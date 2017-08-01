@@ -24,6 +24,14 @@ build:
 	go build ${PROJECT}/pkg/tfbridge
 .PHONY: build
 
+sync:
+	govendor sync -v
+
+updatedeps:
+	govendor add -tree +external
+	sed -i.bck '/\"origin\": "github\.com\/pulumi\/.*\/vendor/d' ./vendor/vendor.json
+	rm ./vendor/vendor.json.bck
+
 test:
 	go test -cover -parallel ${TESTPARALLELISM} ${GOPKGS}
 	which ${GOMETALINTERBIN} >/dev/null

@@ -60,7 +60,6 @@
 		},
 		{
 			"checksumSHA1": "ImX1uv6O09ggFeBPUJJ2nu7MPSA=",
-			"origin": "github.com/pulumi/lumi/vendor/github.com/ghodss/yaml",
 			"path": "github.com/ghodss/yaml",
 			"revision": "f939651c64409fb168911f1271de5b86840e4602",
 			"revisionTime": "2017-08-01T13:23:14Z",
@@ -90,7 +89,6 @@
 		},
 		{
 			"checksumSHA1": "AjyXQ5eohrCPS/jSWZFPn5E8wnQ=",
-			"origin": "github.com/pulumi/lumi/vendor/github.com/golang/protobuf/protoc-gen-go/descriptor",
 			"path": "github.com/golang/protobuf/protoc-gen-go/descriptor",
 			"revision": "f939651c64409fb168911f1271de5b86840e4602",
 			"revisionTime": "2017-08-01T13:23:14Z",
@@ -98,7 +96,6 @@
 		},
 		{
 			"checksumSHA1": "lZFWy27Qo6+m/keDjNFYTxSmvZw=",
-			"origin": "github.com/pulumi/lumi/vendor/github.com/golang/protobuf/ptypes/any",
 			"path": "github.com/golang/protobuf/ptypes/any",
 			"revision": "f939651c64409fb168911f1271de5b86840e4602",
 			"revisionTime": "2017-08-01T13:23:14Z",
@@ -494,6 +491,13 @@
 			"tree": true
 		},
 		{
+			"checksumSHA1": "WxibjC+fKxR3LhOsHVCP8GAYjNg=",
+			"path": "github.com/pulumi/lumi/pkg/util/rendezvous",
+			"revision": "f939651c64409fb168911f1271de5b86840e4602",
+			"revisionTime": "2017-08-01T13:23:14Z",
+			"tree": true
+		},
+		{
 			"checksumSHA1": "UCGsCU7n0gDgSxpcn7y6suMMOq0=",
 			"path": "github.com/pulumi/lumi/pkg/util/rpcutil",
 			"revision": "f939651c64409fb168911f1271de5b86840e4602",
@@ -516,7 +520,6 @@
 		},
 		{
 			"checksumSHA1": "GTSusTEcXS+e4bVB9GW8C9kXpSI=",
-			"origin": "github.com/pulumi/lumi/vendor/github.com/reconquest/loreley",
 			"path": "github.com/reconquest/loreley",
 			"revision": "f939651c64409fb168911f1271de5b86840e4602",
 			"revisionTime": "2017-08-01T13:23:14Z",
@@ -577,7 +580,6 @@
 		},
 		{
 			"checksumSHA1": "ZaU56svwLgiJD0y8JOB3+/mpYBA=",
-			"origin": "github.com/pulumi/lumi/vendor/golang.org/x/crypto/ssh/terminal",
 			"path": "golang.org/x/crypto/ssh/terminal",
 			"revision": "f939651c64409fb168911f1271de5b86840e4602",
 			"revisionTime": "2017-08-01T13:23:14Z",
@@ -592,7 +594,6 @@
 		},
 		{
 			"checksumSHA1": "VrzPJyWI6disCgYuVEQzkjqUsJk=",
-			"origin": "github.com/pulumi/lumi/vendor/golang.org/x/net/idna",
 			"path": "golang.org/x/net/idna",
 			"revision": "f939651c64409fb168911f1271de5b86840e4602",
 			"revisionTime": "2017-08-01T13:23:14Z",
@@ -600,7 +601,6 @@
 		},
 		{
 			"checksumSHA1": "UxahDzW2v4mf/+aFxruuupaoIwo=",
-			"origin": "github.com/pulumi/lumi/vendor/golang.org/x/net/internal/timeseries",
 			"path": "golang.org/x/net/internal/timeseries",
 			"revision": "f939651c64409fb168911f1271de5b86840e4602",
 			"revisionTime": "2017-08-01T13:23:14Z",
@@ -608,7 +608,6 @@
 		},
 		{
 			"checksumSHA1": "3xyuaSNmClqG4YWC7g0isQIbUTc=",
-			"origin": "github.com/pulumi/lumi/vendor/golang.org/x/net/lex/httplex",
 			"path": "golang.org/x/net/lex/httplex",
 			"revision": "f939651c64409fb168911f1271de5b86840e4602",
 			"revisionTime": "2017-08-01T13:23:14Z",
@@ -616,7 +615,6 @@
 		},
 		{
 			"checksumSHA1": "9EZG3s2eOREO7WkBvigjk57wK/8=",
-			"origin": "github.com/pulumi/lumi/vendor/golang.org/x/net/trace",
 			"path": "golang.org/x/net/trace",
 			"revision": "f939651c64409fb168911f1271de5b86840e4602",
 			"revisionTime": "2017-08-01T13:23:14Z",
@@ -624,7 +622,6 @@
 		},
 		{
 			"checksumSHA1": "4owIzLmRdrdy3H3j/OD8UMJD5ZE=",
-			"origin": "github.com/pulumi/lumi/vendor/golang.org/x/sys/unix",
 			"path": "golang.org/x/sys/unix",
 			"revision": "f939651c64409fb168911f1271de5b86840e4602",
 			"revisionTime": "2017-08-01T13:23:14Z",
@@ -632,7 +629,6 @@
 		},
 		{
 			"checksumSHA1": "faFDXp++cLjLBlvsr+izZ+go1WU=",
-			"origin": "github.com/pulumi/lumi/vendor/golang.org/x/text/secure/bidirule",
 			"path": "golang.org/x/text/secure/bidirule",
 			"revision": "f939651c64409fb168911f1271de5b86840e4602",
 			"revisionTime": "2017-08-01T13:23:14Z",
@@ -640,7 +636,6 @@
 		},
 		{
 			"checksumSHA1": "ziMb9+ANGRJSSIuxYdRbA+cDRBQ=",
-			"origin": "github.com/pulumi/lumi/vendor/golang.org/x/text/transform",
 			"path": "golang.org/x/text/transform",
 			"revision": "f939651c64409fb168911f1271de5b86840e4602",
 			"revisionTime": "2017-08-01T13:23:14Z",
@@ -648,7 +643,6 @@
 		},
 		{
 			"checksumSHA1": "MRLtTu/vpd18le8/HPLxOdjO5RE=",
-			"origin": "github.com/pulumi/lumi/vendor/golang.org/x/text/unicode/bidi",
 			"path": "golang.org/x/text/unicode/bidi",
 			"revision": "f939651c64409fb168911f1271de5b86840e4602",
 			"revisionTime": "2017-08-01T13:23:14Z",
@@ -656,15 +650,34 @@
 		},
 		{
 			"checksumSHA1": "kKylzIrLEnH8NKyeVAL0dq5gjVQ=",
-			"origin": "github.com/pulumi/lumi/vendor/golang.org/x/text/unicode/norm",
 			"path": "golang.org/x/text/unicode/norm",
 			"revision": "f939651c64409fb168911f1271de5b86840e4602",
 			"revisionTime": "2017-08-01T13:23:14Z",
 			"tree": true
 		},
 		{
+			"checksumSHA1": "p3gWsy4fQOSXGRMUHr3TnmVFias=",
+			"path": "golang.org/x/tools/go/ast/astutil",
+			"revision": "e6cb469339aef5b7be0c89de730d5f3cc8e47e50",
+			"revisionTime": "2017-06-22T07:15:10Z",
+			"tree": true
+		},
+		{
+			"checksumSHA1": "AnXFEvmaJ7w2Q7hWPcLUmCbPgq0=",
+			"path": "golang.org/x/tools/go/buildutil",
+			"revision": "e6cb469339aef5b7be0c89de730d5f3cc8e47e50",
+			"revisionTime": "2017-06-22T07:15:10Z",
+			"tree": true
+		},
+		{
+			"checksumSHA1": "aXtllsj+ZEheKoMt22s6hPTHdTM=",
+			"path": "golang.org/x/tools/go/loader",
+			"revision": "e6cb469339aef5b7be0c89de730d5f3cc8e47e50",
+			"revisionTime": "2017-06-22T07:15:10Z",
+			"tree": true
+		},
+		{
 			"checksumSHA1": "61oRC/n7DFqHNu6Z+4fAKY1FVCY=",
-			"origin": "github.com/pulumi/lumi/vendor/google.golang.org/genproto/googleapis/rpc/status",
 			"path": "google.golang.org/genproto/googleapis/rpc/status",
 			"revision": "f939651c64409fb168911f1271de5b86840e4602",
 			"revisionTime": "2017-08-01T13:23:14Z",
@@ -672,7 +685,6 @@
 		},
 		{
 			"checksumSHA1": "fALlQNY1fM99NesfLJ50KguWsio=",
-			"origin": "github.com/pulumi/lumi/vendor/gopkg.in/yaml.v2",
 			"path": "gopkg.in/yaml.v2",
 			"revision": "f939651c64409fb168911f1271de5b86840e4602",
 			"revisionTime": "2017-08-01T13:23:14Z",
