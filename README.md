@@ -28,10 +28,10 @@ interface so that we don't need to get our hands dirty with various internal and
 Before doing any development, there are a few prerequisites to install:
 
 * Go: https://golang.org/dl
-* [Dep](https://github.com/golang/dep): $ go get -u github.com/golang/dep
+* [Govendor](https://github.com/kardianos/govendor): `$ go get -u github.com/kardianos/govendor`
 * [GoMetaLinter](https://github.com/alecthomas/gometalinter):
-    - $ go get -u github.com/alecthomas/gometalinter
-    - $ gometalinter --install
+    - `$ go get -u github.com/alecthomas/gometalinter`
+    - `$ gometalinter --install`
 
 ### Building and Testing
 
@@ -44,7 +44,7 @@ To build, ensure `$GOPATH` is set, and clone into a standard Go workspace:
 
 Before building, you will need to ensure dependencies have been restored to your enlistment:
 
-    $ dep ensure
+    $ govendor sync
 
 At this point you can run make to build and run tests:
 
