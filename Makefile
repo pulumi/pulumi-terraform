@@ -28,9 +28,11 @@ sync:
 	govendor sync -v
 
 updatedeps:
+	govendor init
 	govendor add -tree +external
 	sed -i.bck '/\"origin\": "github\.com\/pulumi\/.*\/vendor/d' ./vendor/vendor.json
 	rm ./vendor/vendor.json.bck
+	govendor update +v
 
 test:
 	go test -cover -parallel ${TESTPARALLELISM} ${GOPKGS}
