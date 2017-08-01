@@ -29,7 +29,7 @@ sync:
 
 updatedeps:
 	govendor init
-	govendor add -tree +external
+	govendor add +external
 	sed -i.bck '/\"origin\": "github\.com\/pulumi\/.*\/vendor/d' ./vendor/vendor.json
 	rm ./vendor/vendor.json.bck
 	govendor update +v
