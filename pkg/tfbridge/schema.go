@@ -89,6 +89,10 @@ func MakeTerraformInput(res *PulumiResource, name string,
 			if tfs != nil {
 				if sch, issch := tfs.Elem.(*schema.Schema); issch {
 					etfs = sch
+				} else if _, isres := tfs.Elem.(*schema.Resource); isres {
+					// The IsObject case below expects a schema whose `Elem` is
+					// a Resource, so just pass the full List schema
+					etfs = tfs
 				}
 			}
 			var eps *SchemaInfo
