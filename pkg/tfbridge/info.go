@@ -17,6 +17,9 @@ type ProviderInfo struct {
 	Resources   map[string]*ResourceInfo   // a map of TF name to Pulumi name; standard mangling occurs if no entry.
 	DataSources map[string]*DataSourceInfo // a map of TF name to Pulumi resource info.
 	Overlay     *OverlayInfo               // optional overlay information for augmented code-generation.
+
+	// Optional function to validate the provided variables and local machine environment are valid.
+	environmentCheck func(map[string]string) error
 }
 
 // ResourceInfo is a top-level type exported by a provider.  This structure can override the type to generate.  It can

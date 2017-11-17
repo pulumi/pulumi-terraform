@@ -155,6 +155,14 @@ func (p *Provider) camelPascalPulumiName(name string) (string, string) {
 // Configure configures the underlying Terraform provider with the live Pulumi variable state.
 func (p *Provider) Configure(ctx context.Context, req *lumirpc.ConfigureRequest) (*pbempty.Empty, error) {
 	p.setLoggingContext(ctx)
+
+	// Check that the provided variables and local machine environment are valid.
+	if p.info.environmentCheck != nil {
+		if err := p.info.environmentCheck(req.Variables); err != nil {
+			return nil, errors.Wrap(err, "checking environment")
+		}
+	}
+
 	// Fetch the map of tokens to values.  It will be in the form of fully qualified tokens, so
 	// we will need to translate into simply the configuration variable names.
 	vars := make(resource.PropertyMap)
