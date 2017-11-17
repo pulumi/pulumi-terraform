@@ -1104,6 +1104,15 @@ func (g *generator) tfToJSType(sch *schema.Schema, custom *tfbridge.SchemaInfo, 
 		}
 		elem = custom.Elem
 	}
+
+	switch sch.Type {
+	case schema.TypeList, schema.TypeSet:
+		// Terraform's Schema doesn't have an explicit way to indicate "a named group of parameters". To approximate this,
+		// providers use a schema.TypeList with MaxItems: 1. This is pretty common in the AWS provider.
+		if sch.MaxItems == 1 {
+			return g.tfElemToJSType(sch.Elem, custom, out)
+		}
+	}
 	return g.tfToJSValueType(sch.Type, sch.Elem, elem, out)
 }
 

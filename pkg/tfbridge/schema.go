@@ -73,6 +73,41 @@ func MakeTerraformInputs(res *PulumiResource, m resource.PropertyMap,
 // to disk in order to create a name out of it.  Please take care not to call it superfluously!
 func MakeTerraformInput(res *PulumiResource, name string,
 	v resource.PropertyValue, tfs *schema.Schema, ps *SchemaInfo, defaults, rawNames bool) (interface{}, error) {
+
+	// If we are dealing with a single-item list or map, it will have been projected as its element type. Transform the
+	// resource appropriately.
+	if tfs != nil {
+		switch tfs.Type {
+		case schema.TypeList, schema.TypeSet:
+			if tfs.MaxItems == 1 {
+				var (
+					etfs *schema.Schema
+					eps  *SchemaInfo
+				)
+				switch e := tfs.Elem.(type) {
+				case *schema.Schema:
+					etfs = e
+				case *schema.Resource:
+					// We need to fake up a schema here: if we just pass our own, we'll end up infinitely recursing.
+					// Since the IsObject case expects a schema whose `Elem` is a Resource, make one of those.
+					etfs = &schema.Schema{Elem: e}
+				default:
+					etfs = nil
+				}
+				if ps != nil {
+					eps = ps.Elem
+				}
+
+				elem, err := MakeTerraformInput(res, name, v, etfs, eps, defaults, rawNames)
+				if err != nil {
+					return nil, err
+				}
+
+				return []interface{}{elem}, nil
+			}
+		}
+	}
+
 	if v.IsNull() {
 		return nil, nil
 	} else if v.IsBool() {
@@ -216,8 +251,16 @@ func MakeTerraformOutput(v interface{},
 		// Else it's just a string.
 		return resource.NewStringProperty(t)
 	case []interface{}:
-		var tfes *schema.Schema
+		var (
+			tfes                 *schema.Schema
+			projectSingleElement bool
+		)
 		if tfs != nil {
+			switch tfs.Type {
+			case schema.TypeList, schema.TypeSet:
+				projectSingleElement = tfs.MaxItems == 1
+			}
+
 			if sch, issch := tfs.Elem.(*schema.Schema); issch {
 				tfes = sch
 			} else if _, isres := tfs.Elem.(*schema.Resource); isres {
@@ -230,6 +273,18 @@ func MakeTerraformOutput(v interface{},
 		if ps != nil {
 			pes = ps.Elem
 		}
+
+		// If we're dealing with a single-item list or set, we want to project it as its element. Otherwise, we will
+		// project an array property.
+		if projectSingleElement {
+			switch len(t) {
+			case 0:
+				return resource.NewNullProperty()
+			case 1:
+				return MakeTerraformOutput(t[0], tfes, pes, rawNames)
+			}
+		}
+
 		var arr []resource.PropertyValue
 		for _, elem := range t {
 			arr = append(arr, MakeTerraformOutput(elem, tfes, pes, rawNames))
