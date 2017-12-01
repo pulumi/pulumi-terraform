@@ -50,7 +50,11 @@ func MakeTerraformInputs(res *PulumiResource, m resource.PropertyMap,
 					result[key] = info.Default.Value
 					glog.V(9).Infof("Created Terraform input: %v = %v (default)", key, result[key])
 				} else if from := info.Default.From; from != nil {
-					result[key] = from(res)
+					v, err := from(res)
+					if err != nil {
+						return nil, err
+					}
+					result[key] = v
 					glog.V(9).Infof("Created Terraform input: %v = %v (default from fnc)", key, result[key])
 				}
 			}
