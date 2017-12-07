@@ -89,7 +89,7 @@ func FromName(rand bool, randmaxlen int, transform func(string) string) func(res
 			vs = transform(vs)
 		}
 		if rand {
-			return resource.NewUniqueHex(vs+"-", randmaxlen)
+			return resource.NewUniqueHex(vs, randmaxlen)
 		}
 		return vs, nil
 	}
