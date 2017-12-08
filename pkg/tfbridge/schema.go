@@ -269,6 +269,13 @@ func MakeTerraformOutputs(outs map[string]interface{},
 // MakeTerraformOutput takes a single Terraform property and returns the Pulumi equivalent.
 func MakeTerraformOutput(v interface{},
 	tfs *schema.Schema, ps *SchemaInfo, assets AssetTable, rawNames bool) resource.PropertyValue {
+	if assets != nil && ps != nil && ps.Asset != nil {
+		asset, has := assets[ps]
+		contract.Assertf(has, "expected asset value for Pulumi schema info")
+		contract.Assert(asset.IsAsset() || asset.IsArchive())
+		return asset
+	}
+
 	if v == nil {
 		return resource.NewNullProperty()
 	}
@@ -278,13 +285,6 @@ func MakeTerraformOutput(v interface{},
 	case int:
 		return resource.NewNumberProperty(float64(t))
 	case string:
-		if assets != nil && ps != nil && ps.Asset != nil {
-			asset, has := assets[ps]
-			contract.Assertf(has, "expected asset value for Pulumi schema info")
-			contract.Assert(asset.IsAsset() || asset.IsArchive())
-			return asset
-		}
-
 		// If the string is the special unknown property sentinel, reflect back an unknown computed property.  Note that
 		// Terraform doesn't carry the types along with it, so the best we can do is give back a computed string.
 		if t == config.UnknownVariableValue {
