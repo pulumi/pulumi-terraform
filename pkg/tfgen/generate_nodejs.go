@@ -845,7 +845,6 @@ func tsTypeComplex(sch *schema.Schema, info *tfbridge.SchemaInfo, noflags, out b
 func tsPrimitive(vt schema.ValueType, elem interface{}, eleminfo *tfbridge.SchemaInfo, out bool) string {
 	// First figure out the raw type.
 	var t string
-	var array bool
 	switch vt {
 	case schema.TypeBool:
 		t = "boolean"
@@ -853,17 +852,11 @@ func tsPrimitive(vt schema.ValueType, elem interface{}, eleminfo *tfbridge.Schem
 		t = "number"
 	case schema.TypeString:
 		t = "string"
-	case schema.TypeList:
+	case schema.TypeSet, schema.TypeList:
 		t = tsElemType(elem, eleminfo, out)
-		array = true
+		t = fmt.Sprintf("%s[]", t)
 	case schema.TypeMap:
 		t = fmt.Sprintf("{[key: string]: %v}", tsElemType(elem, eleminfo, out))
-	case schema.TypeSet:
-		// IDEA: we can't use ES6 sets here, because we're using values and not objects.  It would be possible to come
-		//     up with a ValueSet of some sorts, but that depends on things like shallowEquals which is known to be
-		//     brittle and implementation dependent.  For now, we will stick to arrays, and validate on the backend.
-		t = tsElemType(elem, eleminfo, out)
-		array = true
 	default:
 		contract.Failf("Unrecognized schema type: %v", vt)
 	}
@@ -871,13 +864,6 @@ func tsPrimitive(vt schema.ValueType, elem interface{}, eleminfo *tfbridge.Schem
 	// Now, if it is an input property value, it must be wrapped in a ComputedValue<T>.
 	if !out {
 		t = fmt.Sprintf("pulumi.ComputedValue<%s>", t)
-	}
-
-	// Finally make sure arrays are arrays; this must be done after the above, so we get a ComputedValue<T>[],
-	// and not a ComputedValue<T[]>, which would constrain the ability to flexibly construct them.
-	// BUGBUG[pulumi/pulumi-terraform#47]: this code needs to be removed -- it's just wrong.
-	if array {
-		t = fmt.Sprintf("%s[]", t)
 	}
 
 	return t
