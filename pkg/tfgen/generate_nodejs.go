@@ -844,29 +844,29 @@ func tsTypeComplex(sch *schema.Schema, info *tfbridge.SchemaInfo, noflags, out b
 // tsPrimitive returns the TypeScript type name for a given schema value type and element kind.
 func tsPrimitive(vt schema.ValueType, elem interface{}, eleminfo *tfbridge.SchemaInfo, out bool) string {
 	// First figure out the raw type.
-	var t string
-	switch vt {
-	case schema.TypeBool:
-		t = "boolean"
-	case schema.TypeInt, schema.TypeFloat:
-		t = "number"
-	case schema.TypeString:
-		t = "string"
-	case schema.TypeSet, schema.TypeList:
-		t = tsElemType(elem, eleminfo, out)
-		t = fmt.Sprintf("%s[]", t)
-	case schema.TypeMap:
-		t = fmt.Sprintf("{[key: string]: %v}", tsElemType(elem, eleminfo, out))
-	default:
-		contract.Failf("Unrecognized schema type: %v", vt)
+	var t = (func() string {
+		switch vt {
+		case schema.TypeBool:
+			return "boolean"
+		case schema.TypeInt, schema.TypeFloat:
+			return "number"
+		case schema.TypeString:
+			return "string"
+		case schema.TypeSet, schema.TypeList:
+			return fmt.Sprintf("%s[]", tsElemType(elem, eleminfo, out))
+		case schema.TypeMap:
+			return fmt.Sprintf("{[key: string]: %v}", tsElemType(elem, eleminfo, out))
+		default:
+			contract.Failf("Unrecognized schema type: %v", vt)
+			return ""
+		}
+	})()
+
+	if out {
+		return t
 	}
 
-	// Now, if it is an input property value, it must be wrapped in a ComputedValue<T>.
-	if !out {
-		t = fmt.Sprintf("pulumi.ComputedValue<%s>", t)
-	}
-
-	return t
+	return fmt.Sprintf("pulumi.ComputedValue<%s>", t)
 }
 
 // tsElemType returns the TypeScript type for a given schema element.  This element may be either a simple schema
