@@ -416,8 +416,8 @@ func (g *nodeJSGenerator) emitResourceType(mod *module, res *resourceType) (stri
 		}
 
 		// Emit the property as a computed value; it has to carry undefined because of planning.
-		w.Writefmtln("    public %sreadonly %s%s: pulumi.Computed<%s>;",
-			outcomment, prop.name, tsFlags(prop), tsType(prop, false))
+		w.Writefmtln("    public %sreadonly %s: pulumi.Computed<%s>;",
+			outcomment, prop.name, tsType(prop, false))
 	}
 	w.Writefmtln("")
 
