@@ -877,7 +877,13 @@ func tsPrimitive(vt schema.ValueType, elem interface{}, eleminfo *tfbridge.Schem
 		case schema.TypeString:
 			return "string"
 		case schema.TypeSet, schema.TypeList:
-			return fmt.Sprintf("%s[]", tsElemType(elem, eleminfo, out))
+			elemType := tsElemType(elem, eleminfo, out)
+			// Use the element type when MaxItems=1 to represent an embedded struct.
+			if sch, ok := elem.(*schema.Schema); ok && sch.MaxItems == 1 {
+				return fmt.Sprintf("%s", elemType)
+			}
+			// Else use an array of the element type.
+			return fmt.Sprintf("%s[]", elemType)
 		case schema.TypeMap:
 			return fmt.Sprintf("{[key: string]: %v}", tsElemType(elem, eleminfo, out))
 		default:

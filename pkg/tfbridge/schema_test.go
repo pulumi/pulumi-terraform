@@ -38,6 +38,10 @@ func TestTerraformInputs(t *testing.T) {
 					"configurationValue": true,
 				},
 			}},
+			"optionalConfig": map[string]interface{}{
+				"someValue":      true,
+				"someOtherValue": "a value",
+			},
 		}),
 		map[string]*schema.Schema{
 			// Type mapPropertyValue as a map so that keys aren't mangled in the usual way.
@@ -45,13 +49,23 @@ func TestTerraformInputs(t *testing.T) {
 			"map_property_value":   {Type: schema.TypeMap},
 			"nested_resources": {
 				Type:     schema.TypeList,
-				MaxItems: 1,
+				MaxItems: 2,
 				// Embed a `*schema.Resource` to validate that type directed
 				// walk of the schema successfully walks inside Resources as well
 				// as Schemas.
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"configuration": {Type: schema.TypeMap},
+					},
+				},
+			},
+			"optional_config": {
+				Type:     schema.TypeList,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"some_value":       {Type: schema.TypeBool},
+						"some_other_value": {Type: schema.TypeString},
 					},
 				},
 			},
@@ -92,6 +106,12 @@ func TestTerraformInputs(t *testing.T) {
 				},
 			},
 		},
+		"optional_config": []interface{}{
+			map[string]interface{}{
+				"some_value":       true,
+				"some_other_value": "a value",
+			},
+		},
 	}, result)
 }
 
@@ -123,6 +143,12 @@ func TestTerraformOutputs(t *testing.T) {
 					},
 				},
 			},
+			"optional_config": []interface{}{
+				map[string]interface{}{
+					"some_value":       true,
+					"some_other_value": "a value",
+				},
+			},
 		},
 		map[string]*schema.Schema{
 			// Type mapPropertyValue as a map so that keys aren't mangled in the usual way.
@@ -130,13 +156,23 @@ func TestTerraformOutputs(t *testing.T) {
 			"map_property_value":   {Type: schema.TypeMap},
 			"nested_resources": {
 				Type:     schema.TypeList,
-				MaxItems: 1,
+				MaxItems: 2,
 				// Embed a `*schema.Resource` to validate that type directed
 				// walk of the schema successfully walks inside Resources as well
 				// as Schemas.
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"configuration": {Type: schema.TypeMap},
+					},
+				},
+			},
+			"optional_config": {
+				Type:     schema.TypeList,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"some_value":       {Type: schema.TypeBool},
+						"some_other_value": {Type: schema.TypeString},
 					},
 				},
 			},
@@ -173,6 +209,10 @@ func TestTerraformOutputs(t *testing.T) {
 				"configurationValue": true,
 			},
 		}},
+		"optionalConfig": map[string]interface{}{
+			"someValue":      true,
+			"someOtherValue": "a value",
+		},
 	}), result)
 }
 

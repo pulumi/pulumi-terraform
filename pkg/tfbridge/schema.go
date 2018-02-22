@@ -133,6 +133,13 @@ func MakeTerraformInput(res *PulumiResource, name string,
 	old, v resource.PropertyValue, tfs *schema.Schema, ps *SchemaInfo, assets AssetTable,
 	defaults, rawNames bool) (interface{}, error) {
 
+	// For TypeList or TypeSet with MaxItems==1, we will have projected as a scalar nested value, and need to wrap it
+	// into a single-element array before passing to Terraform.
+	if tfs != nil && tfs.MaxItems == 1 && (tfs.Type == schema.TypeList || tfs.Type == schema.TypeSet) {
+		old = resource.NewArrayProperty([]resource.PropertyValue{old})
+		v = resource.NewArrayProperty([]resource.PropertyValue{v})
+	}
+
 	switch {
 	case v.IsNull():
 		return nil, nil
@@ -155,10 +162,10 @@ func MakeTerraformInput(res *PulumiResource, name string,
 		if tfs != nil {
 			if sch, issch := tfs.Elem.(*schema.Schema); issch {
 				etfs = sch
-			} else if _, isres := tfs.Elem.(*schema.Resource); isres {
+			} else if res, isres := tfs.Elem.(*schema.Resource); isres {
 				// The IsObject case below expects a schema whose `Elem` is
-				// a Resource, so just pass the full List schema
-				etfs = tfs
+				// a Resource, so create a fake schema wrapping this resource.
+				etfs = &schema.Schema{Elem: res}
 			}
 		}
 		var eps *SchemaInfo
@@ -319,6 +326,18 @@ func MakeTerraformOutput(v interface{},
 		var arr []resource.PropertyValue
 		for _, elem := range t {
 			arr = append(arr, MakeTerraformOutput(elem, tfes, pes, assets, rawNames))
+		}
+		// For TypeList or TypeSet with MaxItems==1, we will have projected as a scalar nested value, so need to extract
+		// out the  need to wrap it into a single-element array before passing to Terraform.
+		if tfs != nil && tfs.MaxItems == 1 && (tfs.Type == schema.TypeList || tfs.Type == schema.TypeSet) {
+			switch len(arr) {
+			case 0:
+				return resource.NewNullProperty()
+			case 1:
+				return arr[0]
+			default:
+				contract.Failf("Unexpected multiple elements in array with MaxItems=1")
+			}
 		}
 		return resource.NewArrayProperty(arr)
 	case map[string]interface{}:
