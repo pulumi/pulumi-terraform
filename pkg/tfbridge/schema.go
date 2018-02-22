@@ -164,7 +164,7 @@ func MakeTerraformInput(res *PulumiResource, name string,
 				etfs = sch
 			} else if res, isres := tfs.Elem.(*schema.Resource); isres {
 				// The IsObject case below expects a schema whose `Elem` is
-				// a Resource, so create a fake schema wrapping this resource.
+				// a Resource, so create a placeholder schema wrapping this resource.
 				etfs = &schema.Schema{Elem: res}
 			}
 		}

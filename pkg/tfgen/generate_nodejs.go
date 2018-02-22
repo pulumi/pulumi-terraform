@@ -829,7 +829,6 @@ func tsType(v *variable, noflags bool) string {
 
 // tsTypeComplex is just like tsType, but permits recursing using component pieces rather than a true variable.
 func tsTypeComplex(sch *schema.Schema, info *tfbridge.SchemaInfo, noflags, out bool) string {
-	fmt.Printf("tsTypeComplex: %v %v %v %v\n", sch, info, noflags, out)
 	// First, see if there is a custom override.  If yes, use it directly.
 	var t string
 	var elem *tfbridge.SchemaInfo
@@ -853,7 +852,7 @@ func tsTypeComplex(sch *schema.Schema, info *tfbridge.SchemaInfo, noflags, out b
 
 	// If nothing was found, generate the primitive type name for this.
 	if t == "" {
-		t = tsPrimitive(sch.Type, sch.Elem, elem, out)
+		t = tsPrimitive(sch.Type, sch.Elem, elem, sch.MaxItems == 1, out)
 	}
 
 	// If we aren't using optional flags, we need to use TypeScript union types to permit undefined values.
@@ -867,8 +866,7 @@ func tsTypeComplex(sch *schema.Schema, info *tfbridge.SchemaInfo, noflags, out b
 }
 
 // tsPrimitive returns the TypeScript type name for a given schema value type and element kind.
-func tsPrimitive(vt schema.ValueType, elem interface{}, eleminfo *tfbridge.SchemaInfo, out bool) string {
-	fmt.Printf("tsPrimitive: %v %v %v %v\n", vt, elem, eleminfo, out)
+func tsPrimitive(vt schema.ValueType, elem interface{}, eleminfo *tfbridge.SchemaInfo, flatten, out bool) string {
 	// First figure out the raw type.
 	var t = (func() string {
 		switch vt {
@@ -880,11 +878,9 @@ func tsPrimitive(vt schema.ValueType, elem interface{}, eleminfo *tfbridge.Schem
 			return "string"
 		case schema.TypeSet, schema.TypeList:
 			elemType := tsElemType(elem, eleminfo, out)
-			// Use the element type when MaxItems=1 to represent an embedded struct.
-			if sch, ok := elem.(*schema.Schema); ok && sch.MaxItems == 1 {
-				return fmt.Sprintf("%s", elemType)
+			if flatten {
+				return elemType
 			}
-			// Else use an array of the element type.
 			return fmt.Sprintf("%s[]", elemType)
 		case schema.TypeMap:
 			return fmt.Sprintf("{[key: string]: %v}", tsElemType(elem, eleminfo, out))
@@ -904,7 +900,6 @@ func tsPrimitive(vt schema.ValueType, elem interface{}, eleminfo *tfbridge.Schem
 // tsElemType returns the TypeScript type for a given schema element.  This element may be either a simple schema
 // property or a complex structure.  In the case of a complex structure, this will expand to its nominal type.
 func tsElemType(elem interface{}, info *tfbridge.SchemaInfo, out bool) string {
-	fmt.Printf("tsElemType: %v %v %v\n", elem, info, out)
 	// If there is no element type specified, we will accept anything.
 	if elem == nil {
 		return "any"
@@ -912,7 +907,7 @@ func tsElemType(elem interface{}, info *tfbridge.SchemaInfo, out bool) string {
 
 	switch e := elem.(type) {
 	case schema.ValueType:
-		return tsPrimitive(e, nil, info, out)
+		return tsPrimitive(e, nil, info, false, out)
 	case *schema.Schema:
 		// A simple type, just return its type name.
 		return tsTypeComplex(e, info, true /*noflags*/, out)
