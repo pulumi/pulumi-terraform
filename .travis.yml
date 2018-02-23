@@ -3,21 +3,17 @@ if: branch = master OR branch =~ ^release/ OR tag IS present
 language: go
 go: 1.9
 sudo: true # give us 7.5GB and >2 bursted cores.
+git:
+  depth: false
 before_install:
-    - export PULUMI_ROOT=/opt/pulumi
-    # Dep for Go dependency management.
-    - go get -v github.com/golang/dep/cmd/dep
-    # Gometalinter for good Go linting/hygiene.
-    - go get -v github.com/alecthomas/gometalinter
-    - gometalinter --install
+    - source ./build/travis/prepare-environment.sh
 install:
-    # Clone the Pulumi-wide repo so we can use its scripts.
-    - git clone git@github.com:pulumi/home ${GOPATH}/src/github.com/pulumi/home
-    - make ensure
+    - source ./build/travis/install-common-toolchain.sh
 before_script:
-    # Ensure the working tree is clean (make ensure may have updated lock files)
-    - ${GOPATH}/src/github.com/pulumi/home/scripts/check-worktree-is-clean.sh
+    - ./build/travis/ensure-dependencies
 script:
     - make travis_${TRAVIS_EVENT_TYPE}
+after_failure:
+    - ./build/travis/upload-failure-logs
 notifications:
     webhooks: https://ufci1w66n3.execute-api.us-west-2.amazonaws.com/stage/travis
