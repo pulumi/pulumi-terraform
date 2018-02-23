@@ -41,10 +41,15 @@ func TestPluralize(t *testing.T) {
 			Type:     schema.TypeSet,
 			MaxItems: 1,
 		},
+		"all_things": {
+			Type: schema.TypeSet,
+		},
 	}
 	assert.Equal(t, "someThings", TerraformToPulumiName("some_thing", tfs["some_thing"], false))
 	assert.Equal(t, "someOtherThing", TerraformToPulumiName("some_other_thing", tfs["some_other_thing"], false))
+	assert.Equal(t, "allThings", TerraformToPulumiName("all_things", tfs["all_things"], false))
 
 	assert.Equal(t, "some_thing", PulumiToTerraformName("someThings", tfs))
 	assert.Equal(t, "some_other_things", PulumiToTerraformName("someOtherThings", tfs))
+	assert.Equal(t, "all_things", PulumiToTerraformName("allThings", tfs))
 }
