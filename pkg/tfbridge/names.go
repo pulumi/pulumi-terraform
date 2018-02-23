@@ -27,10 +27,11 @@ func PulumiToTerraformName(name string, tfs map[string]*schema.Schema) string {
 		}
 	}
 	// Singularize names which were pluralized because they were array-shaped Pulumi values
-	if tfs != nil && tfs[result] != nil {
-		sch, ok := tfs[result]
+	if tfs != nil {
+		singularResult := inflector.Singularize(result)
+		sch, ok := tfs[singularResult]
 		if ok && sch.MaxItems != 1 && (sch.Type == schema.TypeList || sch.Type == schema.TypeSet) {
-			result = inflector.Singularize(result)
+			result = singularResult
 		}
 	}
 	return result
