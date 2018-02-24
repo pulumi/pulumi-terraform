@@ -852,7 +852,13 @@ func tsTypeComplex(sch *schema.Schema, info *tfbridge.SchemaInfo, noflags, out b
 
 	// If nothing was found, generate the primitive type name for this.
 	if t == "" {
-		t = tsPrimitive(sch.Type, sch.Elem, elem, sch.MaxItems == 1, out)
+		var flatten bool
+		if info != nil && info.MaxItemsOne != nil {
+			flatten = *info.MaxItemsOne
+		} else {
+			flatten = sch.MaxItems == 1
+		}
+		t = tsPrimitive(sch.Type, sch.Elem, elem, flatten, out)
 	}
 
 	// If we aren't using optional flags, we need to use TypeScript union types to permit undefined values.

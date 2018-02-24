@@ -135,7 +135,7 @@ func MakeTerraformInput(res *PulumiResource, name string,
 
 	// For TypeList or TypeSet with MaxItems==1, we will have projected as a scalar nested value, and need to wrap it
 	// into a single-element array before passing to Terraform.
-	if tfs != nil && tfs.MaxItems == 1 && (tfs.Type == schema.TypeList || tfs.Type == schema.TypeSet) {
+	if isListOrSetWithMaxItemsOne(tfs, ps) {
 		old = resource.NewArrayProperty([]resource.PropertyValue{old})
 		v = resource.NewArrayProperty([]resource.PropertyValue{v})
 	}
@@ -328,8 +328,8 @@ func MakeTerraformOutput(v interface{},
 			arr = append(arr, MakeTerraformOutput(elem, tfes, pes, assets, rawNames))
 		}
 		// For TypeList or TypeSet with MaxItems==1, we will have projected as a scalar nested value, so need to extract
-		// out the  need to wrap it into a single-element array before passing to Terraform.
-		if tfs != nil && tfs.MaxItems == 1 && (tfs.Type == schema.TypeList || tfs.Type == schema.TypeSet) {
+		// out the single element (or null).
+		if isListOrSetWithMaxItemsOne(tfs, ps) {
 			switch len(arr) {
 			case 0:
 				return resource.NewNullProperty()
@@ -573,6 +573,21 @@ func MakeTerraformDiffFromRPC(old *pbstruct.Struct, new *pbstruct.Struct,
 		}
 	}
 	return MakeTerraformDiff(oldprops, newprops, tfs, ps)
+}
+
+// isListOrSetWithMaxItemsOne returns true if the schema/info pair represents a TypeList or TypeSet which should project
+// as a scalar, else returns false.
+func isListOrSetWithMaxItemsOne(tfs *schema.Schema, info *SchemaInfo) bool {
+	if tfs == nil {
+		return false
+	}
+	if tfs.Type != schema.TypeList && tfs.Type != schema.TypeSet {
+		return false
+	}
+	if info != nil && info.MaxItemsOne != nil {
+		return *info.MaxItemsOne
+	}
+	return tfs.MaxItems == 1
 }
 
 // useRawNames returns true if raw, unmangled names should be preserved.  This is only true for Terraform maps.
