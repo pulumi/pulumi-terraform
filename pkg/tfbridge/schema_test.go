@@ -33,6 +33,13 @@ func TestTerraformInputs(t *testing.T) {
 					"nestedPropertyA": true,
 				},
 			},
+			"mapPropertyValueMangled": map[string]interface{}{
+				"propertyA": "a",
+				"propertyB": true,
+				"propertyC": map[string]interface{}{
+					"nestedPropertyA": true,
+				},
+			},
 			"nestedResources": []map[string]interface{}{{
 				"configuration": map[string]interface{}{
 					"configurationValue": true,
@@ -49,8 +56,9 @@ func TestTerraformInputs(t *testing.T) {
 		}),
 		map[string]*schema.Schema{
 			// Type mapPropertyValue as a map so that keys aren't mangled in the usual way.
-			"float_property_value": {Type: schema.TypeFloat},
-			"map_property_value":   {Type: schema.TypeMap},
+			"float_property_value":       {Type: schema.TypeFloat},
+			"map_property_value":         {Type: schema.TypeMap},
+			"map_property_value_mangled": {Type: schema.TypeMap},
 			"nested_resource": {
 				Type:     schema.TypeList,
 				MaxItems: 2,
@@ -92,6 +100,10 @@ func TestTerraformInputs(t *testing.T) {
 				Name:        "optionalConfigOther",
 				MaxItemsOne: boolPointer(true),
 			},
+			"map_property_value_mangled": {
+				Name:              "mapPropertyValueMangled",
+				MangleTypeMapKeys: boolPointer(true),
+			},
 		},
 		nil,   /* assets */
 		false, /*defaults*/
@@ -114,6 +126,13 @@ func TestTerraformInputs(t *testing.T) {
 			"propertyB": true,
 			"propertyC": map[string]interface{}{
 				"nestedPropertyA": true,
+			},
+		},
+		"map_property_value_mangled": map[string]interface{}{
+			"property_a": "a",
+			"property_b": true,
+			"property_c": map[string]interface{}{
+				"nested_property_a": true,
 			},
 		},
 		"nested_resource": []interface{}{
@@ -159,6 +178,13 @@ func TestTerraformOutputs(t *testing.T) {
 					"nestedPropertyA": true,
 				},
 			},
+			"map_property_value_mangled": map[string]interface{}{
+				"property_a": "a",
+				"property_b": true,
+				"property_c": map[string]interface{}{
+					"nested_property_a": true,
+				},
+			},
 			"nested_resource": []interface{}{
 				map[string]interface{}{
 					"configuration": map[string]interface{}{
@@ -181,8 +207,9 @@ func TestTerraformOutputs(t *testing.T) {
 		},
 		map[string]*schema.Schema{
 			// Type mapPropertyValue as a map so that keys aren't mangled in the usual way.
-			"float_property_value": {Type: schema.TypeFloat},
-			"map_property_value":   {Type: schema.TypeMap},
+			"float_property_value":       {Type: schema.TypeFloat},
+			"map_property_value":         {Type: schema.TypeMap},
+			"map_property_value_mangled": {Type: schema.TypeMap},
 			"nested_resource": {
 				Type:     schema.TypeList,
 				MaxItems: 2,
@@ -224,6 +251,10 @@ func TestTerraformOutputs(t *testing.T) {
 				Name:        "optionalConfigOther",
 				MaxItemsOne: boolPointer(true),
 			},
+			"map_property_value_mangled": {
+				Name:              "mapPropertyValueMangled",
+				MangleTypeMapKeys: boolPointer(true),
+			},
 		},
 		nil,   /* assets */
 		false, /*useRawNames*/
@@ -240,6 +271,13 @@ func TestTerraformOutputs(t *testing.T) {
 			"propertyB": true,
 		},
 		"mapPropertyValue": map[string]interface{}{
+			"propertyA": "a",
+			"propertyB": true,
+			"propertyC": map[string]interface{}{
+				"nestedPropertyA": true,
+			},
+		},
+		"mapPropertyValueMangled": map[string]interface{}{
 			"propertyA": "a",
 			"propertyB": true,
 			"propertyC": map[string]interface{}{
