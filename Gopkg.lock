@@ -361,11 +361,12 @@
     "pkg/util/fsutil",
     "pkg/util/mapper",
     "pkg/util/rpcutil",
+    "pkg/util/rpcutil/rpcerror",
     "pkg/workspace",
     "sdk/proto/go"
   ]
-  revision = "26b1fcb67adc8a1fcf65684e959fc58eb8be1b5d"
-  version = "v0.11.0"
+  revision = "0dbf6f8263054f00eb012f35dc7cb0b0eb53ee3b"
+  version = "v0.11.1-rc1"
 
 [[projects]]
   branch = "master"
