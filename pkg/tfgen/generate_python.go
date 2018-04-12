@@ -3,7 +3,6 @@
 package tfgen
 
 import (
-	"fmt"
 	"path/filepath"
 	"reflect"
 	"sort"
@@ -308,7 +307,7 @@ func (g *pythonGenerator) emitRawDocComment(w *tools.GenWriter, comment, prefix 
 					curr++
 				}
 			} else {
-				w.Writefmtln(`"""`)
+				w.Writefmtln(`%s"""`, prefix)
 				w.Writefmt(prefix)
 			}
 			w.Writefmt(word)
@@ -543,14 +542,6 @@ func (g *pythonGenerator) emitPackageMetadata(pack *pkg) error {
 	// Emit a standard warning header ("do not edit", etc).
 	w.EmitHeaderWarning(g.commentChars())
 
-	// Create a Python version.
-	version := pack.version
-	if len(version) > 0 && version[0] == 'v' {
-		version = version[1:] // no leading v
-	}
-	version = strings.Replace(version, "-dev-", "a", 1) // replace dev tags with alpha
-	version = strings.Replace(version, "-rc", "rc", 1)  // replace release candidate tags with rc
-
 	// Now create a standard Python package from the metadata.
 	w.Writefmtln("from setuptools import setup, find_packages")
 	w.Writefmtln("from setuptools.command.install import install")
@@ -561,10 +552,25 @@ func (g *pythonGenerator) emitPackageMetadata(pack *pkg) error {
 	w.Writefmtln("class InstallPluginCommand(install):")
 	w.Writefmtln("    def run(self):")
 	w.Writefmtln("        install.run(self)")
-	w.Writefmtln("        # if a true install, not building a wheel or egg, fetch the plugin:")
-	w.Writefmtln("        if not self.single_version_externally_managed:")
-	w.Writefmtln("            check_call(['pulumi', 'plugin', 'install', 'resource', '%s', '%s'])", pack.name, version)
+	w.Writefmtln("        check_call(['pulumi', 'plugin', 'install', 'resource', '%s', '%s'])",
+		pack.name, pack.version)
 	w.Writefmtln("")
+
+	// Create a Python version.  To do so, we need to mangle it slightly.  Namely, do the following:
+	//
+	//     1) Skip the leading "v" (i.e., "1.3.11", not "v1.3.11").
+	//     2) Change "-dev-<xyz>" into an alpha release "a<xyz>".
+	//     3) Change "-rc-<xyz>" into a release candidate "rc<xyz>".
+	//     4) Change "-<commitish><dirty>" into a local version label; e.g. "+37bc2f9-dirty", not "-37bc2f9-dirty".
+	//
+	// These changes ensure that we confirm with PEP440: https://www.python.org/dev/peps/pep-0440/#version-scheme.
+	version := pack.version
+	if len(version) > 0 && version[0] == 'v' {
+		version = version[1:] // (1)
+	}
+	version = strings.Replace(version, "-dev-", "a", 1) // (2)
+	version = strings.Replace(version, "-rc", "rc", 1)  // (3)
+	version = strings.Replace(version, "-", "+", 1)     // (4)
 
 	// Finally, the actual setup part.
 	w.Writefmtln("setup(name='%s',", pyPack(pack.name))
@@ -635,7 +641,11 @@ func (g *pythonGenerator) emitPackageMetadata(pack *pkg) error {
 // pyType returns the expected runtime type for the given variable.  Of course, being a dynamic language, this
 // check is not exhaustive, but it should be good enough to catch 80% of the cases early on.
 func pyType(v *variable) string {
-	switch v.schema.Type {
+	return pyTypeFromSchema(v.schema, v.info)
+}
+
+func pyTypeFromSchema(sch *schema.Schema, info *tfbridge.SchemaInfo) string {
+	switch sch.Type {
 	case schema.TypeBool:
 		return "bool"
 	case schema.TypeInt:
@@ -645,9 +655,22 @@ func pyType(v *variable) string {
 	case schema.TypeString:
 		return "basestring"
 	case schema.TypeSet, schema.TypeList:
-		return fmt.Sprintf("list")
+		if tfbridge.IsMaxItemsOne(sch, info) {
+			// This isn't supposed to be projected as a list; project it as a scalar.
+			if elem, ok := sch.Elem.(*schema.Schema); ok {
+				var schInfo *tfbridge.SchemaInfo
+				if info != nil {
+					schInfo = info.Elem
+				}
+				// If the elem is a schema type, see if we can do better than just "dict".
+				return pyTypeFromSchema(elem, schInfo)
+			}
+			// Otherwise, return "dict".
+			return "dict"
+		}
+		return "list"
 	default:
-		return fmt.Sprintf("dict")
+		return "dict"
 	}
 }
 

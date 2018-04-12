@@ -14,14 +14,17 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/pkg/errors"
+	"golang.org/x/net/context"
+	"google.golang.org/grpc/codes"
+
 	"github.com/pulumi/pulumi/pkg/diag"
 	"github.com/pulumi/pulumi/pkg/resource"
 	"github.com/pulumi/pulumi/pkg/resource/plugin"
 	"github.com/pulumi/pulumi/pkg/resource/provider"
 	"github.com/pulumi/pulumi/pkg/tokens"
 	"github.com/pulumi/pulumi/pkg/util/contract"
+	"github.com/pulumi/pulumi/pkg/util/rpcutil/rpcerror"
 	pulumirpc "github.com/pulumi/pulumi/sdk/proto/go"
-	"golang.org/x/net/context"
 )
 
 // Provider implements the Pulumi resource provider operations for any Terraform plugin.
@@ -172,6 +175,36 @@ func (p *Provider) Configure(ctx context.Context, req *pulumirpc.ConfigureReques
 		}
 	}
 
+	// So we can provide better error messages, do a quick scan of required configs for this
+	// schema and report any that haven't been supplied.
+	var missingKeys []*pulumirpc.ConfigureErrorMissingKeys_MissingKey
+	for key, meta := range p.tf.Schema {
+		_, present := vars[resource.PropertyKey(key)]
+		if meta.Required && !present {
+			fullyQualifiedKey := tokens.NewModuleToken(p.pkg(), tokens.ModuleName(key))
+
+			// TF descriptions often have newlines in inopportune positions. This makes them present
+			// a little better in our console output.
+			descriptionWithoutNewlines := strings.Replace(meta.Description, "\n", " ", -1)
+			missingKeys = append(missingKeys, &pulumirpc.ConfigureErrorMissingKeys_MissingKey{
+				Name:        fullyQualifiedKey.String(),
+				Description: descriptionWithoutNewlines,
+			})
+		}
+	}
+
+	if len(missingKeys) > 0 {
+		err := rpcerror.New(codes.InvalidArgument, "required configuration keys were missing")
+
+		// Clients of our RPC endpoint will be looking for this detail in order to figure out
+		// which keys need descriptive error messages.
+		err = rpcerror.WithDetails(err, &pulumirpc.ConfigureErrorMissingKeys{
+			MissingKeys: missingKeys,
+		})
+
+		return nil, err
+	}
+
 	// Now make a Terraform config map out of the variables.
 	config, err := MakeTerraformConfig(nil, vars, p.tf.Schema, p.info.Config, true)
 	if err != nil {
@@ -300,17 +333,25 @@ func (p *Provider) Diff(ctx context.Context, req *pulumirpc.DiffRequest) (*pulum
 		return nil, errors.Wrapf(err, "diffing %s", urn)
 	}
 
-	// Each RequiresNew translates into a replacement.
+	// If there were changes in this diff, check to see if we have a replacement.
 	var replaces []string
-	replaced := make(map[resource.PropertyKey]bool)
-	if diff != nil {
+	var replaced map[resource.PropertyKey]bool
+	var changes pulumirpc.DiffResponse_DiffChanges
+	hasChanges := diff != nil && len(diff.Attributes) > 0
+	if hasChanges {
+		changes = pulumirpc.DiffResponse_DIFF_SOME
 		for k, attr := range diff.Attributes {
 			if attr.RequiresNew {
 				name, _, _ := getInfoFromTerraformName(k, res.TFSchema, res.Schema.Fields, false)
 				replaces = append(replaces, string(name))
+				if replaced == nil {
+					replaced = make(map[resource.PropertyKey]bool)
+				}
 				replaced[name] = true
 			}
 		}
+	} else {
+		changes = pulumirpc.DiffResponse_DIFF_NONE
 	}
 
 	// For all properties that are ForceNew, but didn't change, assume they are stable.  Also recognize
@@ -325,6 +366,7 @@ func (p *Provider) Diff(ctx context.Context, req *pulumirpc.DiffRequest) (*pulum
 	}
 
 	return &pulumirpc.DiffResponse{
+		Changes:             changes,
 		Replaces:            replaces,
 		Stables:             stables,
 		DeleteBeforeReplace: len(replaces) > 0 && res.Schema.DeleteBeforeReplace,
@@ -365,6 +407,50 @@ func (p *Provider) Create(ctx context.Context, req *pulumirpc.CreateRequest) (*p
 		return nil, err
 	}
 	return &pulumirpc.CreateResponse{Id: newstate.ID, Properties: mprops}, nil
+}
+
+// Read the current live state associated with a resource.  Enough state must be include in the inputs to uniquely
+// identify the resource; this is typically just the resource ID, but may also include some properties.
+func (p *Provider) Read(ctx context.Context, req *pulumirpc.ReadRequest) (*pulumirpc.ReadResponse, error) {
+	p.setLoggingContext(ctx)
+	urn := resource.URN(req.GetUrn())
+	t := urn.Type()
+	res, has := p.resources[t]
+	if !has {
+		return nil, errors.Errorf("unrecognized resource type (Read): %s", t)
+	}
+
+	id := resource.ID(req.GetId())
+	label := fmt.Sprintf("%s.Read(%s, %s/%s)", p.label(), id, urn, res.TF.Name)
+	glog.V(9).Infof("%s executing", label)
+
+	// Manufacture Terraform attributes and state with the provided properties, in preparation for reading.
+	inputs, err := MakeTerraformAttributesFromRPC(
+		nil, req.GetProperties(), res.TFSchema, res.Schema.Fields, false, false, fmt.Sprintf("%s.state", label))
+	if err != nil {
+		return nil, errors.Wrapf(err, "preparing %s's property state", urn)
+	}
+	info := &terraform.InstanceInfo{Type: res.TF.Name}
+	state := &terraform.InstanceState{ID: req.GetId(), Attributes: inputs}
+	newstate, err := p.tf.Refresh(info, state)
+	if err != nil {
+		return nil, errors.Wrapf(err, "refreshing %s", urn)
+	}
+
+	// Store the ID and properties in the output.  The ID *should* be the same as the input ID, but in the case
+	// that the resource no longer exists, we will simply return the empty string and an empty property map.
+	if newstate != nil {
+		props := MakeTerraformResult(newstate, res.TFSchema, res.Schema.Fields)
+		mprops, err := plugin.MarshalProperties(props, plugin.MarshalOptions{
+			Label: fmt.Sprintf("%s.newstate", label)})
+		if err != nil {
+			return nil, err
+		}
+		return &pulumirpc.ReadResponse{Id: newstate.ID, Properties: mprops}, nil
+	}
+
+	// The resource is gone.
+	return &pulumirpc.ReadResponse{}, nil
 }
 
 // Update updates an existing resource with new values.  Only those values in the provided property bag are updated
