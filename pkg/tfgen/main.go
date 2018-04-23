@@ -51,17 +51,7 @@ func newTFGenCmd(pkg string, version string, prov tfbridge.ProviderInfo) *cobra.
 			}
 
 			// Let's generate some code!
-			err = g.Generate()
-			if err != nil {
-				return err
-			}
-
-			// If we succeeded at generate, but there were errors, exit unsuccessfully.
-			if !cmdutil.Diag().Success() {
-				os.Exit(-2)
-			}
-
-			return nil
+			return g.Generate()
 		}),
 		PersistentPostRun: func(cmd *cobra.Command, args []string) {
 			glog.Flush()
