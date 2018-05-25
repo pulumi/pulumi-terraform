@@ -241,7 +241,7 @@ func MakeTerraformInput(res *PulumiResource, name string,
 			oldObject = old.ObjectValue()
 		}
 		return MakeTerraformInputs(res, oldObject, v.ObjectValue(),
-			tfflds, psflds, assets, defaults, rawNames || useRawNames(tfs))
+			tfflds, psflds, assets, defaults, rawNames || useRawNames(tfs, ps))
 	case v.IsComputed() || v.IsOutput():
 		// If any variables are unknown, we need to mark them in the inputs so the config map treats it right.  This
 		// requires the use of the special UnknownVariableValue sentinel in Terraform, which is how it internally stores
@@ -363,7 +363,7 @@ func MakeTerraformOutput(v interface{},
 		if ps != nil {
 			psflds = ps.Fields
 		}
-		obj := MakeTerraformOutputs(t, tfflds, psflds, assets, rawNames || useRawNames(tfs))
+		obj := MakeTerraformOutputs(t, tfflds, psflds, assets, rawNames || useRawNames(tfs, ps))
 		return resource.NewObjectProperty(obj)
 	default:
 		contract.Failf("Unexpected TF output property value: %v", v)
@@ -603,8 +603,14 @@ func IsMaxItemsOne(tfs *schema.Schema, info *SchemaInfo) bool {
 }
 
 // useRawNames returns true if raw, unmangled names should be preserved.  This is only true for Terraform maps.
-func useRawNames(tfs *schema.Schema) bool {
-	return tfs != nil && tfs.Type == schema.TypeMap
+func useRawNames(tfs *schema.Schema, info *SchemaInfo) bool {
+	if tfs != nil && tfs.Type == schema.TypeMap {
+		if info != nil && info.MangleTypeMapKeys != nil {
+			return !*info.MangleTypeMapKeys
+		}
+		return true
+	}
+	return false
 }
 
 // getInfoFromTerraformName does a map lookup to find the Pulumi name and schema info, if any.
