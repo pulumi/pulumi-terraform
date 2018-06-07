@@ -1,4 +1,16 @@
-// Copyright 2016-2017, Pulumi Corporation.  All rights reserved.
+// Copyright 2016-2018, Pulumi Corporation.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package tfbridge
 
@@ -152,7 +164,7 @@ func (p *Provider) initResourceMaps() {
 // camelPascalPulumiName returns the camel and pascal cased name for a given terraform name.
 func (p *Provider) camelPascalPulumiName(name string) (string, string) {
 	// Strip off the module prefix (e.g., "aws_") and then return the camel- and Pascal-cased names.
-	prefix := p.module + "_" // all resources will have this prefix.
+	prefix := p.info.Name + "_" // all resources will have this prefix.
 	contract.Assertf(strings.HasPrefix(name, prefix),
 		"Expected all Terraform resources in this module to have a '%v' prefix", prefix)
 	name = name[len(prefix):]

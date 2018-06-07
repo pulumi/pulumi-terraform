@@ -1,9 +1,22 @@
-// Copyright 2016-2017, Pulumi Corporation.  All rights reserved.
+// Copyright 2016-2018, Pulumi Corporation.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package tfbridge
 
 import (
 	"fmt"
+	"reflect"
 	"strconv"
 
 	"github.com/golang/glog"
@@ -292,23 +305,32 @@ func MakeTerraformOutput(v interface{},
 	if v == nil {
 		return resource.NewNullProperty()
 	}
-	switch t := v.(type) {
-	case bool:
-		return resource.NewBoolProperty(t)
-	case int:
-		return resource.NewNumberProperty(float64(t))
-	case float64:
-		return resource.NewNumberProperty(t)
-	case string:
+
+	// We use reflection instead of a type switch so that we can support mapping values whose underlying type is
+	// supported into a Pulumi value, even if they stored as a wrapper type (such as a strongly-typed enum).
+	val := reflect.ValueOf(v)
+	switch val.Kind() {
+	case reflect.Bool:
+		return resource.NewBoolProperty(val.Bool())
+	case reflect.Int:
+		return resource.NewNumberProperty(float64(val.Int()))
+	case reflect.Float64:
+		return resource.NewNumberProperty(val.Float())
+	case reflect.String:
 		// If the string is the special unknown property sentinel, reflect back an unknown computed property.  Note that
 		// Terraform doesn't carry the types along with it, so the best we can do is give back a computed string.
+		t := val.String()
 		if t == config.UnknownVariableValue {
 			elem := resource.Computed{Element: resource.NewStringProperty("")}
 			return resource.NewComputedProperty(elem)
 		}
 		// Else it's just a string.
 		return resource.NewStringProperty(t)
-	case []interface{}:
+	case reflect.Slice:
+		elems := []interface{}{}
+		for i := 0; i < val.Len(); i++ {
+			elems = append(elems, val.Index(i).Interface())
+		}
 		var tfes *schema.Schema
 		if tfs != nil {
 			if sch, issch := tfs.Elem.(*schema.Schema); issch {
@@ -324,7 +346,7 @@ func MakeTerraformOutput(v interface{},
 			pes = ps.Elem
 		}
 		var arr []resource.PropertyValue
-		for _, elem := range t {
+		for _, elem := range elems {
 			arr = append(arr, MakeTerraformOutput(elem, tfes, pes, assets, rawNames))
 		}
 		// For TypeList or TypeSet with MaxItems==1, we will have projected as a scalar nested value, so need to extract
@@ -340,7 +362,12 @@ func MakeTerraformOutput(v interface{},
 			}
 		}
 		return resource.NewArrayProperty(arr)
-	case map[string]interface{}:
+	case reflect.Map:
+		outs := map[string]interface{}{}
+		for _, key := range val.MapKeys() {
+			contract.Assert(key.Kind() == reflect.String)
+			outs[key.String()] = val.MapIndex(key).Interface()
+		}
 		var tfflds map[string]*schema.Schema
 		if tfs != nil {
 			if res, isres := tfs.Elem.(*schema.Resource); isres {
@@ -351,7 +378,7 @@ func MakeTerraformOutput(v interface{},
 		if ps != nil {
 			psflds = ps.Fields
 		}
-		obj := MakeTerraformOutputs(t, tfflds, psflds, assets, rawNames || useRawNames(tfs))
+		obj := MakeTerraformOutputs(outs, tfflds, psflds, assets, rawNames || useRawNames(tfs))
 		return resource.NewObjectProperty(obj)
 	default:
 		contract.Failf("Unexpected TF output property value: %v", v)
