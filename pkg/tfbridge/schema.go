@@ -68,8 +68,22 @@ func MakeTerraformInputs(res *PulumiResource, olds, news resource.PropertyMap,
 
 	// Now enumerate and propagate defaults if the corresponding values are still missing.
 	if defaults {
+		// Compute any names for which setting a default would cause a conflict.
+		conflictsWith := make(map[string]struct{})
+		for name, sch := range tfs {
+			if _, has := result[name]; has {
+				for _, conflictingName := range sch.ConflictsWith {
+					conflictsWith[conflictingName] = struct{}{}
+				}
+			}
+		}
+
 		// First, attempt to use the overlays.
 		for name, info := range ps {
+			if _, conflicts := conflictsWith[name]; conflicts {
+				continue
+			}
+
 			if _, has := result[name]; !has && info.HasDefault() {
 				// If we already have a default value from a previous version of this resource, use that instead.
 				key, tfi, psi := getInfoFromTerraformName(name, tfs, ps, useRawNames)
@@ -98,6 +112,10 @@ func MakeTerraformInputs(res *PulumiResource, olds, news resource.PropertyMap,
 
 		// Next, populate defaults from the Terraform schema.
 		for name, sch := range tfs {
+			if _, conflicts := conflictsWith[name]; conflicts {
+				continue
+			}
+
 			if _, has := result[name]; !has {
 				if sch.Removed != "" {
 					// Don't populate defaults for removed fields.
@@ -247,7 +265,28 @@ func MakeTerraformInput(res *PulumiResource, name string,
 		// If any variables are unknown, we need to mark them in the inputs so the config map treats it right.  This
 		// requires the use of the special UnknownVariableValue sentinel in Terraform, which is how it internally stores
 		// interpolated variables whose inputs are currently unknown.
-		return config.UnknownVariableValue, nil
+		//
+		// It is important that we use the TF schema (if available) to decide what shape the unknown value should have:
+		// e.g. TF does not play nicely with unknown lists, instead expecting a list of unknowns.
+		if tfs == nil {
+			return config.UnknownVariableValue, nil
+		}
+
+		switch tfs.Type {
+		case schema.TypeList, schema.TypeSet:
+			// TF does not accept unknown lists or sets. Instead, it accepts lists or sets of unknowns.
+			count := 1
+			if tfs.MinItems > 0 {
+				count = tfs.MinItems
+			}
+			arr := make([]interface{}, count)
+			for i := range arr {
+				arr[i] = config.UnknownVariableValue
+			}
+			return arr, nil
+		default:
+			return config.UnknownVariableValue, nil
+		}
 	default:
 		contract.Failf("Unexpected value marshaled: %v", v)
 		return nil, nil
@@ -537,69 +576,6 @@ func MakeTerraformAttributesFromInputs(inputs map[string]interface{},
 		flattenValue(result, k, f.Value)
 	}
 	return result, nil
-}
-
-// MakeTerraformDiff takes a bag of old and new properties, and returns two things: the existing resource's state as
-// an attribute map, alongside a Terraform diff for the old versus new state.  If there was no existing state, the
-// returned attributes will be empty (because the resource doesn't yet exist).
-func MakeTerraformDiff(old resource.PropertyMap, new resource.PropertyMap,
-	tfs map[string]*schema.Schema, ps map[string]*SchemaInfo) (*terraform.InstanceState,
-	*terraform.InstanceDiff, error) {
-	// BUGBUG[pulumi/pulumi-terraform#22]: avoid spilling except for during creation.
-	diff := make(map[string]*terraform.ResourceAttrDiff)
-	// Add all new property values.
-	if new != nil {
-		inputs, err := MakeTerraformAttributes(nil, new, tfs, ps, false)
-		if err != nil {
-			return nil, nil, err
-		}
-		for p, v := range inputs {
-			if diff[p] == nil {
-				diff[p] = &terraform.ResourceAttrDiff{}
-			}
-			diff[p].New = v
-		}
-	}
-	// Now add all old property values, provided they exist in new.
-	existing := make(map[string]string)
-	if old != nil {
-		inputs, err := MakeTerraformAttributes(nil, old, tfs, ps, false)
-		if err != nil {
-			return nil, nil, err
-		}
-		for p, v := range inputs {
-			if d, has := diff[p]; has {
-				d.Old = v
-			}
-			existing[p] = v
-		}
-	}
-	return &terraform.InstanceState{Attributes: existing},
-		&terraform.InstanceDiff{Attributes: diff}, nil
-}
-
-// MakeTerraformDiffFromRPC takes RPC maps of old and new properties, unmarshals them, and calls into MakeTerraformDiff.
-func MakeTerraformDiffFromRPC(old *pbstruct.Struct, new *pbstruct.Struct,
-	tfs map[string]*schema.Schema, ps map[string]*SchemaInfo) (*terraform.InstanceState,
-	*terraform.InstanceDiff, error) {
-	var err error
-	var oldprops resource.PropertyMap
-	if old != nil {
-		oldprops, err = plugin.UnmarshalProperties(old,
-			plugin.MarshalOptions{SkipNulls: true})
-		if err != nil {
-			return nil, nil, err
-		}
-	}
-	var newprops resource.PropertyMap
-	if new != nil {
-		newprops, err = plugin.UnmarshalProperties(new,
-			plugin.MarshalOptions{KeepUnknowns: true, SkipNulls: true})
-		if err != nil {
-			return nil, nil, err
-		}
-	}
-	return MakeTerraformDiff(oldprops, newprops, tfs, ps)
 }
 
 // IsMaxItemsOne returns true if the schema/info pair represents a TypeList or TypeSet which should project
