@@ -120,7 +120,7 @@ func TestTerraformInputs(t *testing.T) {
 		"float_property_value":  99.6767932,
 		"string_property_value": "ognirts",
 		"array_property_value":  []interface{}{"an array"},
-		"unknown_array_value": []interface{}{config.UnknownVariableValue},
+		"unknown_array_value":   []interface{}{config.UnknownVariableValue},
 		"object_property_value": map[string]interface{}{
 			"property_a": "a",
 			"property_b": true,
