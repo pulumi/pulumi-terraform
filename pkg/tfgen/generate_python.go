@@ -675,7 +675,7 @@ func pyName(name string) string {
 	//                was either a number or a lowercase letter.
 	//   stateAcronym - The last character we saw was an uppercase letter and the character before it
 	//                  was an uppercase letter.
-	//   stateLowerOrNumber - The last character we saw was a letter or a number.
+	//   stateLowerOrNumber - The last character we saw was a lowercase letter or a number.
 	//
 	// The following are the state transitions of this state machine:
 	//   stateFirst -> (uppercase letter) -> stateUpper
@@ -688,7 +688,9 @@ func pyName(name string) string {
 	//
 	//   stateAcronym -> (uppercase letter) -> stateAcronym
 	//		Append the lower-case form of the character to currentComponent.
-	//   stateAcronym -> (lowercase letter or number) -> stateLowerOrNumber
+	//   stateAcronym -> (number) -> stateLowerOrNumber
+	//      Append the character to currentComponent.
+	//   stateAcronym -> (lowercase letter) -> stateLowerOrNumber
 	//      Take all but the last character in currentComponent, turn that into
 	//      a string, and append that to components. Set currentComponent to the
 	//      last two characters seen.
@@ -702,8 +704,9 @@ func pyName(name string) string {
 	//
 	// The Go libraries that convert camelCase to snake_case deviate subtly from
 	// the semantics we're going for in this method, namely that they separate
-	// numbers and lowercase letters. We don't want this (we want e.g. Sha256Hash to
-	// be converted as sha256_hash).
+	// numbers and lowercase letters. We don't want this in all cases (we want e.g. Sha256Hash to
+	// be converted as sha256_hash). We also want SHA256Hash to be converted as sha256_hash, so
+	// we must at least be aware of digits when in the stateAcronym state.
 	//
 	// As for why this is a state machine, the libraries that do this all pretty much use
 	// either regular expressions or state machines, which I suppose are ultimately the same thing.
@@ -749,6 +752,15 @@ func pyName(name string) string {
 			if unicode.IsUpper(char) {
 				// stateAcronym -> stateAcronym
 				currentComponent = append(currentComponent, unicode.ToLower(char))
+				continue
+			}
+
+			// We want to fold digits immediately following an acronym into the same
+			// component as the acronym.
+			if unicode.IsDigit(char) {
+				// stateAcronym -> stateLowerOrNumber
+				currentComponent = append(currentComponent, char)
+				state = stateLowerOrNumber
 				continue
 			}
 

@@ -30,6 +30,8 @@ func TestPyName(t *testing.T) {
 		{"InstanceGroup", "instance_group"},
 		{"Ipv4Thingy", "ipv4_thingy"},
 		{"Sha256Hash", "sha256_hash"},
+		{"SHA256Hash", "sha256_hash"},
+		{"LongACME7Name", "long_acme7_name"},
 		{"foo4Bar", "foo4_bar"},
 	}
 
