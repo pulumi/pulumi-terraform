@@ -15,6 +15,8 @@
 package tfbridge
 
 import (
+	"encoding/json"
+
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/pulumi/pulumi/pkg/resource"
@@ -126,3 +128,303 @@ type GolangInfo struct {
 
 // PreConfigureCallback is a function to invoke prior to calling the TF provider Configure
 type PreConfigureCallback func(vars resource.PropertyMap, config *terraform.ResourceConfig) error
+
+// The types below are marshallable versions of the schema descriptions associated with a provider. These are used when
+// marshalling a provider info as JSON; Note that these types only represent a subset of the informatino associated
+// with a ProviderInfo; thus, a ProviderInfo cannot be round-tripped through KSON.
+
+type marshallableSchema struct {
+	Type schema.ValueType `json:"type"`
+	Optional bool `json:"optional,omitempty"`
+	Required bool `json:"required,omitempty"`
+	Computed bool `json:"computed,omitempty"`
+	ForceNew bool `json:"forceNew,omitempty"`
+	Elem *marshallableElem `json:"element,omitempty"`
+	MaxItems int `json:"maxItems,omitempty"`
+	MinItems int `json:"minItems,omitempty"`
+	PromoteSingle bool `json:"promoteSingle,omitempty"`
+}
+
+func marshalSchema(s *schema.Schema) *marshallableSchema {
+	return &marshallableSchema{
+		Type: s.Type,
+		Optional: s.Optional,
+		Required: s.Required,
+		Computed: s.Computed,
+		ForceNew: s.ForceNew,
+		Elem: marshalElem(s.Elem),
+		MaxItems: s.MaxItems,
+		MinItems: s.MinItems,
+		PromoteSingle: s.PromoteSingle,
+	}
+}
+
+func (m *marshallableSchema) unmarshal() *schema.Schema {
+	return &schema.Schema{
+		Type: m.Type,
+		Optional: m.Optional,
+		Required: m.Required,
+		Computed: m.Computed,
+		ForceNew: m.ForceNew,
+		Elem: m.Elem.unmarshal(),
+		MaxItems: m.MaxItems,
+		MinItems: m.MinItems,
+		PromoteSingle: m.PromoteSingle,
+	}
+}
+
+type marshallableResource map[string]*marshallableSchema
+
+func marshalResource(r *schema.Resource) marshallableResource {
+	m := make(marshallableResource)
+	for k, v := range r.Schema {
+		m[k] = marshalSchema(v)
+	}
+	return m
+}
+
+func (m marshallableResource) unmarshal() *schema.Resource {
+	s := make(map[string]*schema.Schema)
+	for k, v := range m {
+		s[k] = v.unmarshal()
+	}
+	return &schema.Resource{Schema: s}
+}
+
+type marshallableElem struct {
+	Schema *marshallableSchema `json:"schema,omitempty"`
+	Resource marshallableResource `json:"resource,omitempty"`
+}
+
+func marshalElem(e interface{}) *marshallableElem {
+	switch v := e.(type) {
+	case *schema.Schema:
+		return &marshallableElem{Schema: marshalSchema(v)}
+	case *schema.Resource:
+		return &marshallableElem{Resource: marshalResource(v)}
+	default:
+		return nil
+	}
+}
+
+func (m *marshallableElem) unmarshal() interface{} {
+	switch {
+	case m == nil:
+		return nil
+	case m.Schema != nil:
+		return m.Schema.unmarshal()
+	case m.Resource != nil:
+		return m.Resource.unmarshal()
+	default:
+		return nil
+	}
+}
+
+type marshallableProvider struct {
+	Schema map[string]*marshallableSchema `json:"schema,omitempty"`
+	Resources map[string]marshallableResource `json:"resources,omitempty"`
+	DataSources map[string]marshallableResource `json:"dataSources,omitempty"`
+}
+
+func marshalProvider(p *schema.Provider) *marshallableProvider {
+	config := make(map[string]*marshallableSchema)
+	for k, v := range p.Schema {
+		config[k] = marshalSchema(v)
+	}
+	resources := make(map[string]marshallableResource)
+	for k, v := range p.ResourcesMap {
+		resources[k] = marshalResource(v)
+	}
+	dataSources := make(map[string]marshallableResource)
+	for k, v := range p.DataSourcesMap {
+		dataSources[k] = marshalResource(v)
+	}
+	return &marshallableProvider{
+		Schema: config,
+		Resources: resources,
+		DataSources: dataSources,
+	}
+}
+
+func (m *marshallableProvider) unmarshal() *schema.Provider {
+	config := make(map[string]*schema.Schema)
+	for k, v := range m.Schema {
+		config[k] = v.unmarshal()
+	}
+	resources := make(map[string]*schema.Resource)
+	for k, v := range m.Resources {
+		resources[k] = v.unmarshal()
+	}
+	dataSources := make(map[string]*schema.Resource)
+	for k, v := range m.DataSources {
+		dataSources[k] = v.unmarshal()
+	}
+	return &schema.Provider{
+		Schema: config,
+		ResourcesMap: resources,
+		DataSourcesMap: dataSources,
+	}
+}
+
+type marshallableSchemaInfo struct {
+	Name string `json:"name,omitempty"`
+	Type tokens.Type `json:"typeomitempty"`
+	AltTypes []tokens.Type `json:"altTypes,omitempty"`
+	Elem *marshallableSchemaInfo `json:"element,omitempty"`
+	Fields map[string]*marshallableSchemaInfo `json:"fields,omitempty"`
+	Asset *AssetTranslation `json:"asset,omitempty"`
+	MaxItemsOne *bool `json:"maxItemsOne,omitempty"`
+}
+
+func marshalSchemaInfo(s *SchemaInfo) *marshallableSchemaInfo {
+	if s == nil {
+		return nil
+	}
+
+	fields := make(map[string]*marshallableSchemaInfo)
+	for k, v := range s.Fields {
+		fields[k] = marshalSchemaInfo(v)
+	}
+	return &marshallableSchemaInfo{
+		Name: s.Name,
+		Type: s.Type,
+		AltTypes: s.AltTypes,
+		Elem: marshalSchemaInfo(s.Elem),
+		Fields: fields,
+		Asset: s.Asset,
+		MaxItemsOne: s.MaxItemsOne,
+	}
+}
+
+func (m *marshallableSchemaInfo) unmarshal() *SchemaInfo {
+	if m == nil {
+		return nil
+	}
+
+	fields := make(map[string]*SchemaInfo)
+	for k, v := range m.Fields {
+		fields[k] = v.unmarshal()
+	}
+	return &SchemaInfo{
+		Name: m.Name,
+		Type: m.Type,
+		AltTypes: m.AltTypes,
+		Elem: m.Elem.unmarshal(),
+		Fields: fields,
+		Asset: m.Asset,
+		MaxItemsOne: m.MaxItemsOne,
+	}
+}
+
+type marshallableResourceInfo struct {
+	Tok tokens.Type `json:"tok"`
+	Fields map[string]*marshallableSchemaInfo `json:"fields"`
+	IDFields []string `json:"idFields"`
+}
+
+func marshalResourceInfo(r *ResourceInfo) *marshallableResourceInfo {
+	fields := make(map[string]*marshallableSchemaInfo)
+	for k, v := range r.Fields {
+		fields[k] = marshalSchemaInfo(v)
+	}
+	return &marshallableResourceInfo{
+		Tok: r.Tok,
+		Fields: fields,
+		IDFields: r.IDFields,
+	}
+}
+
+func (m *marshallableResourceInfo) unmarshal() *ResourceInfo {
+	fields := make(map[string]*SchemaInfo)
+	for k, v := range m.Fields {
+		fields[k] = v.unmarshal()
+	}
+	return &ResourceInfo{
+		Tok: m.Tok,
+		Fields: fields,
+		IDFields: m.IDFields,
+	}
+}
+
+type marshallableDataSourceInfo struct {
+	Tok tokens.ModuleMember `json:"tok"`
+	Fields map[string]*marshallableSchemaInfo `json:"fields"`
+}
+
+func marshalDataSourceInfo(d *DataSourceInfo) *marshallableDataSourceInfo {
+	fields := make(map[string]*marshallableSchemaInfo)
+	for k, v := range d.Fields {
+		fields[k] = marshalSchemaInfo(v)
+	}
+	return &marshallableDataSourceInfo{
+		Tok: d.Tok,
+		Fields: fields,
+	}
+}
+
+func (m *marshallableDataSourceInfo) unmarshal() *DataSourceInfo {
+	fields := make(map[string]*SchemaInfo)
+	for k, v := range m.Fields {
+		fields[k] = v.unmarshal()
+	}
+	return &DataSourceInfo{
+		Tok: m.Tok,
+		Fields: fields,
+	}
+}
+
+type marshallableProviderInfo struct {
+	Provider *marshallableProvider `json:"provider"`
+	Config map[string]*marshallableSchemaInfo `json:"config,omitempty"`
+	Resources map[string]*marshallableResourceInfo `json:"resources,omitempty"`
+	DataSources map[string]*marshallableDataSourceInfo `json:"dataSources,omitempty"`
+}
+
+// MarshalJSON marshals a subset of this provider info as JSON.
+func (p *ProviderInfo) MarshalJSON() ([]byte, error) {
+	config := make(map[string]*marshallableSchemaInfo)
+	for k, v := range p.Config {
+		config[k] = marshalSchemaInfo(v)
+	}
+	resources := make(map[string]*marshallableResourceInfo)
+	for k, v := range p.Resources {
+		resources[k] = marshalResourceInfo(v)
+	}
+	dataSources := make(map[string]*marshallableDataSourceInfo)
+	for k, v := range p.DataSources {
+		dataSources[k] = marshalDataSourceInfo(v)
+	}
+
+	m := &marshallableProviderInfo{
+		Provider: marshalProvider(p.P),
+		Config: config,
+		Resources: resources,
+		DataSources: dataSources,
+	}
+	return json.Marshal(m)
+}
+
+// UnmarshalJSON unmarshals a subset of this provider info from JSON).
+func (p *ProviderInfo) UnmarshalJSON(data []byte) error {
+	var m marshallableProviderInfo
+	if err := json.Unmarshal(data, &m); err != nil {
+		return err
+	}
+
+	config := make(map[string]*SchemaInfo)
+	for k, v := range m.Config {
+		config[k] = v.unmarshal()
+	}
+	resources := make(map[string]*ResourceInfo)
+	for k, v := range m.Resources {
+		resources[k] = v.unmarshal()
+	}
+	dataSources := make(map[string]*DataSourceInfo)
+	for k, v := range m.DataSources {
+		dataSources[k] = v.unmarshal()
+	}
+
+	p.P = m.Provider.unmarshal()
+	p.Config, p.Resources, p.DataSources = config, resources, dataSources
+	return nil
+}
