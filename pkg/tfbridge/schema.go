@@ -87,25 +87,28 @@ func MakeTerraformInputs(res *PulumiResource, olds, news resource.PropertyMap,
 			if _, has := result[name]; !has && info.HasDefault() {
 				// If we already have a default value from a previous version of this resource, use that instead.
 				key, tfi, psi := getInfoFromTerraformName(name, tfs, ps, useRawNames)
-				if old, hasold := olds[key]; hasold {
-					v, err := MakeTerraformInput(res, name, resource.PropertyValue{}, old, tfi, psi, assets,
-						false, useRawNames)
-					if err != nil {
-						return nil, err
-					}
-					result[name] = v
-					glog.V(9).Infof("Created Terraform input: %v = %v (old default)", key, old)
-				} else if info.Default.Value != nil {
-					result[name] = info.Default.Value
-					glog.V(9).Infof("Created Terraform input: %v = %v (default)", name, result[name])
-				} else if from := info.Default.From; from != nil {
-					v, err := from(res)
-					if err != nil {
-						return nil, err
-					}
+				// Only populate defaults for input properties
+				if tfi.Optional || tfi.Required {
+					if old, hasold := olds[key]; hasold {
+						v, err := MakeTerraformInput(res, name, resource.PropertyValue{}, old, tfi, psi, assets,
+							false, useRawNames)
+						if err != nil {
+							return nil, err
+						}
+						result[name] = v
+						glog.V(9).Infof("Created Terraform input: %v = %v (old default)", key, old)
+					} else if info.Default.Value != nil {
+						result[name] = info.Default.Value
+						glog.V(9).Infof("Created Terraform input: %v = %v (default)", name, result[name])
+					} else if from := info.Default.From; from != nil {
+						v, err := from(res)
+						if err != nil {
+							return nil, err
+						}
 
-					result[name] = v
-					glog.V(9).Infof("Created Terraform input: %v = %v (default from fnc)", name, result[name])
+						result[name] = v
+						glog.V(9).Infof("Created Terraform input: %v = %v (default from fnc)", name, result[name])
+					}
 				}
 			}
 		}

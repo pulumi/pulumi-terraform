@@ -97,6 +97,14 @@ func TestTerraformInputs(t *testing.T) {
 					},
 				},
 			},
+			"name": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			"nameoutput": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 		map[string]*SchemaInfo{
 			// Reverse map string_property_value to the stringo property.
@@ -107,9 +115,19 @@ func TestTerraformInputs(t *testing.T) {
 				Name:        "optionalConfigOther",
 				MaxItemsOne: boolPointer(true),
 			},
+			"name": {
+				Default: &DefaultInfo{
+					Value: "defaultname",
+				},
+			},
+			"nameoutput": {
+				Default: &DefaultInfo{
+					Value: "defaultname",
+				},
+			},
 		},
 		nil,   /* assets */
-		false, /*defaults*/
+		true,  /*defaults*/
 		false, /*useRawNames*/
 	)
 	assert.Nil(t, err)
@@ -151,6 +169,7 @@ func TestTerraformInputs(t *testing.T) {
 				"some_other_value": "a value",
 			},
 		},
+		"name": "defaultname",
 	}, result)
 }
 
