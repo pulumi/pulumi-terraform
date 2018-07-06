@@ -97,6 +97,14 @@ func TestTerraformInputs(t *testing.T) {
 					},
 				},
 			},
+			"name": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			"nameoutput": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 		map[string]*SchemaInfo{
 			// Reverse map string_property_value to the stringo property.
@@ -107,9 +115,19 @@ func TestTerraformInputs(t *testing.T) {
 				Name:        "optionalConfigOther",
 				MaxItemsOne: boolPointer(true),
 			},
+			"name": {
+				Default: &DefaultInfo{
+					Value: "defaultname",
+				},
+			},
+			"nameoutput": {
+				Default: &DefaultInfo{
+					Value: "defaultname",
+				},
+			},
 		},
 		nil,   /* assets */
-		false, /*defaults*/
+		true,  /*defaults*/
 		false, /*useRawNames*/
 	)
 	assert.Nil(t, err)
@@ -151,6 +169,7 @@ func TestTerraformInputs(t *testing.T) {
 				"some_other_value": "a value",
 			},
 		},
+		"name": "defaultname",
 	}, result)
 }
 
@@ -465,17 +484,19 @@ func TestDefaults(t *testing.T) {
 	assert.Nil(t, err)
 	assets := make(AssetTable)
 	tfs := map[string]*schema.Schema{
-		"ccc": {Type: schema.TypeString, Default: "CCC"},
-		"cc2": {Type: schema.TypeString, DefaultFunc: func() (interface{}, error) { return "CC2", nil }},
-		"ddd": {Type: schema.TypeString, Default: "TFD"},
-		"dd2": {Type: schema.TypeString, DefaultFunc: func() (interface{}, error) { return "TD2", nil }},
-		"ggg": {Type: schema.TypeString, Default: "TFG"},
-		"hhh": {Type: schema.TypeString, Default: "TFH"},
-		"iii": {Type: schema.TypeString, Default: "TFI"},
-		"jjj": {Type: schema.TypeString},
-		"lll": {Type: schema.TypeString, Default: "TFL"},
-		"mmm": {Type: schema.TypeString},
-		"zzz": {Type: schema.TypeString},
+		"ccc": {Type: schema.TypeString, Optional: true, Default: "CCC"},
+		"cc2": {Type: schema.TypeString, Optional: true, DefaultFunc: func() (interface{}, error) { return "CC2", nil }},
+		"ddd": {Type: schema.TypeString, Optional: true, Default: "TFD"},
+		"dd2": {Type: schema.TypeString, Optional: true, DefaultFunc: func() (interface{}, error) { return "TD2", nil }},
+		"eee": {Type: schema.TypeString, Optional: true},
+		"ee2": {Type: schema.TypeString, Optional: true},
+		"ggg": {Type: schema.TypeString, Optional: true, Default: "TFG"},
+		"hhh": {Type: schema.TypeString, Optional: true, Default: "TFH"},
+		"iii": {Type: schema.TypeString, Optional: true, Default: "TFI"},
+		"jjj": {Type: schema.TypeString, Optional: true},
+		"lll": {Type: schema.TypeString, Optional: true, Default: "TFL"},
+		"mmm": {Type: schema.TypeString, Optional: true},
+		"zzz": {Type: schema.TypeString, Optional: true},
 	}
 	ps := map[string]*SchemaInfo{
 		"eee": {Default: &DefaultInfo{Value: "EEE"}},
