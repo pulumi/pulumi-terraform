@@ -134,41 +134,41 @@ type PreConfigureCallback func(vars resource.PropertyMap, config *terraform.Reso
 // with a ProviderInfo; thus, a ProviderInfo cannot be round-tripped through KSON.
 
 type marshallableSchema struct {
-	Type schema.ValueType `json:"type"`
-	Optional bool `json:"optional,omitempty"`
-	Required bool `json:"required,omitempty"`
-	Computed bool `json:"computed,omitempty"`
-	ForceNew bool `json:"forceNew,omitempty"`
-	Elem *marshallableElem `json:"element,omitempty"`
-	MaxItems int `json:"maxItems,omitempty"`
-	MinItems int `json:"minItems,omitempty"`
-	PromoteSingle bool `json:"promoteSingle,omitempty"`
+	Type          schema.ValueType  `json:"type"`
+	Optional      bool              `json:"optional,omitempty"`
+	Required      bool              `json:"required,omitempty"`
+	Computed      bool              `json:"computed,omitempty"`
+	ForceNew      bool              `json:"forceNew,omitempty"`
+	Elem          *marshallableElem `json:"element,omitempty"`
+	MaxItems      int               `json:"maxItems,omitempty"`
+	MinItems      int               `json:"minItems,omitempty"`
+	PromoteSingle bool              `json:"promoteSingle,omitempty"`
 }
 
 func marshalSchema(s *schema.Schema) *marshallableSchema {
 	return &marshallableSchema{
-		Type: s.Type,
-		Optional: s.Optional,
-		Required: s.Required,
-		Computed: s.Computed,
-		ForceNew: s.ForceNew,
-		Elem: marshalElem(s.Elem),
-		MaxItems: s.MaxItems,
-		MinItems: s.MinItems,
+		Type:          s.Type,
+		Optional:      s.Optional,
+		Required:      s.Required,
+		Computed:      s.Computed,
+		ForceNew:      s.ForceNew,
+		Elem:          marshalElem(s.Elem),
+		MaxItems:      s.MaxItems,
+		MinItems:      s.MinItems,
 		PromoteSingle: s.PromoteSingle,
 	}
 }
 
 func (m *marshallableSchema) unmarshal() *schema.Schema {
 	return &schema.Schema{
-		Type: m.Type,
-		Optional: m.Optional,
-		Required: m.Required,
-		Computed: m.Computed,
-		ForceNew: m.ForceNew,
-		Elem: m.Elem.unmarshal(),
-		MaxItems: m.MaxItems,
-		MinItems: m.MinItems,
+		Type:          m.Type,
+		Optional:      m.Optional,
+		Required:      m.Required,
+		Computed:      m.Computed,
+		ForceNew:      m.ForceNew,
+		Elem:          m.Elem.unmarshal(),
+		MaxItems:      m.MaxItems,
+		MinItems:      m.MinItems,
 		PromoteSingle: m.PromoteSingle,
 	}
 }
@@ -192,7 +192,7 @@ func (m marshallableResource) unmarshal() *schema.Resource {
 }
 
 type marshallableElem struct {
-	Schema *marshallableSchema `json:"schema,omitempty"`
+	Schema   *marshallableSchema  `json:"schema,omitempty"`
 	Resource marshallableResource `json:"resource,omitempty"`
 }
 
@@ -221,8 +221,8 @@ func (m *marshallableElem) unmarshal() interface{} {
 }
 
 type marshallableProvider struct {
-	Schema map[string]*marshallableSchema `json:"schema,omitempty"`
-	Resources map[string]marshallableResource `json:"resources,omitempty"`
+	Schema      map[string]*marshallableSchema  `json:"schema,omitempty"`
+	Resources   map[string]marshallableResource `json:"resources,omitempty"`
 	DataSources map[string]marshallableResource `json:"dataSources,omitempty"`
 }
 
@@ -240,8 +240,8 @@ func marshalProvider(p *schema.Provider) *marshallableProvider {
 		dataSources[k] = marshalResource(v)
 	}
 	return &marshallableProvider{
-		Schema: config,
-		Resources: resources,
+		Schema:      config,
+		Resources:   resources,
 		DataSources: dataSources,
 	}
 }
@@ -260,20 +260,20 @@ func (m *marshallableProvider) unmarshal() *schema.Provider {
 		dataSources[k] = v.unmarshal()
 	}
 	return &schema.Provider{
-		Schema: config,
-		ResourcesMap: resources,
+		Schema:         config,
+		ResourcesMap:   resources,
 		DataSourcesMap: dataSources,
 	}
 }
 
 type marshallableSchemaInfo struct {
-	Name string `json:"name,omitempty"`
-	Type tokens.Type `json:"typeomitempty"`
-	AltTypes []tokens.Type `json:"altTypes,omitempty"`
-	Elem *marshallableSchemaInfo `json:"element,omitempty"`
-	Fields map[string]*marshallableSchemaInfo `json:"fields,omitempty"`
-	Asset *AssetTranslation `json:"asset,omitempty"`
-	MaxItemsOne *bool `json:"maxItemsOne,omitempty"`
+	Name        string                             `json:"name,omitempty"`
+	Type        tokens.Type                        `json:"typeomitempty"`
+	AltTypes    []tokens.Type                      `json:"altTypes,omitempty"`
+	Elem        *marshallableSchemaInfo            `json:"element,omitempty"`
+	Fields      map[string]*marshallableSchemaInfo `json:"fields,omitempty"`
+	Asset       *AssetTranslation                  `json:"asset,omitempty"`
+	MaxItemsOne *bool                              `json:"maxItemsOne,omitempty"`
 }
 
 func marshalSchemaInfo(s *SchemaInfo) *marshallableSchemaInfo {
@@ -286,12 +286,12 @@ func marshalSchemaInfo(s *SchemaInfo) *marshallableSchemaInfo {
 		fields[k] = marshalSchemaInfo(v)
 	}
 	return &marshallableSchemaInfo{
-		Name: s.Name,
-		Type: s.Type,
-		AltTypes: s.AltTypes,
-		Elem: marshalSchemaInfo(s.Elem),
-		Fields: fields,
-		Asset: s.Asset,
+		Name:        s.Name,
+		Type:        s.Type,
+		AltTypes:    s.AltTypes,
+		Elem:        marshalSchemaInfo(s.Elem),
+		Fields:      fields,
+		Asset:       s.Asset,
 		MaxItemsOne: s.MaxItemsOne,
 	}
 }
@@ -306,20 +306,20 @@ func (m *marshallableSchemaInfo) unmarshal() *SchemaInfo {
 		fields[k] = v.unmarshal()
 	}
 	return &SchemaInfo{
-		Name: m.Name,
-		Type: m.Type,
-		AltTypes: m.AltTypes,
-		Elem: m.Elem.unmarshal(),
-		Fields: fields,
-		Asset: m.Asset,
+		Name:        m.Name,
+		Type:        m.Type,
+		AltTypes:    m.AltTypes,
+		Elem:        m.Elem.unmarshal(),
+		Fields:      fields,
+		Asset:       m.Asset,
 		MaxItemsOne: m.MaxItemsOne,
 	}
 }
 
 type marshallableResourceInfo struct {
-	Tok tokens.Type `json:"tok"`
-	Fields map[string]*marshallableSchemaInfo `json:"fields"`
-	IDFields []string `json:"idFields"`
+	Tok      tokens.Type                        `json:"tok"`
+	Fields   map[string]*marshallableSchemaInfo `json:"fields"`
+	IDFields []string                           `json:"idFields"`
 }
 
 func marshalResourceInfo(r *ResourceInfo) *marshallableResourceInfo {
@@ -328,8 +328,8 @@ func marshalResourceInfo(r *ResourceInfo) *marshallableResourceInfo {
 		fields[k] = marshalSchemaInfo(v)
 	}
 	return &marshallableResourceInfo{
-		Tok: r.Tok,
-		Fields: fields,
+		Tok:      r.Tok,
+		Fields:   fields,
 		IDFields: r.IDFields,
 	}
 }
@@ -340,14 +340,14 @@ func (m *marshallableResourceInfo) unmarshal() *ResourceInfo {
 		fields[k] = v.unmarshal()
 	}
 	return &ResourceInfo{
-		Tok: m.Tok,
-		Fields: fields,
+		Tok:      m.Tok,
+		Fields:   fields,
 		IDFields: m.IDFields,
 	}
 }
 
 type marshallableDataSourceInfo struct {
-	Tok tokens.ModuleMember `json:"tok"`
+	Tok    tokens.ModuleMember                `json:"tok"`
 	Fields map[string]*marshallableSchemaInfo `json:"fields"`
 }
 
@@ -357,7 +357,7 @@ func marshalDataSourceInfo(d *DataSourceInfo) *marshallableDataSourceInfo {
 		fields[k] = marshalSchemaInfo(v)
 	}
 	return &marshallableDataSourceInfo{
-		Tok: d.Tok,
+		Tok:    d.Tok,
 		Fields: fields,
 	}
 }
@@ -368,15 +368,15 @@ func (m *marshallableDataSourceInfo) unmarshal() *DataSourceInfo {
 		fields[k] = v.unmarshal()
 	}
 	return &DataSourceInfo{
-		Tok: m.Tok,
+		Tok:    m.Tok,
 		Fields: fields,
 	}
 }
 
 type marshallableProviderInfo struct {
-	Provider *marshallableProvider `json:"provider"`
-	Config map[string]*marshallableSchemaInfo `json:"config,omitempty"`
-	Resources map[string]*marshallableResourceInfo `json:"resources,omitempty"`
+	Provider    *marshallableProvider                  `json:"provider"`
+	Config      map[string]*marshallableSchemaInfo     `json:"config,omitempty"`
+	Resources   map[string]*marshallableResourceInfo   `json:"resources,omitempty"`
 	DataSources map[string]*marshallableDataSourceInfo `json:"dataSources,omitempty"`
 }
 
@@ -396,9 +396,9 @@ func (p *ProviderInfo) MarshalJSON() ([]byte, error) {
 	}
 
 	m := &marshallableProviderInfo{
-		Provider: marshalProvider(p.P),
-		Config: config,
-		Resources: resources,
+		Provider:    marshalProvider(p.P),
+		Config:      config,
+		Resources:   resources,
 		DataSources: dataSources,
 	}
 	return json.Marshal(m)
