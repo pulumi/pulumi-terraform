@@ -15,8 +15,6 @@
 package tfbridge
 
 import (
-	"encoding/json"
-
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/pulumi/pulumi/pkg/resource"
@@ -131,133 +129,145 @@ type PreConfigureCallback func(vars resource.PropertyMap, config *terraform.Reso
 
 // The types below are marshallable versions of the schema descriptions associated with a provider. These are used when
 // marshalling a provider info as JSON; Note that these types only represent a subset of the informatino associated
-// with a ProviderInfo; thus, a ProviderInfo cannot be round-tripped through KSON.
+// with a ProviderInfo; thus, a ProviderInfo cannot be round-tripped through JSON.
 
-type marshallableSchema struct {
+// MarshallableSchema is the JSON-marshallable form of a Terraform schema.
+type MarshallableSchema struct {
 	Type          schema.ValueType  `json:"type"`
 	Optional      bool              `json:"optional,omitempty"`
 	Required      bool              `json:"required,omitempty"`
 	Computed      bool              `json:"computed,omitempty"`
 	ForceNew      bool              `json:"forceNew,omitempty"`
-	Elem          *marshallableElem `json:"element,omitempty"`
+	Elem          *MarshallableElem `json:"element,omitempty"`
 	MaxItems      int               `json:"maxItems,omitempty"`
 	MinItems      int               `json:"minItems,omitempty"`
 	PromoteSingle bool              `json:"promoteSingle,omitempty"`
 }
 
-func marshalSchema(s *schema.Schema) *marshallableSchema {
-	return &marshallableSchema{
+// MarshalSchema converts a Terraform schema into a MarshallableSchema.
+func MarshalSchema(s *schema.Schema) *MarshallableSchema {
+	return &MarshallableSchema{
 		Type:          s.Type,
 		Optional:      s.Optional,
 		Required:      s.Required,
 		Computed:      s.Computed,
 		ForceNew:      s.ForceNew,
-		Elem:          marshalElem(s.Elem),
+		Elem:          MarshalElem(s.Elem),
 		MaxItems:      s.MaxItems,
 		MinItems:      s.MinItems,
 		PromoteSingle: s.PromoteSingle,
 	}
 }
 
-func (m *marshallableSchema) unmarshal() *schema.Schema {
+// Unmarshal creates a mostly-initialized Terraform schema from the given MarshallableSchema.
+func (m *MarshallableSchema) Unmarshal() *schema.Schema {
 	return &schema.Schema{
 		Type:          m.Type,
 		Optional:      m.Optional,
 		Required:      m.Required,
 		Computed:      m.Computed,
 		ForceNew:      m.ForceNew,
-		Elem:          m.Elem.unmarshal(),
+		Elem:          m.Elem.Unmarshal(),
 		MaxItems:      m.MaxItems,
 		MinItems:      m.MinItems,
 		PromoteSingle: m.PromoteSingle,
 	}
 }
 
-type marshallableResource map[string]*marshallableSchema
+// MarshallableResource is the JSON-marshallable form of a Terraform resource schema.
+type MarshallableResource map[string]*MarshallableSchema
 
-func marshalResource(r *schema.Resource) marshallableResource {
-	m := make(marshallableResource)
+// MarshalResource converts a Terraform resource schema into a MarshallableResource.
+func MarshalResource(r *schema.Resource) MarshallableResource {
+	m := make(MarshallableResource)
 	for k, v := range r.Schema {
-		m[k] = marshalSchema(v)
+		m[k] = MarshalSchema(v)
 	}
 	return m
 }
 
-func (m marshallableResource) unmarshal() *schema.Resource {
+// Unmarshal creates a mostly-initialized Terraform resource schema from the given MarshallableResource.
+func (m MarshallableResource) Unmarshal() *schema.Resource {
 	s := make(map[string]*schema.Schema)
 	for k, v := range m {
-		s[k] = v.unmarshal()
+		s[k] = v.Unmarshal()
 	}
 	return &schema.Resource{Schema: s}
 }
 
-type marshallableElem struct {
-	Schema   *marshallableSchema  `json:"schema,omitempty"`
-	Resource marshallableResource `json:"resource,omitempty"`
+// MarshallableElem is the JSON-marshallable form of a Terraform schema's element field.
+type MarshallableElem struct {
+	Schema   *MarshallableSchema  `json:"schema,omitempty"`
+	Resource MarshallableResource `json:"resource,omitempty"`
 }
 
-func marshalElem(e interface{}) *marshallableElem {
+// MarshalElem converts a Terraform schema's element field into a MarshallableElem.
+func MarshalElem(e interface{}) *MarshallableElem {
 	switch v := e.(type) {
 	case *schema.Schema:
-		return &marshallableElem{Schema: marshalSchema(v)}
+		return &MarshallableElem{Schema: MarshalSchema(v)}
 	case *schema.Resource:
-		return &marshallableElem{Resource: marshalResource(v)}
+		return &MarshallableElem{Resource: MarshalResource(v)}
 	default:
 		return nil
 	}
 }
 
-func (m *marshallableElem) unmarshal() interface{} {
+// Unmarshal creates a Terraform schema element from a MarshallableElem.
+func (m *MarshallableElem) Unmarshal() interface{} {
 	switch {
 	case m == nil:
 		return nil
 	case m.Schema != nil:
-		return m.Schema.unmarshal()
+		return m.Schema.Unmarshal()
 	case m.Resource != nil:
-		return m.Resource.unmarshal()
+		return m.Resource.Unmarshal()
 	default:
 		return nil
 	}
 }
 
-type marshallableProvider struct {
-	Schema      map[string]*marshallableSchema  `json:"schema,omitempty"`
-	Resources   map[string]marshallableResource `json:"resources,omitempty"`
-	DataSources map[string]marshallableResource `json:"dataSources,omitempty"`
+// MarshallableProvider is the JSON-marshallable form of a Terraform provider schema.
+type MarshallableProvider struct {
+	Schema      map[string]*MarshallableSchema  `json:"schema,omitempty"`
+	Resources   map[string]MarshallableResource `json:"resources,omitempty"`
+	DataSources map[string]MarshallableResource `json:"dataSources,omitempty"`
 }
 
-func marshalProvider(p *schema.Provider) *marshallableProvider {
-	config := make(map[string]*marshallableSchema)
+// MarshalProvider converts a Terraform provider schema into a MarshallableProvider.
+func MarshalProvider(p *schema.Provider) *MarshallableProvider {
+	config := make(map[string]*MarshallableSchema)
 	for k, v := range p.Schema {
-		config[k] = marshalSchema(v)
+		config[k] = MarshalSchema(v)
 	}
-	resources := make(map[string]marshallableResource)
+	resources := make(map[string]MarshallableResource)
 	for k, v := range p.ResourcesMap {
-		resources[k] = marshalResource(v)
+		resources[k] = MarshalResource(v)
 	}
-	dataSources := make(map[string]marshallableResource)
+	dataSources := make(map[string]MarshallableResource)
 	for k, v := range p.DataSourcesMap {
-		dataSources[k] = marshalResource(v)
+		dataSources[k] = MarshalResource(v)
 	}
-	return &marshallableProvider{
+	return &MarshallableProvider{
 		Schema:      config,
 		Resources:   resources,
 		DataSources: dataSources,
 	}
 }
 
-func (m *marshallableProvider) unmarshal() *schema.Provider {
+// Unmarshal creates a mostly-initialized Terraform provider schema from a MarshallableProvider
+func (m *MarshallableProvider) Unmarshal() *schema.Provider {
 	config := make(map[string]*schema.Schema)
 	for k, v := range m.Schema {
-		config[k] = v.unmarshal()
+		config[k] = v.Unmarshal()
 	}
 	resources := make(map[string]*schema.Resource)
 	for k, v := range m.Resources {
-		resources[k] = v.unmarshal()
+		resources[k] = v.Unmarshal()
 	}
 	dataSources := make(map[string]*schema.Resource)
 	for k, v := range m.DataSources {
-		dataSources[k] = v.unmarshal()
+		dataSources[k] = v.Unmarshal()
 	}
 	return &schema.Provider{
 		Schema:         config,
@@ -266,78 +276,84 @@ func (m *marshallableProvider) unmarshal() *schema.Provider {
 	}
 }
 
-type marshallableSchemaInfo struct {
+// MarshallableSchemaInfo is the JSON-marshallable form of a Pulumi SchemaInfo value.
+type MarshallableSchemaInfo struct {
 	Name        string                             `json:"name,omitempty"`
 	Type        tokens.Type                        `json:"typeomitempty"`
 	AltTypes    []tokens.Type                      `json:"altTypes,omitempty"`
-	Elem        *marshallableSchemaInfo            `json:"element,omitempty"`
-	Fields      map[string]*marshallableSchemaInfo `json:"fields,omitempty"`
+	Elem        *MarshallableSchemaInfo            `json:"element,omitempty"`
+	Fields      map[string]*MarshallableSchemaInfo `json:"fields,omitempty"`
 	Asset       *AssetTranslation                  `json:"asset,omitempty"`
 	MaxItemsOne *bool                              `json:"maxItemsOne,omitempty"`
 }
 
-func marshalSchemaInfo(s *SchemaInfo) *marshallableSchemaInfo {
+// MarshalSchemaInfo converts a Pulumi SchemaInfo value into a MarshallableSchemaInfo value.
+func MarshalSchemaInfo(s *SchemaInfo) *MarshallableSchemaInfo {
 	if s == nil {
 		return nil
 	}
 
-	fields := make(map[string]*marshallableSchemaInfo)
+	fields := make(map[string]*MarshallableSchemaInfo)
 	for k, v := range s.Fields {
-		fields[k] = marshalSchemaInfo(v)
+		fields[k] = MarshalSchemaInfo(v)
 	}
-	return &marshallableSchemaInfo{
+	return &MarshallableSchemaInfo{
 		Name:        s.Name,
 		Type:        s.Type,
 		AltTypes:    s.AltTypes,
-		Elem:        marshalSchemaInfo(s.Elem),
+		Elem:        MarshalSchemaInfo(s.Elem),
 		Fields:      fields,
 		Asset:       s.Asset,
 		MaxItemsOne: s.MaxItemsOne,
 	}
 }
 
-func (m *marshallableSchemaInfo) unmarshal() *SchemaInfo {
+// Unmarshal creates a mostly-=initialized Pulumi SchemaInfo value from the given MarshallableSchemaInfo.
+func (m *MarshallableSchemaInfo) Unmarshal() *SchemaInfo {
 	if m == nil {
 		return nil
 	}
 
 	fields := make(map[string]*SchemaInfo)
 	for k, v := range m.Fields {
-		fields[k] = v.unmarshal()
+		fields[k] = v.Unmarshal()
 	}
 	return &SchemaInfo{
 		Name:        m.Name,
 		Type:        m.Type,
 		AltTypes:    m.AltTypes,
-		Elem:        m.Elem.unmarshal(),
+		Elem:        m.Elem.Unmarshal(),
 		Fields:      fields,
 		Asset:       m.Asset,
 		MaxItemsOne: m.MaxItemsOne,
 	}
 }
 
-type marshallableResourceInfo struct {
+// MarshallableResourceInfo is the JSON-marshallable form of a Pulumi ResourceInfo value.
+type MarshallableResourceInfo struct {
 	Tok      tokens.Type                        `json:"tok"`
-	Fields   map[string]*marshallableSchemaInfo `json:"fields"`
+	Fields   map[string]*MarshallableSchemaInfo `json:"fields"`
 	IDFields []string                           `json:"idFields"`
 }
 
-func marshalResourceInfo(r *ResourceInfo) *marshallableResourceInfo {
-	fields := make(map[string]*marshallableSchemaInfo)
+// MarshalResourceInfo converts a Pulumi ResourceInfo value into a MarshallableResourceInfo value.
+func MarshalResourceInfo(r *ResourceInfo) *MarshallableResourceInfo {
+	fields := make(map[string]*MarshallableSchemaInfo)
 	for k, v := range r.Fields {
-		fields[k] = marshalSchemaInfo(v)
+		fields[k] = MarshalSchemaInfo(v)
 	}
-	return &marshallableResourceInfo{
+	return &MarshallableResourceInfo{
 		Tok:      r.Tok,
 		Fields:   fields,
 		IDFields: r.IDFields,
 	}
 }
 
-func (m *marshallableResourceInfo) unmarshal() *ResourceInfo {
+// Unmarshal creates a mostly-=initialized Pulumi ResourceInfo value from the given MarshallableResourceInfo.
+func (m *MarshallableResourceInfo) Unmarshal() *ResourceInfo {
 	fields := make(map[string]*SchemaInfo)
 	for k, v := range m.Fields {
-		fields[k] = v.unmarshal()
+		fields[k] = v.Unmarshal()
 	}
 	return &ResourceInfo{
 		Tok:      m.Tok,
@@ -346,26 +362,29 @@ func (m *marshallableResourceInfo) unmarshal() *ResourceInfo {
 	}
 }
 
-type marshallableDataSourceInfo struct {
+// MarshallableDataSourceInfo is the JSON-marshallable form of a Pulumi DataSourceInfo value.
+type MarshallableDataSourceInfo struct {
 	Tok    tokens.ModuleMember                `json:"tok"`
-	Fields map[string]*marshallableSchemaInfo `json:"fields"`
+	Fields map[string]*MarshallableSchemaInfo `json:"fields"`
 }
 
-func marshalDataSourceInfo(d *DataSourceInfo) *marshallableDataSourceInfo {
-	fields := make(map[string]*marshallableSchemaInfo)
+// MarshalDataSourceInfo converts a Pulumi DataSourceInfo value into a MarshallableDataSourceInfo value.
+func MarshalDataSourceInfo(d *DataSourceInfo) *MarshallableDataSourceInfo {
+	fields := make(map[string]*MarshallableSchemaInfo)
 	for k, v := range d.Fields {
-		fields[k] = marshalSchemaInfo(v)
+		fields[k] = MarshalSchemaInfo(v)
 	}
-	return &marshallableDataSourceInfo{
+	return &MarshallableDataSourceInfo{
 		Tok:    d.Tok,
 		Fields: fields,
 	}
 }
 
-func (m *marshallableDataSourceInfo) unmarshal() *DataSourceInfo {
+// Unmarshal creates a mostly-=initialized Pulumi DataSourceInfo value from the given MarshallableDataSourceInfo.
+func (m *MarshallableDataSourceInfo) Unmarshal() *DataSourceInfo {
 	fields := make(map[string]*SchemaInfo)
 	for k, v := range m.Fields {
-		fields[k] = v.unmarshal()
+		fields[k] = v.Unmarshal()
 	}
 	return &DataSourceInfo{
 		Tok:    m.Tok,
@@ -373,58 +392,56 @@ func (m *marshallableDataSourceInfo) unmarshal() *DataSourceInfo {
 	}
 }
 
-type marshallableProviderInfo struct {
-	Provider    *marshallableProvider                  `json:"provider"`
-	Config      map[string]*marshallableSchemaInfo     `json:"config,omitempty"`
-	Resources   map[string]*marshallableResourceInfo   `json:"resources,omitempty"`
-	DataSources map[string]*marshallableDataSourceInfo `json:"dataSources,omitempty"`
+// MarshallableProviderInfo is the JSON-marshallable form of a Pulumi ProviderInfo value.
+type MarshallableProviderInfo struct {
+	Provider    *MarshallableProvider                  `json:"provider"`
+	Config      map[string]*MarshallableSchemaInfo     `json:"config,omitempty"`
+	Resources   map[string]*MarshallableResourceInfo   `json:"resources,omitempty"`
+	DataSources map[string]*MarshallableDataSourceInfo `json:"dataSources,omitempty"`
 }
 
-// MarshalJSON marshals a subset of this provider info as JSON.
-func (p *ProviderInfo) MarshalJSON() ([]byte, error) {
-	config := make(map[string]*marshallableSchemaInfo)
+// MarshalProviderInfo converts a Pulumi ProviderInfo value into a MarshallableProviderInfo value.
+func MarshalProviderInfo(p *ProviderInfo) *MarshallableProviderInfo {
+	config := make(map[string]*MarshallableSchemaInfo)
 	for k, v := range p.Config {
-		config[k] = marshalSchemaInfo(v)
+		config[k] = MarshalSchemaInfo(v)
 	}
-	resources := make(map[string]*marshallableResourceInfo)
+	resources := make(map[string]*MarshallableResourceInfo)
 	for k, v := range p.Resources {
-		resources[k] = marshalResourceInfo(v)
+		resources[k] = MarshalResourceInfo(v)
 	}
-	dataSources := make(map[string]*marshallableDataSourceInfo)
+	dataSources := make(map[string]*MarshallableDataSourceInfo)
 	for k, v := range p.DataSources {
-		dataSources[k] = marshalDataSourceInfo(v)
+		dataSources[k] = MarshalDataSourceInfo(v)
 	}
 
-	m := &marshallableProviderInfo{
-		Provider:    marshalProvider(p.P),
+	return &MarshallableProviderInfo{
+		Provider:    MarshalProvider(p.P),
 		Config:      config,
 		Resources:   resources,
 		DataSources: dataSources,
 	}
-	return json.Marshal(m)
 }
 
-// UnmarshalJSON unmarshals a subset of this provider info from JSON).
-func (p *ProviderInfo) UnmarshalJSON(data []byte) error {
-	var m marshallableProviderInfo
-	if err := json.Unmarshal(data, &m); err != nil {
-		return err
-	}
-
+// Unmarshal creates a mostly-=initialized Pulumi ProviderInfo value from the given MarshallableProviderInfo.
+func (m *MarshallableProviderInfo) Unmarshal() *ProviderInfo {
 	config := make(map[string]*SchemaInfo)
 	for k, v := range m.Config {
-		config[k] = v.unmarshal()
+		config[k] = v.Unmarshal()
 	}
 	resources := make(map[string]*ResourceInfo)
 	for k, v := range m.Resources {
-		resources[k] = v.unmarshal()
+		resources[k] = v.Unmarshal()
 	}
 	dataSources := make(map[string]*DataSourceInfo)
 	for k, v := range m.DataSources {
-		dataSources[k] = v.unmarshal()
+		dataSources[k] = v.Unmarshal()
 	}
 
-	p.P = m.Provider.unmarshal()
-	p.Config, p.Resources, p.DataSources = config, resources, dataSources
-	return nil
+	return &ProviderInfo{
+		P:           m.Provider.Unmarshal(),
+		Config:      config,
+		Resources:   resources,
+		DataSources: dataSources,
+	}
 }

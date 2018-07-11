@@ -32,7 +32,7 @@ func Main(pkg string, version string, prov ProviderInfo) {
 	dumpInfo := flags.Bool("get-provider-info", false, "dump provider info as JSON to stdout")
 	contract.IgnoreError(flags.Parse(os.Args[1:]))
 	if *dumpInfo {
-		if err := json.NewEncoder(os.Stdout).Encode(&prov); err != nil {
+		if err := json.NewEncoder(os.Stdout).Encode(MarshalProviderInfo(&prov)); err != nil {
 			cmdutil.ExitError(err.Error())
 		}
 		os.Exit(0)
