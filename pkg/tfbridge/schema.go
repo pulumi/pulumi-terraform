@@ -339,14 +339,13 @@ func MakeTerraformOutput(v interface{},
 
 		// we might not have the asset value if this was something computed. in that
 		// case just return an appropriate sentinel indicating that was the case.
-		contract.Assert(v != nil)
-		contract.Assert(reflect.ValueOf(v).Kind() == reflect.String)
 
-		t := v.(string)
+		t, ok := v.(string)
+		contract.Assert(ok)
 		contract.Assert(t == config.UnknownVariableValue)
 
-		elem := resource.Computed{Element: resource.NewStringProperty("")}
-		return resource.NewComputedProperty(elem)
+		return resource.NewComputedProperty(
+			resource.Computed{Element: resource.NewStringProperty("")})
 	}
 
 	if v == nil {
@@ -368,8 +367,8 @@ func MakeTerraformOutput(v interface{},
 		// Terraform doesn't carry the types along with it, so the best we can do is give back a computed string.
 		t := val.String()
 		if t == config.UnknownVariableValue {
-			elem := resource.Computed{Element: resource.NewStringProperty("")}
-			return resource.NewComputedProperty(elem)
+			return resource.NewComputedProperty(
+				resource.Computed{Element: resource.NewStringProperty("")})
 		}
 		// Else it's just a string.
 		return resource.NewStringProperty(t)
