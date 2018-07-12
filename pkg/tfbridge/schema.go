@@ -329,11 +329,24 @@ func MakeTerraformOutputs(outs map[string]interface{},
 // MakeTerraformOutput takes a single Terraform property and returns the Pulumi equivalent.
 func MakeTerraformOutput(v interface{},
 	tfs *schema.Schema, ps *SchemaInfo, assets AssetTable, rawNames bool) resource.PropertyValue {
+
 	if assets != nil && ps != nil && ps.Asset != nil {
-		asset, has := assets[ps]
-		contract.Assertf(has, "expected asset value for Pulumi schema info")
-		contract.Assert(asset.IsAsset() || asset.IsArchive())
-		return asset
+		if asset, has := assets[ps]; has {
+			// if we have the value, it better actually be an asset or an archive.
+			contract.Assert(asset.IsAsset() || asset.IsArchive())
+			return asset
+		}
+
+		// we might not have the asset value if this was something computed. in that
+		// case just return an appropriate sentinel indicating that was the case.
+		contract.Assert(v != nil)
+		contract.Assert(reflect.ValueOf(v).Kind() == reflect.String)
+
+		t := v.(string)
+		contract.Assert(t == config.UnknownVariableValue)
+
+		elem := resource.Computed{Element: resource.NewStringProperty("")}
+		return resource.NewComputedProperty(elem)
 	}
 
 	if v == nil {
