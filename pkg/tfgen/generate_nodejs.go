@@ -914,33 +914,31 @@ func tsTypeComplex(sch *schema.Schema, info *tfbridge.SchemaInfo, noflags, out b
 // tsPrimitive returns the TypeScript type name for a given schema value type and element kind.
 func tsPrimitive(vt schema.ValueType, elem interface{}, eleminfo *tfbridge.SchemaInfo, flatten, out bool) string {
 	// First figure out the raw type.
-	var t = (func() string {
-		switch vt {
-		case schema.TypeBool:
-			return "boolean"
-		case schema.TypeInt, schema.TypeFloat:
-			return "number"
-		case schema.TypeString:
-			return "string"
-		case schema.TypeSet, schema.TypeList:
-			elemType := tsElemType(elem, eleminfo, out)
-			if flatten {
-				return elemType
-			}
-			return fmt.Sprintf("%s[]", elemType)
-		case schema.TypeMap:
-			return fmt.Sprintf("{[key: string]: %v}", tsElemType(elem, eleminfo, out))
-		default:
-			contract.Failf("Unrecognized schema type: %v", vt)
-			return ""
+	var t string
+	switch vt {
+	case schema.TypeBool:
+		t = "boolean"
+	case schema.TypeInt, schema.TypeFloat:
+		t = "number"
+	case schema.TypeString:
+		t = "string"
+	case schema.TypeSet, schema.TypeList:
+		elemType := tsElemType(elem, eleminfo, out)
+		if flatten {
+			return elemType
 		}
-	})()
-
-	if out {
-		return t
+		t = fmt.Sprintf("%s[]", elemType)
+	case schema.TypeMap:
+		t = fmt.Sprintf("{[key: string]: %v}", tsElemType(elem, eleminfo, out))
+	default:
+		contract.Failf("Unrecognized schema type: %v", vt)
 	}
 
-	return fmt.Sprintf("pulumi.Input<%s>", t)
+	if !out {
+		t = fmt.Sprintf("pulumi.Input<%s>", t)
+	}
+
+	return t
 }
 
 // tsElemType returns the TypeScript type for a given schema element.  This element may be either a simple schema
