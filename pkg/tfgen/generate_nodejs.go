@@ -876,12 +876,13 @@ func tsTypeComplex(sch *schema.Schema, info *tfbridge.SchemaInfo, noflags, out b
 	if info != nil {
 		if info.Type != "" {
 			t = string(info.Type.Name())
-			if len(info.AltTypes) > 0 {
-				for _, at := range info.AltTypes {
-					t = fmt.Sprintf("%s | %s", t, at.Name())
-				}
-			}
 			if !out {
+				// Only include AltTypes on inputs, as outputs will always have a concrete type
+				if len(info.AltTypes) > 0 {
+					for _, at := range info.AltTypes {
+						t = fmt.Sprintf("%s | %s", t, at.Name())
+					}
+				}
 				t = fmt.Sprintf("pulumi.Input<%s>", t)
 			}
 		} else if info.Asset != nil {

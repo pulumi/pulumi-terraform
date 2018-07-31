@@ -49,7 +49,7 @@ func Test_TsType(t *testing.T) {
 	}, false))
 
 	// AltTypes output
-	assert.Equal(t, "string | Foo", tsType(&variable{
+	assert.Equal(t, "string", tsType(&variable{
 		name: "foo",
 		info: &tfbridge.SchemaInfo{
 			Type:     "string",
