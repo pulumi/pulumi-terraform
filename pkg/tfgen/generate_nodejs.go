@@ -977,7 +977,11 @@ func tsElemType(elem interface{}, info *tfbridge.SchemaInfo, out bool) string {
 				c++
 			}
 		}
-		return t + " }"
+		t += " }"
+		if !out {
+			t = fmt.Sprintf("pulumi.Input<%s>", t)
+		}
+		return t
 	default:
 		contract.Failf("Unrecognized schema element type: %v", e)
 		return ""
