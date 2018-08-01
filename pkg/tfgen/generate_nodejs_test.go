@@ -36,7 +36,7 @@ func Test_TsType(t *testing.T) {
 		},
 		out: true,
 		opt: true,
-	}, false))
+	}, false, false))
 
 	// Schema input
 	assert.Equal(t, "pulumi.Input<string>", tsType(&variable{
@@ -46,7 +46,7 @@ func Test_TsType(t *testing.T) {
 		},
 		out: false,
 		opt: true,
-	}, false))
+	}, false, true))
 
 	// AltTypes output
 	assert.Equal(t, "string", tsType(&variable{
@@ -57,7 +57,7 @@ func Test_TsType(t *testing.T) {
 		},
 		out: true,
 		opt: true,
-	}, false))
+	}, false, false))
 
 	// AltTypes input
 	assert.Equal(t, "pulumi.Input<string | Foo>", tsType(&variable{
@@ -68,7 +68,7 @@ func Test_TsType(t *testing.T) {
 		},
 		out: false,
 		opt: true,
-	}, false))
+	}, false, true))
 
 }
 
@@ -83,11 +83,11 @@ func Test_Issue130(t *testing.T) {
 		name:   "condition",
 		schema: schema,
 		out:    true,
-	}, false))
+	}, false, false))
 
 	assert.Equal(t, "pulumi.Input<string>", tsType(&variable{
 		name:   "condition",
 		schema: schema,
 		out:    false,
-	}, false))
+	}, false, true))
 }

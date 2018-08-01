@@ -670,9 +670,7 @@ func (g *generator) gatherDataSource(rawname string,
 		// Remember detailed information for every input arg (we will use it below).
 		docURL := fmt.Sprintf("%s#%s", parsedDocs.URL, arg)
 		if input(args[arg]) {
-			// Note: Although these are arguments, we pass `out` as true to ensure that the arguments do not get wrapped
-			// in `pulumi.Input`.
-			argvar := propertyVariable(arg, sch, cust, parsedDocs.Arguments[arg], "", docURL, true /*out*/)
+			argvar := propertyVariable(arg, sch, cust, parsedDocs.Arguments[arg], "", docURL, false /*out*/)
 			fun.args = append(fun.args, argvar)
 			if !argvar.optional() {
 				fun.reqargs[argvar.name] = true
