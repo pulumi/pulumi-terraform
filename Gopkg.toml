@@ -1,6 +1,6 @@
 [[constraint]]
   name = "github.com/pulumi/pulumi"
-  branch = "master"
+  branch = "release/0.15"
 
 # Redirect all Terraform references to our fork.
 [[override]]
