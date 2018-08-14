@@ -300,15 +300,16 @@ func (g *nodeJSGenerator) emitConfigVariables(mod *module) (string, error) {
 }
 
 func (g *nodeJSGenerator) emitConfigVariable(w *tools.GenWriter, v *variable) {
-	var getfunc string
-	if v.optional() {
-		getfunc = "get"
-	} else {
-		getfunc = "require"
-	}
+	optionalFunc := "get"
+	requiredFunc := "require"
+
+	flagsType := tsType(v, false /*noflags*/, !v.out /*wrapInput*/)
+	noFlagsType := tsType(v, true /*noflags*/, !v.out /*wrapInput*/)
+
 	if v.schema.Type != schema.TypeString {
 		// Only try to parse a JSON object if the config isn't a straight string.
-		getfunc = fmt.Sprintf("%sObject<%s>", getfunc, tsType(v, false /*noflags*/, !v.out /*wrapInput*/))
+		optionalFunc = fmt.Sprintf("%sObject<%s>", optionalFunc, flagsType)
+		requiredFunc = fmt.Sprintf("%sObject<%s>", requiredFunc, flagsType)
 	}
 	var anycast string
 	if v.info != nil && v.info.Type != "" {
@@ -320,8 +321,20 @@ func (g *nodeJSGenerator) emitConfigVariable(w *tools.GenWriter, v *variable) {
 	} else if v.rawdoc != "" {
 		g.emitRawDocComment(w, v.rawdoc, "")
 	}
-	w.Writefmtln("export let %[1]s: %[2]s = %[3]s__config.%[4]s(\"%[1]s\");",
-		v.name, tsType(v, true /*noflags*/, !v.out /*wrapInput*/), anycast, getfunc)
+
+	if v.optional() {
+		w.Writefmtln("export let %[1]s: %[2]s = %[3]s__config.%[4]s(\"%[1]s\");",
+			v.name, noFlagsType, anycast, optionalFunc)
+
+		// If it was an optional config variable spit out a helper that will require the value.
+		// That way someone who needs the value can call this helper and have it report the appropriate
+		// error telling the user what value is needed.
+		w.Writefmtln("export function require%[1]s(): %[2]s { return %[3]s__config.%[4]s(\"%[5]s\"); }",
+			upperFirst(v.name), flagsType, anycast, requiredFunc, v.name)
+	} else {
+		w.Writefmtln("export let %[1]s: %[2]s = %[3]s__config.%[4]s(\"%[1]s\");",
+			v.name, flagsType, anycast, requiredFunc)
+	}
 }
 
 // sanitizeForDocComment ensures that no `*/` sequence appears in the string, to avoid
