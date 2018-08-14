@@ -307,6 +307,7 @@ func (g *nodeJSGenerator) emitConfigVariable(w *tools.GenWriter, v *variable) {
 	noFlagsType := tsType(v, true /*noflags*/, !v.out /*wrapInput*/)
 
 	if v.schema.Type != schema.TypeString {
+		// Only try to parse a JSON object if the config isn't a straight string.
 		optionalFunc = fmt.Sprintf("%sObject<%s>", optionalFunc, flagsType)
 		requiredFunc = fmt.Sprintf("%sObject<%s>", requiredFunc, flagsType)
 	}
