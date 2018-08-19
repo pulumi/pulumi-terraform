@@ -529,15 +529,26 @@ func (p *Provider) Update(ctx context.Context, req *pulumirpc.UpdateRequest) (*p
 	}
 
 	newstate, err := p.tf.Apply(info, state, diff)
+	if newstate == nil {
+		contract.Assertf(err != nil, "expected non-nil error with nil state during Update")
+		return nil, err
+	}
+
+	contract.Assertf(newstate.ID != "", "Expected non-empty ID for new state during Update")
+	reasons := make([]string, 0)
 	if err != nil {
-		return nil, errors.Wrapf(err, "updating %s", urn)
+		reasons = append(reasons, errors.Wrapf(err, "updating %s", urn).Error())
 	}
 
 	props := MakeTerraformResult(newstate, res.TFSchema, res.Schema.Fields)
 	mprops, err := plugin.MarshalProperties(props, plugin.MarshalOptions{
 		Label: fmt.Sprintf("%s.outs", label)})
 	if err != nil {
-		return nil, err
+		reasons = append(reasons, errors.Wrapf(err, "marshalling %s", urn).Error())
+	}
+
+	if len(reasons) != 0 {
+		return nil, initializationError(newstate.ID, mprops, reasons)
 	}
 	return &pulumirpc.UpdateResponse{Properties: mprops}, nil
 }
