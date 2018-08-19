@@ -406,7 +406,7 @@ func (p *Provider) Create(ctx context.Context, req *pulumirpc.CreateRequest) (*p
 	label := fmt.Sprintf("%s.Create(%s/%s)", p.label(), urn, res.TF.Name)
 	glog.V(9).Infof("%s executing", label)
 
-	// To get Terraform to create a new resource, the ID msut be blank and existing state must be empty (since the
+	// To get Terraform to create a new resource, the ID must be blank and existing state must be empty (since the
 	// resource does not exist yet), and the diff object should have no old state and all of the new state.
 	info := &terraform.InstanceInfo{Type: res.TF.Name}
 	state := &terraform.InstanceState{}
