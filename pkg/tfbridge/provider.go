@@ -421,16 +421,26 @@ func (p *Provider) Create(ctx context.Context, req *pulumirpc.CreateRequest) (*p
 	}
 
 	newstate, err := p.tf.Apply(info, state, diff)
-	if err != nil {
-		return nil, errors.Wrapf(err, "creating %s", urn)
+	if newstate == nil {
+		contract.Assertf(err != nil, "expected non-nil error with nil state during Create")
+		return nil, err
 	}
-	contract.Assertf(newstate != nil, "expected non-nil TF state during Create; required to obtain ID")
+
+	contract.Assertf(newstate.ID != "", "Expected non-empty ID for new state during Create")
+	reasons := make([]string, 0)
+	if err != nil {
+		reasons = append(reasons, errors.Wrapf(err, "creating %s", urn).Error())
+	}
 
 	// Create the ID and property maps and return them.
 	props := MakeTerraformResult(newstate, res.TFSchema, res.Schema.Fields)
 	mprops, err := plugin.MarshalProperties(props, plugin.MarshalOptions{Label: fmt.Sprintf("%s.outs", label)})
 	if err != nil {
-		return nil, err
+		reasons = append(reasons, errors.Wrapf(err, "marshalling %s", urn).Error())
+	}
+
+	if len(reasons) != 0 {
+		return nil, initializationError(newstate.ID, mprops, reasons)
 	}
 	return &pulumirpc.CreateResponse{Id: newstate.ID, Properties: mprops}, nil
 }
@@ -652,4 +662,14 @@ func (p *Provider) GetPluginInfo(ctx context.Context, req *pbempty.Empty) (*pulu
 // Cancel requests that the provider cancel all ongoing RPCs. For TF, this is a no-op.
 func (p *Provider) Cancel(ctx context.Context, req *pbempty.Empty) (*pbempty.Empty, error) {
 	return &pbempty.Empty{}, nil
+}
+
+func initializationError(id string, props *pbstruct.Struct, reasons []string) error {
+	contract.Assertf(len(reasons) > 0, "initializationError must be passed at least one reasons")
+	detail := pulumirpc.ErrorResourceInitFailed{
+		Id:         id,
+		Properties: props,
+		Reasons:    reasons,
+	}
+	return rpcerror.WithDetails(rpcerror.New(codes.Unknown, reasons[0]), &detail)
 }
