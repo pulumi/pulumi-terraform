@@ -962,10 +962,9 @@ func tsPrimitive(vt schema.ValueType, elem interface{}, eleminfo *tfbridge.Schem
 		// TF that effectively forces this behavior.
 		elemType := tsElemType(elem, eleminfo, out, wrapInput)
 		if _, hasResourceElem := elem.(*schema.Resource); hasResourceElem {
-			t, wrapInput = elemType, false
-		} else {
-			t = fmt.Sprintf("{[key: string]: %v}", elemType)
+			return elemType
 		}
+		t = fmt.Sprintf("{[key: string]: %v}", elemType)
 	default:
 		contract.Failf("Unrecognized schema type: %v", vt)
 	}
