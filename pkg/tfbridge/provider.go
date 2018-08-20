@@ -676,7 +676,7 @@ func (p *Provider) Cancel(ctx context.Context, req *pbempty.Empty) (*pbempty.Emp
 }
 
 func initializationError(id string, props *pbstruct.Struct, reasons []string) error {
-	contract.Assertf(len(reasons) > 0, "initializationError must be passed at least one reasons")
+	contract.Assertf(len(reasons) > 0, "initializationError must be passed at least one reason")
 	detail := pulumirpc.ErrorResourceInitFailed{
 		Id:         id,
 		Properties: props,
