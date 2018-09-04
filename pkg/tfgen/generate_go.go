@@ -277,7 +277,7 @@ func (g *goGenerator) emitConfigAccessor(w *tools.GenWriter, v *variable) {
 		w.Writefmtln("\t\treturn dv")
 		w.Writefmtln("\t}")
 		if !v.optional() {
-			w.Writefmtln("\tcontract.Failf(err.Error())")
+			w.Writefmtln("\tpanic(err.Error())")
 		}
 		w.Writefmtln("\treturn v")
 	} else {
