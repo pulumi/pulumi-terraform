@@ -34,4 +34,15 @@ export function getEnvNumber(...vars: string[]): number | undefined {
     }
     return undefined;
 }
+
+export function requireWithDefault<T>(req: () => T, def: T | undefined): T {
+	try {
+		return req();
+	} catch (err) {
+		if (def === undefined) {
+			throw err;
+		}
+	}
+	return def;
+}
 `

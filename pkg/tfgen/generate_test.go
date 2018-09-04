@@ -65,7 +65,7 @@ var defaultTests = []defaultValueTest{
 		info:           tfbridge.DefaultInfo{Value: "foo"},
 		expectedNode:   `"foo"`,
 		expectedGo:     `"foo"`,
-		expectedPython: `"foo"`,
+		expectedPython: `'foo'`,
 	},
 }
 
@@ -177,7 +177,7 @@ func Test_PythonDefaults(t *testing.T) {
 			envFunc = "utilities.get_env_float"
 		}
 
-		singleEnv, multiEnv := fmt.Sprintf(`%s("FOO")`, envFunc), fmt.Sprintf(`%s("FOO", "BAR")`, envFunc)
+		singleEnv, multiEnv := fmt.Sprintf(`%s('FOO')`, envFunc), fmt.Sprintf(`%s('FOO', 'BAR')`, envFunc)
 		if dvt.expectedPython != "" {
 			singleEnv = fmt.Sprintf("(%s or %s)", singleEnv, dvt.expectedPython)
 			multiEnv = fmt.Sprintf("(%s or %s)", multiEnv, dvt.expectedPython)

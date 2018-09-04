@@ -300,16 +300,22 @@ func (g *pythonGenerator) emitConfigVariables(mod *module) (string, error) {
 
 func (g *pythonGenerator) emitConfigVariable(w *tools.GenWriter, v *variable) {
 	var getfunc string
-	var orDefaultValue string
 	if v.optional() {
 		getfunc = "get"
-		if dv := pyDefaultValue(v); dv != "" {
-			orDefaultValue = " or " + dv
-		}
 	} else {
 		getfunc = "require"
 	}
-	w.Writefmtln("%s = __config__.%s('%s')%s", pyName(v.name), getfunc, v.name, orDefaultValue)
+
+	configFetch := fmt.Sprintf("__config__.%s('%s')", getfunc, v.name)
+	if defaultValue := pyDefaultValue(v); defaultValue != "" {
+		if v.optional() {
+			configFetch += " or " + defaultValue
+		} else {
+			configFetch = fmt.Sprintf("utilities.requireWithDefault(lambda: %s, %s)", configFetch, defaultValue)
+		}
+	}
+
+	w.Writefmtln("%s = %s", pyName(v.name), configFetch)
 	if v.doc != "" {
 		g.emitDocComment(w, v.doc, "")
 	} else if v.rawdoc != "" {
@@ -928,7 +934,7 @@ func pyPrimitiveValue(value interface{}) (string, error) {
 	case reflect.Float32, reflect.Float64:
 		return strconv.FormatFloat(v.Float(), 'f', -1, 64), nil
 	case reflect.String:
-		return fmt.Sprintf("%q", v.String()), nil
+		return fmt.Sprintf("'%s'", v.String()), nil
 	default:
 		return "", errors.Errorf("unsupported default value of type %T", value)
 	}
@@ -961,9 +967,9 @@ func pyDefaultValue(v *variable) string {
 			envFunc = "utilities.get_env_float"
 		}
 
-		envVars := fmt.Sprintf("%q", defaults.EnvVars[0])
+		envVars := fmt.Sprintf("'%s'", defaults.EnvVars[0])
 		for _, e := range defaults.EnvVars[1:] {
-			envVars += fmt.Sprintf(", %q", e)
+			envVars += fmt.Sprintf(", '%s'", e)
 		}
 		if defaultValue == "" {
 			defaultValue = fmt.Sprintf("%s(%s)", envFunc, envVars)

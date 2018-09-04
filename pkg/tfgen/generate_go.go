@@ -246,17 +246,14 @@ func (g *goGenerator) emitConfigAccessor(w *tools.GenWriter, v *variable) {
 		getfunc = "Require"
 	}
 
-	var gettype string
+	gettype, functype := "", ""
 	switch v.schema.Type {
 	case schema.TypeBool:
-		getfunc += "Bool"
-		gettype = "bool"
+		gettype, functype = "bool", "Bool"
 	case schema.TypeInt:
-		getfunc += "Int"
-		gettype = "int"
+		gettype, functype = "int", "Int"
 	case schema.TypeFloat:
-		getfunc += "Float64"
-		gettype = "float64"
+		gettype, functype = "float64", "Float64"
 	default:
 		gettype = "string"
 	}
@@ -267,21 +264,23 @@ func (g *goGenerator) emitConfigAccessor(w *tools.GenWriter, v *variable) {
 		g.emitRawDocComment(w, v.rawdoc, "")
 	}
 
-	defaultValue := ""
-	if v.optional() {
-		defaultValue = g.goDefaultValue(v)
-	}
+	defaultValue, configKey := g.goDefaultValue(v), fmt.Sprintf("\"%s:%s\"", g.pkg, v.name)
 
 	w.Writefmtln("func Get%s(ctx *pulumi.Context) %s {", upperFirst(v.name), gettype)
-
-	configKey := fmt.Sprintf("\"%s:%s\"", g.pkg, v.name)
 	if defaultValue != "" {
-		w.Writefmtln("\tif v := config.Get(ctx, %s); v != \"\" {", configKey)
-		w.Writefmtln("\t\treturn config.%s(ctx, %s)", getfunc, configKey)
+		w.Writefmtln("\tv, err := config.Try%s(ctx, %s)", functype, configKey)
+		w.Writefmtln("\tif err == nil {")
+		w.Writefmtln("\t\treturn v")
 		w.Writefmtln("\t}")
-		w.Writefmtln("\treturn %s", defaultValue)
+		w.Writefmtln("\tif dv, ok := %s.(%s); ok {", defaultValue, gettype)
+		w.Writefmtln("\t\treturn dv")
+		w.Writefmtln("\t}")
+		if !v.optional() {
+			w.Writefmtln("\tcontract.Failf(err.Error())")
+		}
+		w.Writefmtln("\treturn v")
 	} else {
-		w.Writefmtln("\treturn config.%s(ctx, \"%s:%s\")", getfunc, g.pkg, v.name)
+		w.Writefmtln("\treturn config.%s%s(ctx, \"%s:%s\")", getfunc, functype, g.pkg, v.name)
 	}
 
 	w.Writefmtln("}")

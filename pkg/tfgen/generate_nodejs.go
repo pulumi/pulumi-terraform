@@ -358,15 +358,17 @@ func (g *nodeJSGenerator) emitConfigVariable(w *tools.GenWriter, v *variable) {
 		g.emitRawDocComment(w, v.rawdoc, "")
 	}
 
-	defaultValue := ""
-	if v.optional() {
-		if dv := tsDefaultValue(v); dv != "undefined" {
-			defaultValue = " || " + dv
+	configFetch := fmt.Sprintf("__config.%s(\"%s\")", getfunc, v.name)
+	if defaultValue := tsDefaultValue(v); defaultValue != "undefined" {
+		if v.optional() {
+			configFetch += " || " + defaultValue
+		} else {
+			configFetch = fmt.Sprintf("utilities.requireWithDefault(() => %s, %s)", configFetch, defaultValue)
 		}
 	}
 
-	w.Writefmtln("export let %[1]s: %[2]s = %[3]s__config.%[4]s(\"%[1]s\")%[5]s;",
-		v.name, tsType(v, true /*noflags*/, !v.out /*wrapInput*/), anycast, getfunc, defaultValue)
+	w.Writefmtln("export let %s: %s = %s%s;", v.name, tsType(v, true /*noflags*/, !v.out /*wrapInput*/), anycast,
+		configFetch)
 }
 
 // sanitizeForDocComment ensures that no `*/` sequence appears in the string, to avoid

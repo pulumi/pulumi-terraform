@@ -228,8 +228,10 @@ func (v *variable) optional() bool {
 // optional based on the Terraform or custom overlay properties.
 func optionalComplex(sch *schema.Schema, info *tfbridge.SchemaInfo, out, config bool) bool {
 	// If we're checking a property used in an output position, it isn't optional if it's computed.
-	customDefault := info != nil && info.HasDefault()
-	if out && !config {
+	//
+	// Note that config values with custom defaults are _not_ considered optional unless they are marked as such.
+	customDefault := !config && info != nil && info.HasDefault()
+	if out {
 		return sch.Optional && !sch.Computed && !customDefault
 	}
 	return sch.Optional || sch.Computed || customDefault

@@ -42,4 +42,5 @@ func getEnvOrDefault(def interface{}, parser envParser, vars ...string) interfac
 		}
 	}
 	return def
-}`
+}
+`
