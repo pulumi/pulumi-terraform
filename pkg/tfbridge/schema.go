@@ -97,7 +97,7 @@ func MakeTerraformInputs(res *PulumiResource, olds, news resource.PropertyMap,
 					glog.V(9).Infof("Created Terraform input: %v = %v (old default)", key, old)
 				} else if envVars := info.Default.EnvVars; len(envVars) != 0 {
 					result[name] = schema.MultiEnvDefaultFunc(envVars, info.Default.Value)
-					glog.V(9).Infof("Created Terraform input: %v = %v (defualt from env vars)", name, result[name])
+					glog.V(9).Infof("Created Terraform input: %v = %v (default from env vars)", name, result[name])
 
 				} else if info.Default.Value != nil {
 					result[name] = info.Default.Value

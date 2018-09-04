@@ -246,7 +246,8 @@ func (g *goGenerator) emitConfigAccessor(w *tools.GenWriter, v *variable) {
 		getfunc = "Require"
 	}
 
-	gettype, functype := "", ""
+	var gettype string
+	var functype string
 	switch v.schema.Type {
 	case schema.TypeBool:
 		gettype, functype = "bool", "Bool"
@@ -255,7 +256,7 @@ func (g *goGenerator) emitConfigAccessor(w *tools.GenWriter, v *variable) {
 	case schema.TypeFloat:
 		gettype, functype = "float64", "Float64"
 	default:
-		gettype = "string"
+		gettype, functype = "string", ""
 	}
 
 	if v.doc != "" {
