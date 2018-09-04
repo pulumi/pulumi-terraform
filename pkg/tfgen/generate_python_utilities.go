@@ -13,6 +13,8 @@ def get_env(*args):
 def get_env_bool(*args):
     str = get_env(*args)
     if str is not None:
+        # NOTE: these values are taken from https://golang.org/src/strconv/atob.go?s=351:391#L1, which is what
+        # Terraform uses internally when parsing boolean values.
         if str in ["1", "t", "T", "true", "TRUE", "True"]:
             return True
         if str in ["0", "f", "F", "false", "FALSE", "False"]:

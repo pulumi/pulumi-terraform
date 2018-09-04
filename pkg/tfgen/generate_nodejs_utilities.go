@@ -14,6 +14,8 @@ export function getEnv(...vars: string[]): string | undefined {
 export function getEnvBoolean(...vars: string[]): boolean | undefined {
     const s = getEnv(...vars);
     if (s !== undefined) {
+        // NOTE: these values are taken from https://golang.org/src/strconv/atob.go?s=351:391#L1, which is what
+        // Terraform uses internally when parsing boolean values.
         if (["1", "t", "T", "true", "TRUE", "True"].find(v => v === s) !== undefined) {
             return true;
         }

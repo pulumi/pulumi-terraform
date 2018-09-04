@@ -208,7 +208,7 @@ type variable struct {
 	name   string
 	out    bool
 	opt    bool
-	config bool
+	config bool // config is true if this variable represents a Pulumi config value.
 	doc    string
 	rawdoc string
 	schema *schema.Schema
