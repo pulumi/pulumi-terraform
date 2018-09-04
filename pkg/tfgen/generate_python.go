@@ -311,7 +311,7 @@ func (g *pythonGenerator) emitConfigVariable(w *tools.GenWriter, v *variable) {
 		if v.optional() {
 			configFetch += " or " + defaultValue
 		} else {
-			configFetch = fmt.Sprintf("utilities.requireWithDefault(lambda: %s, %s)", configFetch, defaultValue)
+			configFetch = fmt.Sprintf("utilities.require_with_default(lambda: %s, %s)", configFetch, defaultValue)
 		}
 	}
 

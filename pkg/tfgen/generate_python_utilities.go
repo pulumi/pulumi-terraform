@@ -37,11 +37,11 @@ def get_env_float(*args):
             return None
     return None
 
-def require_with_default(req, def):
-	try:
-		return req()
-	except:
-		if def is not None:
-			return def
-		raise
+def require_with_default(req, default):
+    try:
+        return req()
+    except:
+        if default is not None:
+            return default
+        raise
 `
