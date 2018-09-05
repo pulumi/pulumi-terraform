@@ -528,6 +528,8 @@ func TestDefaults(t *testing.T) {
 	//     - jjj string: old input "OLJ", no defaults, no input => no merged input
 	//     - lll: old default "OLL", TF default "TFL", no input => "OLL"
 	//     - mmm: old default "OLM", PS default "PSM", no input => "OLM"
+	//     - xxx: old default "OLX", deprecated, no input => nothing
+	//     - yyy: TF default "TLY", deprecared, no input => nothing
 	asset, err := resource.NewTextAsset("hello")
 	assert.Nil(t, err)
 	assets := make(AssetTable)
@@ -542,6 +544,8 @@ func TestDefaults(t *testing.T) {
 		"jjj": {Type: schema.TypeString},
 		"lll": {Type: schema.TypeString, Default: "TFL"},
 		"mmm": {Type: schema.TypeString},
+		"xxx": {Type: schema.TypeString, Deprecated: "deprecated", Optional: true},
+		"yyy": {Type: schema.TypeString, Default: "TLY", Deprecated: "deprecated", Optional: true},
 		"zzz": {Type: schema.TypeString},
 	}
 	ps := map[string]*SchemaInfo{
