@@ -14,10 +14,10 @@ func mustSet(data *schema.ResourceData, key string, value interface{}) {
 
 var testTFProvider = &schema.Provider{
 	Schema: map[string]*schema.Schema{
-		"config_value": &schema.Schema{},
+		"config_value": {},
 	},
 	ResourcesMap: map[string]*schema.Resource{
-		"example_resource": &schema.Resource{
+		"example_resource": {
 			Schema: map[string]*schema.Schema{
 				"nil_property_value":    {Type: schema.TypeMap},
 				"bool_property_value":   {Type: schema.TypeBool},
@@ -120,7 +120,7 @@ var testTFProvider = &schema.Provider{
 		},
 	},
 	DataSourcesMap: map[string]*schema.Resource{
-		"example_resource": &schema.Resource{
+		"example_resource": {
 			Schema: map[string]*schema.Schema{
 				"nil_property_value":    {Type: schema.TypeMap},
 				"bool_property_value":   {Type: schema.TypeBool},
