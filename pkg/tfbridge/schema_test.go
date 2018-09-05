@@ -488,6 +488,12 @@ func TestMetaProperties(t *testing.T) {
 	assert.NotNil(t, meta)
 
 	assert.Equal(t, strconv.Itoa(res.SchemaVersion), meta["schema_version"])
+
+	// Remove the resource's meta-attributes and ensure that we do not include them in the result.
+	read2.Meta = map[string]interface{}{}
+	props = MakeTerraformResult(read2, res.Schema, nil)
+	assert.NotNil(t, props)
+	assert.NotContains(t, props, metaKey)
 }
 
 // Test that an unset list still generates a length attribute.
