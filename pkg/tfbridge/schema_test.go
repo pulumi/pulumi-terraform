@@ -528,6 +528,7 @@ func TestDefaults(t *testing.T) {
 	//     - jjj string: old input "OLJ", no defaults, no input => no merged input
 	//     - lll: old default "OLL", TF default "TFL", no input => "OLL"
 	//     - mmm: old default "OLM", PS default "PSM", no input => "OLM"
+	//     - www: old default "OLW", deprecated, required, no input -> "OLW"
 	//     - xxx: old default "OLX", deprecated, no input => nothing
 	//     - yyy: TF default "TLY", deprecared, no input => nothing
 	asset, err := resource.NewTextAsset("hello")
@@ -544,6 +545,7 @@ func TestDefaults(t *testing.T) {
 		"jjj": {Type: schema.TypeString},
 		"lll": {Type: schema.TypeString, Default: "TFL"},
 		"mmm": {Type: schema.TypeString},
+		"www": {Type: schema.TypeString, Deprecated: "deprecated", Required: true},
 		"xxx": {Type: schema.TypeString, Deprecated: "deprecated", Optional: true},
 		"yyy": {Type: schema.TypeString, Default: "TLY", Deprecated: "deprecated", Optional: true},
 		"zzz": {Type: schema.TypeString},
@@ -557,6 +559,7 @@ func TestDefaults(t *testing.T) {
 		"hhh": {Default: &DefaultInfo{Value: "PSH"}},
 		"iii": {Default: &DefaultInfo{Value: "PSI"}},
 		"mmm": {Default: &DefaultInfo{Value: "PSM"}},
+		"www": {Default: &DefaultInfo{Value: "PSW"}},
 		"zzz": {Asset: &AssetTranslation{Kind: FileAsset}},
 	}
 	olds := resource.PropertyMap{
@@ -564,6 +567,8 @@ func TestDefaults(t *testing.T) {
 		"jjj": resource.NewStringProperty("OLJ"),
 		"lll": resource.NewStringProperty("OLL"),
 		"mmm": resource.NewStringProperty("OLM"),
+		"www": resource.NewStringProperty("OLW"),
+		"xxx": resource.NewStringProperty("OLX"),
 	}
 	props := resource.PropertyMap{
 		"bbb": resource.NewStringProperty("BBB"),
@@ -592,6 +597,7 @@ func TestDefaults(t *testing.T) {
 		"iii": "OLI",
 		"lll": "OLL",
 		"mmm": "OLM",
+		"www": "OLW",
 		"zzz": asset,
 	}), outputs)
 }
