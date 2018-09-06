@@ -15,6 +15,7 @@
 package tfbridge
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"strings"
@@ -180,6 +181,35 @@ func (p *Provider) camelPascalPulumiName(name string) (string, string) {
 	return TerraformToPulumiName(name, nil, false), TerraformToPulumiName(name, nil, true)
 }
 
+func convertStringToPropertyValue(s string, typ schema.ValueType) (resource.PropertyValue, error) {
+	// If the schema expects a string, we can just return this as-is.
+	if typ == schema.TypeString {
+		return resource.NewStringProperty(s), nil
+	}
+
+	// Otherwise, we will attempt to deserialize the input string as JSON and convert the result into a Pulumi
+	// property. In order to ensure that deserializeation succeeds when the input is the empty string, we replace it
+	// beforehand with an appropriate JSON string for the type.
+	if s == "" {
+		switch typ {
+		case schema.TypeBool:
+			s = "false"
+		case schema.TypeInt, schema.TypeFloat:
+			s = "0"
+		case schema.TypeList, schema.TypeSet:
+			s = "[]"
+		default:
+			s = "{}"
+		}
+	}
+
+	var jsonValue interface{}
+	if err := json.Unmarshal([]byte(s), &jsonValue); err != nil {
+		return resource.PropertyValue{}, err
+	}
+	return resource.NewPropertyValue(jsonValue), nil
+}
+
 // Configure configures the underlying Terraform provider with the live Pulumi variable state.
 func (p *Provider) Configure(ctx context.Context, req *pulumirpc.ConfigureRequest) (*pbempty.Empty, error) {
 	p.setLoggingContext(ctx)
@@ -191,9 +221,20 @@ func (p *Provider) Configure(ctx context.Context, req *pulumirpc.ConfigureReques
 		if err != nil {
 			return nil, errors.Wrapf(err, "malformed configuration token '%v'", k)
 		}
-		if mm.Module() == p.baseConfigMod() || mm.Module() == p.configMod() {
-			vars[resource.PropertyKey(mm.Name())] = resource.NewStringProperty(v)
+		if mm.Module() != p.baseConfigMod() && mm.Module() != p.configMod() {
+			continue
 		}
+
+		typ := schema.TypeString
+		_, sch, _ := getInfoFromPulumiName(resource.PropertyKey(mm.Name()), p.config, p.info.Config, false)
+		if sch != nil {
+			typ = sch.Type
+		}
+		pv, err := convertStringToPropertyValue(v, typ)
+		if err != nil {
+			return nil, errors.Wrapf(err, "malformed configuration value '%v'", v)
+		}
+		vars[resource.PropertyKey(mm.Name())] = pv
 	}
 
 	// First make a Terraform config map out of the variables. We do this before checking for missing properties
