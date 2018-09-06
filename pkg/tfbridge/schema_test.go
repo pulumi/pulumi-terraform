@@ -530,7 +530,7 @@ func TestDefaults(t *testing.T) {
 	//     - mmm: old default "OLM", PS default "PSM", no input => "OLM"
 	//     - www: old default "OLW", deprecated, required, no input -> "OLW"
 	//     - xxx: old default "OLX", deprecated, no input => nothing
-	//     - yyy: TF default "TLY", deprecared, no input => nothing
+	//     - yyy: TF default "TLY", deprecated, no input => nothing
 	asset, err := resource.NewTextAsset("hello")
 	assert.Nil(t, err)
 	assets := make(AssetTable)
