@@ -188,18 +188,17 @@ func convertStringToPropertyValue(s string, typ schema.ValueType) (resource.Prop
 	}
 
 	// Otherwise, we will attempt to deserialize the input string as JSON and convert the result into a Pulumi
-	// property. In order to ensure that deserializeation succeeds when the input is the empty string, we replace it
-	// beforehand with an appropriate JSON string for the type.
+	// property. If the input string is empty, we will return an appropriate zero value.
 	if s == "" {
 		switch typ {
 		case schema.TypeBool:
-			s = "false"
+			return resource.NewPropertyValue(false), nil
 		case schema.TypeInt, schema.TypeFloat:
-			s = "0"
+			return resource.NewPropertyValue(0), nil
 		case schema.TypeList, schema.TypeSet:
-			s = "[]"
+			return resource.NewPropertyValue([]interface{}{}), nil
 		default:
-			s = "{}"
+			return resource.NewPropertyValue(map[string]interface{}{}), nil
 		}
 	}
 
