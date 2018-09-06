@@ -115,14 +115,16 @@ func MakeTerraformInputs(res *PulumiResource, olds, news resource.PropertyMap,
 								}
 							}
 						case schema.TypeInt:
-							v = 0
+							v = int(0)
 							if str != "" {
-								if v, err = strconv.ParseInt(str, 0, 0); err != nil {
+								iv, err := strconv.ParseInt(str, 0, 0)
+								if err != nil {
 									return nil, err
 								}
+								v = int(iv)
 							}
 						case schema.TypeFloat:
-							v = 0.0
+							v = float64(0.0)
 							if str != "" {
 								if v, err = strconv.ParseFloat(str, 64); err != nil {
 									return nil, err
