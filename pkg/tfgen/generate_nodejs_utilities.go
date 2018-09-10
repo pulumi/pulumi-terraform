@@ -60,8 +60,11 @@ export function unwrap(val: pulumi.Input<any>): pulumi.Input<any> {
     if (pulumi.Output.isInstance(val)) {
         return val.apply(unwrap);
     }
-    if (val instanceof Promise || val instanceof Array) {
+    if (val instanceof Promise) {
         return pulumi.output(val).apply(unwrap);
+    }
+    if (val instanceof Array) {
+        return pulumi.all(val.map(unwrap));
     }
 
     const array = Object.keys(val).map(k =>
