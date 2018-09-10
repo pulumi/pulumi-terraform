@@ -52,7 +52,7 @@ export function requireWithDefault<T>(req: () => T, def: T | undefined): T {
 
 export function unwrap(val: pulumi.Input<any>): pulumi.Input<any> {
     // Bottom out at primitives.
-    if (val === undefined || typeof val !== 'object') {
+    if (val === undefined || val === null || typeof val !== 'object') {
         return val;
     }
 
