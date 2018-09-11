@@ -15,10 +15,13 @@
 package tfbridge
 
 import (
+	"os"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/config"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/terraform"
 	"github.com/pulumi/pulumi/pkg/resource"
 	"github.com/stretchr/testify/assert"
 )
@@ -29,7 +32,6 @@ func TestTerraformInputs(t *testing.T) {
 		nil, /*res*/
 		nil, /*olds*/
 		resource.NewPropertyMapFromMap(map[string]interface{}{
-			"nilPropertyValue":    nil,
 			"boolPropertyValue":   false,
 			"numberPropertyValue": 42,
 			"floatPropertyValue":  99.6767932,
@@ -59,6 +61,9 @@ func TestTerraformInputs(t *testing.T) {
 			"optionalConfigOther": map[string]interface{}{
 				"someValue":      true,
 				"someOtherValue": "a value",
+			},
+			"mapWithResourceElem": map[string]interface{}{
+				"someValue": "a value",
 			},
 		}),
 		map[string]*schema.Schema{
@@ -97,6 +102,14 @@ func TestTerraformInputs(t *testing.T) {
 					},
 				},
 			},
+			"map_with_resource_elem": {
+				Type: schema.TypeMap,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"some_value": {Type: schema.TypeString},
+					},
+				},
+			},
 		},
 		map[string]*SchemaInfo{
 			// Reverse map string_property_value to the stringo property.
@@ -114,7 +127,6 @@ func TestTerraformInputs(t *testing.T) {
 	)
 	assert.Nil(t, err)
 	assert.Equal(t, map[string]interface{}{
-		"nil_property_value":    nil,
 		"bool_property_value":   false,
 		"number_property_value": 42,
 		"float_property_value":  99.6767932,
@@ -151,7 +163,26 @@ func TestTerraformInputs(t *testing.T) {
 				"some_other_value": "a value",
 			},
 		},
+		"map_with_resource_elem": []interface{}{
+			map[string]interface{}{
+				"some_value": "a value",
+			},
+		},
 	}, result)
+
+	_, err = MakeTerraformInputs(
+		nil, /*res*/
+		nil, /*olds*/
+		resource.NewPropertyMapFromMap(map[string]interface{}{
+			"nilPropertyValue": nil,
+		}),
+		nil,   /* tfs */
+		nil,   /* ps */
+		nil,   /* assets */
+		false, /*defaults*/
+		false, /*useRawNames*/
+	)
+	assert.Error(t, err)
 }
 
 type MyString string
@@ -434,6 +465,69 @@ func TestTerraformAttributes(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
+// Test that meta-properties are correctly produced.
+func TestMetaProperties(t *testing.T) {
+	const resName = "example_resource"
+	res := testTFProvider.ResourcesMap["example_resource"]
+
+	info := &terraform.InstanceInfo{Type: resName}
+	state := &terraform.InstanceState{ID: "0", Attributes: map[string]string{}, Meta: map[string]interface{}{}}
+	read, err := testTFProvider.Refresh(info, state)
+	assert.NoError(t, err)
+	assert.NotNil(t, read)
+
+	props := MakeTerraformResult(read, res.Schema, nil)
+	assert.NotNil(t, props)
+
+	attrs, meta, err := MakeTerraformAttributes(res, props, res.Schema, nil, false)
+	assert.NoError(t, err)
+	assert.NotNil(t, attrs)
+	assert.NotNil(t, meta)
+
+	assert.Equal(t, strconv.Itoa(res.SchemaVersion), meta["schema_version"])
+
+	state.Attributes, state.Meta = attrs, meta
+	read2, err := testTFProvider.Refresh(info, state)
+	assert.NoError(t, err)
+	assert.NotNil(t, read2)
+	assert.Equal(t, read, read2)
+
+	// Delete the resource's meta-property and ensure that we re-populate its schema version.
+	delete(props, metaKey)
+
+	attrs, meta, err = MakeTerraformAttributes(res, props, res.Schema, nil, false)
+	assert.NoError(t, err)
+	assert.NotNil(t, attrs)
+	assert.NotNil(t, meta)
+
+	assert.Equal(t, strconv.Itoa(res.SchemaVersion), meta["schema_version"])
+
+	// Remove the resource's meta-attributes and ensure that we do not include them in the result.
+	read2.Meta = map[string]interface{}{}
+	props = MakeTerraformResult(read2, res.Schema, nil)
+	assert.NotNil(t, props)
+	assert.NotContains(t, props, metaKey)
+
+	// Ensure that timeouts are populated and preserved.
+	state.ID = ""
+	cfg, err := config.NewRawConfig(map[string]interface{}{})
+	assert.NoError(t, err)
+	diff, err := testTFProvider.Diff(info, state, terraform.NewResourceConfig(cfg))
+	assert.NoError(t, err)
+	create, err := testTFProvider.Apply(info, state, diff)
+	assert.NoError(t, err)
+
+	props = MakeTerraformResult(create, res.Schema, nil)
+	assert.NotNil(t, props)
+
+	attrs, meta, err = MakeTerraformAttributes(res, props, res.Schema, nil, false)
+	assert.NoError(t, err)
+	assert.NotNil(t, attrs)
+	assert.NotNil(t, meta)
+
+	assert.Contains(t, meta, schema.TimeoutKey)
+}
+
 // Test that an unset list still generates a length attribute.
 func TestEmptyListAttribute(t *testing.T) {
 	result, err := MakeTerraformAttributesFromInputs(
@@ -466,6 +560,13 @@ func TestDefaults(t *testing.T) {
 	//     - jjj string: old input "OLJ", no defaults, no input => no merged input
 	//     - lll: old default "OLL", TF default "TFL", no input => "OLL"
 	//     - mmm: old default "OLM", PS default "PSM", no input => "OLM"
+	//     - uuu: PS default "PSU", envvars w/o valiues => "PSU"
+	//     - vvv: PS default 42, envvars with values => 1337
+	//     - www: old default "OLW", deprecated, required, no input -> "OLW"
+	//     - xxx: old default "OLX", deprecated, no input => nothing
+	//     - yyy: TF default "TLY", deprecated, no input => nothing
+	err := os.Setenv("PTFV2", "1337")
+	assert.Nil(t, err)
 	asset, err := resource.NewTextAsset("hello")
 	assert.Nil(t, err)
 	assets := make(AssetTable)
@@ -480,6 +581,11 @@ func TestDefaults(t *testing.T) {
 		"jjj": {Type: schema.TypeString},
 		"lll": {Type: schema.TypeString, Default: "TFL"},
 		"mmm": {Type: schema.TypeString},
+		"uuu": {Type: schema.TypeString},
+		"vvv": {Type: schema.TypeInt},
+		"www": {Type: schema.TypeString, Deprecated: "deprecated", Required: true},
+		"xxx": {Type: schema.TypeString, Deprecated: "deprecated", Optional: true},
+		"yyy": {Type: schema.TypeString, Default: "TLY", Deprecated: "deprecated", Optional: true},
 		"zzz": {Type: schema.TypeString},
 	}
 	ps := map[string]*SchemaInfo{
@@ -491,6 +597,9 @@ func TestDefaults(t *testing.T) {
 		"hhh": {Default: &DefaultInfo{Value: "PSH"}},
 		"iii": {Default: &DefaultInfo{Value: "PSI"}},
 		"mmm": {Default: &DefaultInfo{Value: "PSM"}},
+		"uuu": {Default: &DefaultInfo{Value: "PSU", EnvVars: []string{"PTFU", "PTFU2"}}},
+		"vvv": {Default: &DefaultInfo{Value: 42, EnvVars: []string{"PTFV", "PTFV2"}}},
+		"www": {Default: &DefaultInfo{Value: "PSW"}},
 		"zzz": {Asset: &AssetTranslation{Kind: FileAsset}},
 	}
 	olds := resource.PropertyMap{
@@ -498,6 +607,8 @@ func TestDefaults(t *testing.T) {
 		"jjj": resource.NewStringProperty("OLJ"),
 		"lll": resource.NewStringProperty("OLL"),
 		"mmm": resource.NewStringProperty("OLM"),
+		"www": resource.NewStringProperty("OLW"),
+		"xxx": resource.NewStringProperty("OLX"),
 	}
 	props := resource.PropertyMap{
 		"bbb": resource.NewStringProperty("BBB"),
@@ -526,12 +637,14 @@ func TestDefaults(t *testing.T) {
 		"iii": "OLI",
 		"lll": "OLL",
 		"mmm": "OLM",
+		"uuu": "PSU",
+		"vvv": 1337,
+		"www": "OLW",
 		"zzz": asset,
 	}), outputs)
 }
 
 func TestComputedAsset(t *testing.T) {
-
 	assets := make(AssetTable)
 	tfs := map[string]*schema.Schema{
 		"zzz": {Type: schema.TypeString},
@@ -552,7 +665,6 @@ func TestComputedAsset(t *testing.T) {
 }
 
 func TestInvalidAsset(t *testing.T) {
-
 	assets := make(AssetTable)
 	tfs := map[string]*schema.Schema{
 		"zzz": {Type: schema.TypeString},
@@ -573,4 +685,25 @@ func TestInvalidAsset(t *testing.T) {
 
 func boolPointer(b bool) *bool {
 	return &b
+}
+
+func TestCustomTransforms(t *testing.T) {
+	doc := map[string]interface{}{
+		"a": 99,
+		"b": false,
+	}
+	tfs := &schema.Schema{Type: schema.TypeString}
+	psi := &SchemaInfo{Transform: TransformJSONDocument}
+	v1, err := MakeTerraformInput(
+		nil, "v", resource.PropertyValue{}, resource.NewObjectProperty(resource.NewPropertyMapFromMap(doc)),
+		tfs, psi, nil, false, false)
+	assert.NoError(t, err)
+	if !assert.Equal(t, `{"a":99,"b":false}`, v1) {
+		assert.Equal(t, `{"b":false,"a":99}`, v1)
+	}
+	v2, err := MakeTerraformInput(
+		nil, "v", resource.PropertyValue{}, resource.NewStringProperty(`{"a":99,"b":false}`),
+		tfs, psi, nil, false, false)
+	assert.NoError(t, err)
+	assert.Equal(t, `{"a":99,"b":false}`, v2)
 }

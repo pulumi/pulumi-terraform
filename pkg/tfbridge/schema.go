@@ -15,6 +15,7 @@
 package tfbridge
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -83,6 +84,10 @@ func MakeTerraformInputs(res *PulumiResource, olds, news resource.PropertyMap,
 			if _, conflicts := conflictsWith[name]; conflicts {
 				continue
 			}
+			sch := tfs[name]
+			if sch != nil && sch.Deprecated != "" && !sch.Required {
+				continue
+			}
 
 			if _, has := result[name]; !has && info.HasDefault() {
 				// If we already have a default value from a previous version of this resource, use that instead.
@@ -95,6 +100,46 @@ func MakeTerraformInputs(res *PulumiResource, olds, news resource.PropertyMap,
 					}
 					result[name] = v
 					glog.V(9).Infof("Created Terraform input: %v = %v (old default)", key, old)
+				} else if envVars := info.Default.EnvVars; len(envVars) != 0 {
+					v, err := schema.MultiEnvDefaultFunc(envVars, info.Default.Value)()
+					if err != nil {
+						return nil, err
+					}
+					if str, ok := v.(string); ok && sch != nil {
+						switch sch.Type {
+						case schema.TypeBool:
+							v = false
+							if str != "" {
+								if v, err = strconv.ParseBool(str); err != nil {
+									return nil, err
+								}
+							}
+						case schema.TypeInt:
+							v = int(0)
+							if str != "" {
+								iv, iverr := strconv.ParseInt(str, 0, 0)
+								if iverr != nil {
+									return nil, iverr
+								}
+								v = int(iv)
+							}
+						case schema.TypeFloat:
+							v = float64(0.0)
+							if str != "" {
+								if v, err = strconv.ParseFloat(str, 64); err != nil {
+									return nil, err
+								}
+							}
+						case schema.TypeString:
+							// nothing to do
+						default:
+							return nil, errors.Errorf("unknown type for default value: %s", sch.Type)
+						}
+					}
+					if v != nil {
+						result[name] = v
+					}
+					glog.V(9).Infof("Created Terraform input: %v = %v (default from env vars)", name, result[name])
 				} else if info.Default.Value != nil {
 					result[name] = info.Default.Value
 					glog.V(9).Infof("Created Terraform input: %v = %v (default)", name, result[name])
@@ -103,7 +148,6 @@ func MakeTerraformInputs(res *PulumiResource, olds, news resource.PropertyMap,
 					if err != nil {
 						return nil, err
 					}
-
 					result[name] = v
 					glog.V(9).Infof("Created Terraform input: %v = %v (default from fnc)", name, result[name])
 				}
@@ -112,6 +156,9 @@ func MakeTerraformInputs(res *PulumiResource, olds, news resource.PropertyMap,
 
 		// Next, populate defaults from the Terraform schema.
 		for name, sch := range tfs {
+			if sch.Deprecated != "" && !sch.Required {
+				continue
+			}
 			if _, conflicts := conflictsWith[name]; conflicts {
 				continue
 			}
@@ -145,7 +192,7 @@ func MakeTerraformInputs(res *PulumiResource, olds, news resource.PropertyMap,
 
 	if glog.V(5) {
 		for k, v := range result {
-			glog.V(5).Infof("Terraform input %v = %v", k, v)
+			glog.V(5).Infof("Terraform input %v = %#v", k, v)
 		}
 	}
 
@@ -166,9 +213,21 @@ func MakeTerraformInput(res *PulumiResource, name string,
 		v = resource.NewArrayProperty([]resource.PropertyValue{v})
 	}
 
+	// If there is a custom transform for this value, run it before processing the value.
+	if ps != nil && ps.Transform != nil {
+		nv, err := ps.Transform(v)
+		if err != nil {
+			return nil, err
+		}
+		v = nv
+	}
+
 	switch {
 	case v.IsNull():
-		return nil, nil
+		if name != "" {
+			return nil, errors.Errorf("unexpected null property %v", name)
+		}
+		return nil, errors.New("unexpected null property")
 	case v.IsBool():
 		return v.BoolValue(), nil
 	case v.IsNumber():
@@ -254,8 +313,21 @@ func MakeTerraformInput(res *PulumiResource, name string,
 		if old.IsObject() {
 			oldObject = old.ObjectValue()
 		}
-		return MakeTerraformInputs(res, oldObject, v.ObjectValue(),
+
+		input, err := MakeTerraformInputs(res, oldObject, v.ObjectValue(),
 			tfflds, psflds, assets, defaults, rawNames || useRawNames(tfs))
+		if err != nil {
+			return nil, err
+		}
+
+		// If we have schema information that indicates that this value is being presented to a map-typed field whose
+		// Elem is a *schema.Resource, wrap the value in an array in order to work around a bug in Terraform.
+		if tfs != nil && tfs.Type == schema.TypeMap {
+			if _, hasResourceElem := tfs.Elem.(*schema.Resource); hasResourceElem {
+				return []interface{}{input}, nil
+			}
+		}
+		return input, nil
 	case v.IsComputed() || v.IsOutput():
 		// If any variables are unknown, we need to mark them in the inputs so the config map treats it right.  This
 		// requires the use of the special UnknownVariableValue sentinel in Terraform, which is how it internally stores
@@ -288,6 +360,9 @@ func MakeTerraformInput(res *PulumiResource, name string,
 	}
 }
 
+// metaKey is the key in a TF bridge result that is used to store a resource's meta-attributes.
+const metaKey = "__meta"
+
 // MakeTerraformResult expands a Terraform state into an expanded Pulumi resource property map.  This respects
 // the property maps so that results end up with their correct Pulumi names when shipping back to the engine.
 func MakeTerraformResult(state *terraform.InstanceState,
@@ -300,7 +375,15 @@ func MakeTerraformResult(state *terraform.InstanceState,
 			outs[key] = flatmap.Expand(attrs, key)
 		}
 	}
-	return MakeTerraformOutputs(outs, tfs, ps, nil, false)
+	outMap := MakeTerraformOutputs(outs, tfs, ps, nil, false)
+
+	// If there is any Terraform metadata associated with this state, record it.
+	if len(state.Meta) != 0 {
+		metaJSON, err := json.Marshal(state.Meta)
+		contract.Assert(err == nil)
+		outMap[metaKey] = resource.NewStringProperty(string(metaJSON))
+	}
+	return outMap
 }
 
 // MakeTerraformOutputs takes an expanded Terraform property map and returns a Pulumi equivalent.  This respects
@@ -466,25 +549,44 @@ func MakeTerraformConfigFromInputs(inputs map[string]interface{}) (*terraform.Re
 // MakeTerraformAttributes converts a Pulumi property bag into its Terraform equivalent.  This requires
 // flattening everything and serializing individual properties as strings.  This is a little awkward, but it's how
 // Terraform represents resource properties (schemas are simply sugar on top).
-func MakeTerraformAttributes(res *PulumiResource, m resource.PropertyMap,
-	tfs map[string]*schema.Schema, ps map[string]*SchemaInfo, defaults bool) (map[string]string, error) {
+func MakeTerraformAttributes(res *schema.Resource, m resource.PropertyMap, tfs map[string]*schema.Schema,
+	ps map[string]*SchemaInfo, defaults bool) (map[string]string, map[string]interface{}, error) {
+
+	// Strip out any metadata from the inputs.
+	var meta map[string]interface{}
+	if metaProperty, hasMeta := m[metaKey]; hasMeta && metaProperty.IsString() {
+		if err := json.Unmarshal([]byte(metaProperty.StringValue()), &meta); err != nil {
+			return nil, nil, err
+		}
+		delete(m, metaKey)
+	} else if res.SchemaVersion > 0 {
+		// If there was no metadata in the input and this resource has a non-zero schema version, return a meta bag
+		// with the current schema version. This helps avoid migration issues.
+		meta = map[string]interface{}{"schema_version": strconv.Itoa(res.SchemaVersion)}
+	}
+
 	// Turn the resource properties into a map.  For the most part, this is a straight Mappable, but we use MapReplace
 	// because we use float64s and Terraform uses ints, to represent numbers.
-	inputs, err := MakeTerraformInputs(res, nil, m, tfs, ps, nil, defaults, false)
+	inputs, err := MakeTerraformInputs(nil, nil, m, tfs, ps, nil, defaults, false)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return MakeTerraformAttributesFromInputs(inputs, tfs)
+
+	attrs, err := MakeTerraformAttributesFromInputs(inputs, tfs)
+	if err != nil {
+		return nil, nil, err
+	}
+	return attrs, meta, nil
 }
 
 // MakeTerraformAttributesFromRPC unmarshals an RPC property map and calls through to MakeTerraformAttributes.
-func MakeTerraformAttributesFromRPC(res *PulumiResource, m *pbstruct.Struct,
+func MakeTerraformAttributesFromRPC(res *schema.Resource, m *pbstruct.Struct,
 	tfs map[string]*schema.Schema, ps map[string]*SchemaInfo,
-	allowUnknowns, defaults bool, label string) (map[string]string, error) {
+	allowUnknowns, defaults bool, label string) (map[string]string, map[string]interface{}, error) {
 	props, err := plugin.UnmarshalProperties(m,
 		plugin.MarshalOptions{Label: label, KeepUnknowns: allowUnknowns, SkipNulls: true})
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	return MakeTerraformAttributes(res, props, tfs, ps, defaults)
 }
@@ -581,6 +683,7 @@ func MakeTerraformAttributesFromInputs(inputs map[string]interface{},
 
 		flattenValue(result, k, f.Value)
 	}
+
 	return result, nil
 }
 
@@ -599,9 +702,14 @@ func IsMaxItemsOne(tfs *schema.Schema, info *SchemaInfo) bool {
 	return tfs.MaxItems == 1
 }
 
-// useRawNames returns true if raw, unmangled names should be preserved.  This is only true for Terraform maps.
+// useRawNames returns true if raw, unmangled names should be preserved.  This is only true for Terraform maps with
+// an Elem that is not a *schema.Resource.
 func useRawNames(tfs *schema.Schema) bool {
-	return tfs != nil && tfs.Type == schema.TypeMap
+	if tfs == nil || tfs.Type != schema.TypeMap {
+		return false
+	}
+	_, hasResourceElem := tfs.Elem.(*schema.Resource)
+	return !hasResourceElem
 }
 
 // getInfoFromTerraformName does a map lookup to find the Pulumi name and schema info, if any.

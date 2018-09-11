@@ -132,6 +132,9 @@ func mergeDocs(provider string, kind DocKind, targetDocs map[string]string, sour
 var argumentBulletRegexp = regexp.MustCompile(
 	"\\*\\s+`([a-zA-z0-9_]*)`\\s+(\\([a-zA-Z]*\\)\\s*)?[–-]?\\s+(\\([^\\)]*\\)\\s*)?(.*)",
 )
+var argumentBlockRegexp = regexp.MustCompile(
+	"`([a-z_]+)`\\s+block[\\s\\w]*:",
+)
 var attributeBulletRegexp = regexp.MustCompile(
 	"\\*\\s+`([a-zA-z0-9_]*)`\\s+[–-]?\\s+(.*)",
 )
@@ -156,6 +159,7 @@ func parseTFMarkdown(kind DocKind, markdown string, provider string, rawname str
 			lastMatch := ""
 			for _, line := range lines {
 				matches := argumentBulletRegexp.FindStringSubmatch(line)
+				blockMatches := argumentBlockRegexp.FindStringSubmatch(line)
 				if len(matches) >= 4 {
 					// found a property bullet, extract the name and description
 					ret.Arguments[matches[1]] = matches[4]
@@ -163,6 +167,10 @@ func parseTFMarkdown(kind DocKind, markdown string, provider string, rawname str
 				} else if strings.TrimSpace(line) != "" && lastMatch != "" {
 					// this is a continuation of the previous bullet
 					ret.Arguments[lastMatch] += "\n" + strings.TrimSpace(line)
+				} else if len(blockMatches) >= 2 {
+					// found a block match, once we've found one of these the main attribute section is finished so exit the loop.
+					// May require changing to get docs for named nested types as part of #163.
+					break
 				} else {
 					// This is an empty line or there were no bullets yet - clear the lastMatch
 					lastMatch = ""
@@ -200,5 +208,50 @@ func parseTFMarkdown(kind DocKind, markdown string, provider string, rawname str
 			// Ignore everything else - most commonly examples and imports with unpredictable section headers.
 		}
 	}
-	return ret
+	return cleanupDoc(ret)
+}
+
+func cleanupDoc(doc parsedDoc) parsedDoc {
+	newargs := make(map[string]string, len(doc.Arguments))
+	for k, v := range doc.Arguments {
+		newargs[k] = cleanupText(v)
+	}
+	newattrs := make(map[string]string, len(doc.Attributes))
+	for k, v := range doc.Attributes {
+		newattrs[k] = cleanupText(v)
+	}
+	return parsedDoc{
+		Description: cleanupText(doc.Description),
+		Arguments:   newargs,
+		Attributes:  newattrs,
+		URL:         doc.URL,
+	}
+}
+
+var markdownLink = regexp.MustCompile(
+	`\[([^\]]*)\]\(([^\)]*)\)`,
+)
+
+// cleanupText processes markdown strings from TF docs and cleans them for inclusion in Pulumi docs
+func cleanupText(text string) string {
+	// Find URLs and re-write local links
+	text = markdownLink.ReplaceAllStringFunc(text, func(link string) string {
+		parts := markdownLink.FindStringSubmatch(link)
+		url := parts[2]
+		if strings.HasPrefix(url, "http") {
+			// Absolute URL, return as-is
+			return link
+		} else if strings.HasPrefix(url, "/") {
+			// Relative URL to the root of the Terraform docs site, rewrite to absolute
+			return fmt.Sprintf("[%s](https://www.terraform.io%s)", parts[1], url)
+		} else if strings.HasPrefix(url, "#") {
+			// Anchor in current page,  can't be resolved currently so remove the link.
+			// Note: This throws away potentially valuable information in the name of not having broken links.
+			return parts[1]
+		}
+		// Relative URL to the current page, can't be resolved currently so remove the link.
+		// Note: This throws away potentially valuable information in the name of not having broken links.
+		return parts[1]
+	})
+	return text
 }
