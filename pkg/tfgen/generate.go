@@ -60,9 +60,10 @@ const (
 	golang language = "go"
 	nodeJS language = "nodejs"
 	python language = "python"
+	dotnet language = "dotnet"
 )
 
-var allLanguages = []language{golang, nodeJS, python}
+var allLanguages = []language{golang, nodeJS, python, dotnet}
 
 // langGenerator is the interfact for language-specific logic and formatting.
 type langGenerator interface {
@@ -333,6 +334,8 @@ func newGenerator(pkg, version string, language language, info tfbridge.Provider
 		lg = newNodeJSGenerator(pkg, version, info, overlaysDir, outDir)
 	case python:
 		lg = newPythonGenerator(pkg, version, info, overlaysDir, outDir)
+	case dotnet:
+		lg = newDotnetGenerator(pkg, version, info, overlaysDir, outDir)
 	default:
 		return nil, errors.Errorf("unrecognized language runtime: %s", language)
 	}
@@ -787,6 +790,10 @@ func (g *generator) gatherOverlays() (moduleMap, error) {
 	case golang:
 		if goinfo := g.info.Golang; goinfo != nil {
 			overlay = goinfo.Overlay
+		}
+	case dotnet:
+		if dotnetinfo := g.info.Dotnet; dotnetinfo != nil {
+			overlay = dotnetinfo.Overlay
 		}
 	default:
 		contract.Failf("unrecognized language: %s", g.language)

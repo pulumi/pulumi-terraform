@@ -37,6 +37,7 @@ type ProviderInfo struct {
 	JavaScript  *JavaScriptInfo            // optional overlay information for augmented JavaScript code-generation.
 	Python      *PythonInfo                // optional overlay information for augmented Python code-generation.
 	Golang      *GolangInfo                // optional overlay information for augmented Golang code-generation.
+	Dotnet      *DotnetInfo                // optional overlay information for augmented Dotnet code-generation.
 
 	PreConfigureCallback PreConfigureCallback // a provider-specific callback to invoke prior to TF Configure
 }
@@ -136,6 +137,11 @@ type PythonInfo struct {
 
 // GolangInfo contains optional overlay information for Golang code-generation.
 type GolangInfo struct {
+	Overlay *OverlayInfo // optional overlay information for augmented code-generation.
+}
+
+// DotnetInfo contains optional overlay information for dotnet code-generation.
+type DotnetInfo struct {
 	Overlay *OverlayInfo // optional overlay information for augmented code-generation.
 }
 
