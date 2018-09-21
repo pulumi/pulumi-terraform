@@ -735,7 +735,7 @@ func TestCustomTransforms(t *testing.T) {
 	assert.Equal(t, config.UnknownVariableValue, v3)
 
 	v4, err := MakeTerraformInput(
-		nil, "v", resource.PropertyValue{}, resource.PropertyValue{V: resource.Computed{Element: resource.PropertyValue{V: ""}}},
+		nil, "v", resource.PropertyValue{}, resource.MakeComputed(resource.NewStringProperty("")),
 		tfs, psi, nil, false, false)
 	assert.NoError(t, err)
 	assert.Equal(t, config.UnknownVariableValue, v4)
