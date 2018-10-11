@@ -618,10 +618,10 @@ func (g *pythonGenerator) emitPackageMetadata(pack *pkg) error {
 		pack.name)
 	w.Writefmtln("")
 
-	// Generate a readme method which will load README.rst, we use this to fill out the
+	// Generate a readme method which will load VERSION, we use this to fill out the
 	// long_description field in the setup call.
 	w.Writefmtln("def readme():")
-	w.Writefmtln("    with open('README.rst') as f:")
+	w.Writefmtln("    with open('VERSION') as f:")
 	w.Writefmtln("        return f.read()")
 	w.Writefmtln("")
 
