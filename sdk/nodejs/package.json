@@ -1,0 +1,39 @@
+{
+  "name": "@pulumi/terraform",
+  "version": "0.1.0",
+  "description": "Helpers for migrating Terraform code to Pulumi",
+  "license": "Apache-2.0",
+  "repository": "https://github.com/pulumi/pulumi-terraform/sdk/nodejs",
+  "files": [
+    "lib/**/*"
+  ],
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.2",
+    "@types/chai": "^4.1.7",
+    "@types/mocha": "^5.2.6",
+    "@types/node": "^10.14.1",
+    "@types/sprintf-js": "^1.1.2",
+    "@types/uuid": "^3.4.4",
+    "@types/validator": "^9.4.4",
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0",
+    "tslint": "^5.14.0",
+    "typescript": "^3.3.3333",
+    "validator": "^10.11.0"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "sprintf-js": "^1.1.2",
+    "title-case": "^2.1.1",
+    "uuid": "^3.3.2"
+  },
+  "scripts": {
+    "lint": "tslint -p tsconfig.json",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test && npm run lint",
+    "build": "tsc",
+    "test": "mocha --require ts-node/register test/*.ts"
+  }
+}

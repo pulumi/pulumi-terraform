@@ -14,9 +14,14 @@ lint::
 
 test_fast::
 	$(GO_TEST_FAST) ${GOPKGS}
+	cd 
 
 test_all::
 	$(GO_TEST) ${GOPKGS}
+
+.PHONY: publish_packages
+	$(call STEP_MESSAGE)
+	./scripts/publish_packages.sh
 
 # The travis_* targets are entrypoints for CI.
 .PHONY: travis_cron travis_push travis_pull_request travis_api
