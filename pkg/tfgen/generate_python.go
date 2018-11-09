@@ -697,8 +697,8 @@ func (g *pythonGenerator) emitPropertyConversionTables(tableModule *module) erro
 	for key := range g.snakeCaseToCamelCase {
 		allKeys = append(allKeys, key)
 	}
-
 	sort.Strings(allKeys)
+
 	w.Writefmtln("_SNAKE_TO_CAMEL_CASE_TABLE = {")
 	for _, key := range allKeys {
 		value := g.snakeCaseToCamelCase[key]
@@ -734,7 +734,7 @@ func (g *pythonGenerator) recordPropertyRec(sch *schema.Schema, info *tfbridge.S
 	switch sch.Type {
 	case schema.TypeList, schema.TypeSet:
 		// If this property that we are recursing on is a list or a set, we do not need to record any properties at this
-		// step but we do need to recurse into the element of the list or set.
+		// step but we do need to recurse into the element schema of the list or set.
 		if elem, ok := sch.Elem.(*schema.Schema); ok {
 			var schInfo *tfbridge.SchemaInfo
 			if info != nil {
@@ -745,7 +745,7 @@ func (g *pythonGenerator) recordPropertyRec(sch *schema.Schema, info *tfbridge.S
 			return
 		}
 
-		// If this list or set doesn't have an element, it does not need to be recorded.
+		// If this list or set doesn't have an element schema, it does not need to be recorded.
 	case schema.TypeMap:
 		// If this property that we are recursing on is a map, and that map has associated with it a Resource schema,
 		// this is a map with well-known keys that we will need to record in our table.
