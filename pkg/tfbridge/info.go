@@ -45,11 +45,23 @@ type ProviderInfo struct {
 // also give custom metadata for fields, using the SchemaInfo structure below.  Finally, a set of composite keys can be
 // given; this is used when Terraform needs more than just the ID to uniquely identify and query for a resource.
 type ResourceInfo struct {
-	Tok                 tokens.Type            // a type token to override the default; "" uses the default.
-	Fields              map[string]*SchemaInfo // a map of custom field names; if a type is missing, uses the default.
-	IDFields            []string               // an optional list of ID alias fields.
-	Docs                *DocInfo               // overrides for finding and mapping TF docs.
-	DeleteBeforeReplace bool                   // if true, Pulumi will delete before creating new replacement resources.
+	// a type token to override the default; "" uses the default.
+	Tok tokens.Type
+
+	// a map of custom field names; if a type is missing, uses the default.
+	Fields map[string]*SchemaInfo
+
+	// an optional list of ID alias fields.
+	IDFields []string
+
+	// Overrides for finding and mapping TF docs.
+	Docs *DocInfo
+
+	// If true, Pulumi will delete before creating new replacement resources.
+	DeleteBeforeReplace bool
+
+	// If true, any importer specified in the Terraform schema will not be called during read.
+	SkipTFImporterOnRead bool
 }
 
 // DataSourceInfo can be used to override a data source's standard name mangling and argument/return information.

@@ -68,6 +68,13 @@ func (res *Resource) collectImporterAttributes(resourceID resource.ID, inputs ma
 		return nil
 	}
 
+	// Even if there is a Terraform importer defined, we may choose to override it because it
+	// doesn't behave in a manner compatible with our Read function.
+	if res.Schema.SkipTFImporterOnRead {
+		glog.V(9).Infof("%s has TF Importer but marked as SkipTFImporterOnRead", res.TFName)
+		return nil
+	}
+
 	glog.V(9).Infof("%s has TF Importer", res.TFName)
 
 	id := resourceID.String()

@@ -806,3 +806,63 @@ func TestImporterOnRead(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "MyID-imported", resp.Properties.Fields["requiredForImport"].GetStringValue())
 }
+
+func TestSkippedImporterOnRead(t *testing.T) {
+	tfProvider := &schema.Provider{
+		ResourcesMap: map[string]*schema.Resource{
+			"importable_resource": {
+				Schema: map[string]*schema.Schema{
+					"required_for_import": {
+						Type: schema.TypeString,
+					},
+				},
+				Importer: &schema.ResourceImporter{
+					State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+						mustSet(d, "required_for_import", "Should_Be_No_Value_Set_Here")
+
+						return []*schema.ResourceData{d}, nil
+					},
+				},
+				Read: func(d *schema.ResourceData, meta interface{}) error {
+					actual, exists := d.GetOkExists("required_for_import")
+
+					if exists {
+						return errors.Errorf("required_for_import has a value - importer ran unexpectedly\n"+
+							"expected: <no value>\n  actual: %v\n", actual)
+					}
+
+					return nil
+				},
+				Create: func(d *schema.ResourceData, meta interface{}) error {
+					return nil
+				},
+				Delete: func(d *schema.ResourceData, meta interface{}) error {
+					return nil
+				},
+			},
+		},
+	}
+
+	provider := &Provider{
+		tf: tfProvider,
+		resources: map[tokens.Type]Resource{
+			"importableResource": {
+				TF:     tfProvider.ResourcesMap["importable_resource"],
+				TFName: "importable_resource",
+				Schema: &ResourceInfo{
+					Tok:                  tokens.NewTypeToken("module", "importableResource"),
+					SkipTFImporterOnRead: true,
+				},
+			},
+		},
+	}
+
+	urn := resource.NewURN("s", "pr", "pa", "importableResource", "n")
+	resp, err := provider.Read(context.TODO(), &pulumirpc.ReadRequest{
+		Id:  "MyID",
+		Urn: string(urn),
+	})
+
+	assert.NoError(t, err)
+	assert.Nil(t, resp.Properties.Fields["requiredForImport"])
+}
