@@ -620,9 +620,11 @@ func (p *Provider) Read(ctx context.Context, req *pulumirpc.ReadRequest) (*pulum
 		return nil, errors.Wrapf(err, "preparing %s's property state", urn)
 	}
 
-	// Ensure that any attributes obtained via the resource importer are passed to read
-	if err = res.collectImporterAttributes(id, inputs); err != nil {
-		return nil, err
+	if len(inputs) == 0 {
+		// Ensure that any attributes obtained via the resource importer are passed to read
+		if err = res.collectImporterAttributes(id, inputs); err != nil {
+			return nil, err
+		}
 	}
 
 	info := &terraform.InstanceInfo{Type: res.TFName}
