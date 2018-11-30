@@ -439,6 +439,7 @@ func (g *nodeJSGenerator) emitPlainOldType(w *tools.GenWriter, pot *plainOldType
 	w.Writefmtln("}")
 }
 
+//nolint:lll
 func (g *nodeJSGenerator) emitResourceType(mod *module, res *resourceType) (string, error) {
 	// Create a resource module file into which all of this resource's types will go.
 	name := res.name
