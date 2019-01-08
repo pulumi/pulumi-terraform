@@ -12,58 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package tfgen
+package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 	"github.com/pulumi/pulumi/pkg/util/cmdutil"
 	"github.com/pulumi/pulumi/pkg/util/contract"
 	"github.com/spf13/cobra"
 
 	"github.com/pulumi/pulumi-terraform/pkg/tfbridge"
+	"github.com/pulumi/pulumi-terraform/pkg/tfgen"
 )
 
-type GenerateOptions struct {
-	OutputDir   string
-	OverlaysDir string
-}
-
-func Generate(lang, pkg, version string, prov tfbridge.ProviderInfo, options *GenerateOptions) error {
-	fmt.Printf("lang: %v, pkg: %v, version: %v\n", lang, pkg, version)
-
-	overlaysDir, outDir := "", ""
-	if options != nil {
-		overlaysDir, outDir = options.OverlaysDir, options.OutputDir
-	}
-
-	// Create a generator with the specified settings.
-	g, err := newGenerator(pkg, version, language(lang), prov, overlaysDir, outDir)
-	if err != nil {
-		return err
-	}
-
-	// Let's generate some code!
-	return g.Generate()
-}
-
-// Main executes the TFGen process for the given package pkg and provider prov.
-func Main(pkg string, version string, prov tfbridge.ProviderInfo) {
-	if err := newTFGenCmd(pkg, version, prov).Execute(); err != nil {
-		_, fmterr := fmt.Fprintf(os.Stderr, "An error occurred: %v\n", err)
-		contract.IgnoreError(fmterr)
-		os.Exit(-1)
-	}
-}
-
-// nolint: lll
-func newTFGenCmd(pkg string, version string, prov tfbridge.ProviderInfo) *cobra.Command {
+func main() {
 	var logToStderr bool
 	var quiet bool
 	var verbose int
-	var options GenerateOptions
+	var pkg string
+	var version string
+	var options tfgen.GenerateOptions
 	cmd := &cobra.Command{
 		Use:   os.Args[0] + " <LANGUAGE>",
 		Args:  cmdutil.SpecificArgs([]string{"language"}),
@@ -74,12 +46,17 @@ func newTFGenCmd(pkg string, version string, prov tfbridge.ProviderInfo) *cobra.
 			"and generate all of the Pulumi metadata necessary to consume the resources.\n" +
 			"\n" +
 			"<LANGUAGE> indicates which language/runtime to target; the current supported set of\n" +
-			"languages is " + fmt.Sprintf("%v", allLanguages) + ".\n" +
+			"languages is " + fmt.Sprintf("%v", tfgen.SupportedLanguages) + ".\n" +
 			"\n" +
 			"Note that there is no custom Pulumi provider code required, because the generated\n" +
 			"provider plugin is metadata-driven and thus works against all Terraform providers.\n",
 		Run: cmdutil.RunFunc(func(cmd *cobra.Command, args []string) error {
-			return Generate(args[0], pkg, version, prov, &options)
+			var info *tfbridge.MarshallableProviderInfo
+			if err := json.NewDecoder(os.Stdin).Decode(&info); err != nil {
+				return errors.Wrap(err, "could not decode provider schema")
+			}
+
+			return tfgen.Generate(args[0], pkg, version, *info.Unmarshal(), &options)
 		}),
 		PersistentPostRun: func(cmd *cobra.Command, args []string) {
 			glog.Flush()
@@ -92,10 +69,18 @@ func newTFGenCmd(pkg string, version string, prov tfbridge.ProviderInfo) *cobra.
 		&options.OutputDir, "out", "o", "", "Save generated package metadata to this directory")
 	cmd.PersistentFlags().StringVar(
 		&options.OverlaysDir, "overlays", "", "Use the target directory for overlays rather than the default of overlays/")
+	cmd.PersistentFlags().StringVar(
+		&pkg, "package", "", "The name of the generated package")
 	cmd.PersistentFlags().BoolVarP(
 		&quiet, "quiet", "q", false, "Suppress non-error output progress messages")
 	cmd.PersistentFlags().IntVarP(
 		&verbose, "verbose", "v", 0, "Enable verbose logging (e.g., v=3); anything >3 is very verbose")
+	cmd.PersistentFlags().StringVar(
+		&version, "version", "", "The version of the generated package")
 
-	return cmd
+	if err := cmd.Execute(); err != nil {
+		_, fmterr := fmt.Fprintf(os.Stderr, "An error occurred: %v\n", err)
+		contract.IgnoreError(fmterr)
+		os.Exit(-1)
+	}
 }

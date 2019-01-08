@@ -8,6 +8,10 @@ TESTPARALLELISM = 10
 build::
 	go build ${PROJECT}/pkg/tfgen
 	go build ${PROJECT}/pkg/tfbridge
+	go install ${PROJECT}/cmd/tfgen
+
+install::
+	go install ${PROJECT}/cmd/tfgen
 
 lint::
 	golangci-lint run

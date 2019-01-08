@@ -409,6 +409,17 @@ func (m *MarshallableDataSourceInfo) Unmarshal() *DataSourceInfo {
 
 // MarshallableProviderInfo is the JSON-marshallable form of a Pulumi ProviderInfo value.
 type MarshallableProviderInfo struct {
+	Name        string
+	Description string
+	Keywords    []string
+	License     string
+	Homepage    string
+	Repository  string
+
+	JavaScript *JavaScriptInfo
+	Python     *PythonInfo
+	Golang     *GolangInfo
+
 	Provider    *MarshallableProvider                  `json:"provider"`
 	Config      map[string]*MarshallableSchemaInfo     `json:"config,omitempty"`
 	Resources   map[string]*MarshallableResourceInfo   `json:"resources,omitempty"`
@@ -431,6 +442,17 @@ func MarshalProviderInfo(p *ProviderInfo) *MarshallableProviderInfo {
 	}
 
 	return &MarshallableProviderInfo{
+		Name:        p.Name,
+		Description: p.Description,
+		Keywords:    p.Keywords,
+		License:     p.License,
+		Homepage:    p.Homepage,
+		Repository:  p.Repository,
+
+		JavaScript: p.JavaScript,
+		Python:     p.Python,
+		Golang:     p.Golang,
+
 		Provider:    MarshalProvider(p.P),
 		Config:      config,
 		Resources:   resources,
@@ -455,8 +477,17 @@ func (m *MarshallableProviderInfo) Unmarshal() *ProviderInfo {
 
 	return &ProviderInfo{
 		P:           m.Provider.Unmarshal(),
+		Name:        m.Name,
+		Description: m.Description,
+		Keywords:    m.Keywords,
+		License:     m.License,
+		Homepage:    m.Homepage,
+		Repository:  m.Repository,
 		Config:      config,
 		Resources:   resources,
 		DataSources: dataSources,
+		JavaScript:  m.JavaScript,
+		Python:      m.Python,
+		Golang:      m.Golang,
 	}
 }

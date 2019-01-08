@@ -62,6 +62,7 @@ const (
 	python language = "python"
 )
 
+var SupportedLanguages = []string{string(golang), string(nodeJS), string(python)}
 var allLanguages = []language{golang, nodeJS, python}
 
 // langGenerator is the interfact for language-specific logic and formatting.
