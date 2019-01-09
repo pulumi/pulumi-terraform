@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
 	"regexp"
@@ -31,6 +30,8 @@ import (
 	"github.com/pulumi/pulumi/pkg/util/cmdutil"
 
 	"github.com/pulumi/pulumi-terraform/pkg/tfbridge"
+	"github.com/pulumi/tf2pulumi/convert"
+	"github.com/pulumi/tf2pulumi/il"
 )
 
 // parsedDoc represents the data parsed from TF markdown documentation
@@ -58,7 +59,7 @@ const (
 // getDocsForProvider extracts documentation details for the given package from
 // TF website documentation markdown content
 func getDocsForProvider(language language, provider string, kind DocKind,
-	rawname string, docinfo *tfbridge.DocInfo) (parsedDoc, error) {
+	rawname string, docinfo *tfbridge.DocInfo, info tfbridge.ProviderInfo) (parsedDoc, error) {
 	repo, err := getRepoDir(provider)
 	if err != nil {
 		return parsedDoc{}, err
@@ -80,7 +81,7 @@ func getDocsForProvider(language language, provider string, kind DocKind,
 		return parsedDoc{}, nil
 	}
 
-	doc, err := parseTFMarkdown(language, kind, string(markdownByts), provider, rawname)
+	doc, err := parseTFMarkdown(language, kind, string(markdownByts), provider, rawname, info)
 	if err != nil {
 		return parsedDoc{}, nil
 	}
@@ -91,6 +92,7 @@ func getDocsForProvider(language language, provider string, kind DocKind,
 			func(s parsedDoc) map[string]string {
 				return s.Attributes
 			},
+			info,
 		); err != nil {
 			return doc, err
 		}
@@ -100,6 +102,7 @@ func getDocsForProvider(language language, provider string, kind DocKind,
 			func(s parsedDoc) map[string]string {
 				return s.Arguments
 			},
+			info,
 		); err != nil {
 			return doc, err
 		}
@@ -109,6 +112,7 @@ func getDocsForProvider(language language, provider string, kind DocKind,
 			func(s parsedDoc) map[string]string {
 				return s.Arguments
 			},
+			info,
 		); err != nil {
 			return doc, err
 		}
@@ -133,10 +137,10 @@ func readMarkdown(repo string, kind DocKind, possibleLocations []string) ([]byte
 
 // mergeDocs adds the docs specified by extractDoc from sourceFrom into the targetDocs
 func mergeDocs(language language, provider string, kind DocKind, targetDocs map[string]string, sourceFrom string,
-	extractDocs func(d parsedDoc) map[string]string) error {
+	extractDocs func(d parsedDoc) map[string]string, info tfbridge.ProviderInfo) error {
 
 	if sourceFrom != "" {
-		sourceDocs, err := getDocsForProvider(language, provider, kind, sourceFrom, nil)
+		sourceDocs, err := getDocsForProvider(language, provider, kind, sourceFrom, nil, info)
 		if err != nil {
 			return err
 		}
@@ -162,7 +166,7 @@ var (
 // parseTFMarkdown takes a TF website markdown doc and extracts a structured representation for use in
 // generating doc comments
 func parseTFMarkdown(language language, kind DocKind, markdown string,
-	provider string, rawname string) (parsedDoc, error) {
+	provider string, rawname string, info tfbridge.ProviderInfo) (parsedDoc, error) {
 	ret := parsedDoc{
 		Arguments:  make(map[string]string),
 		Attributes: make(map[string]string),
@@ -246,7 +250,7 @@ func parseTFMarkdown(language language, kind DocKind, markdown string,
 			// Otherwise, ignore the section, most commonly import sections or unpredictable headers.
 			// TODO: support other languages.
 			if language == nodeJS && strings.Index(lines[0], "Example") == 0 {
-				examples, err := parseExamples(lines)
+				examples, err := parseExamples(lines, provider, info)
 				if err != nil {
 					return parsedDoc{}, err
 				}
@@ -308,7 +312,7 @@ func printDocStats(printIgnoreDetails, printHCLFailureDetails bool) {
 }
 
 // parseExamples converts an examples section into code comments, including converting any code snippets.
-func parseExamples(lines []string) (string, error) {
+func parseExamples(lines []string, provider string, info tfbridge.ProviderInfo) (string, error) {
 	// Each `Example ...` section contains one or more examples written in HCL, optionally separated by
 	// comments about the examples. We will attempt to convert them using our `tf2pulumi` tool, and append
 	// them to the description. If we can't, we'll simply log a warning and keep moving along.
@@ -321,7 +325,7 @@ func parseExamples(lines []string) (string, error) {
 			for j := i + 1; j < len(lines); j++ {
 				if strings.Index(lines[j], "```") == 0 {
 					// We've got our code -- convert it.
-					code, stderr, err := convertHCL(hcl)
+					code, stderr, err := convertHCL(hcl, provider, info)
 					if err != nil {
 						// If the conversion failed, there are two cases to consider. First, if tf2pulumi was
 						// missing from the path, we want to error eagerly, as that means the user probably
@@ -370,16 +374,24 @@ func parseExamples(lines []string) (string, error) {
 // tf2pulumi isn't on the PATH and/or hasn't been installed.
 var errTF2PulumiMissing = errors.New("tf2pulumi is missing, please install it and re-run")
 
+type staticProviderInfoSource map[string]*tfbridge.ProviderInfo
+
+func (ps staticProviderInfoSource) GetProviderInfo(tfProviderName string) (*tfbridge.ProviderInfo, string, error) {
+	info, ok := ps[tfProviderName]
+	if !ok {
+		return il.PluginProviderInfoSource.GetProviderInfo(tfProviderName)
+	}
+	pluginName, ok := il.PluginNames[tfProviderName]
+	if !ok {
+		pluginName = tfProviderName
+	}
+	return info, pluginName, nil
+}
+
 // convertHCL converts an in-memory, simple HCL program to Pulumi, and returns it as a string. In the event
 // of failure, the error returned will be non-nil, and the second string contains the stderr stream of details.
-func convertHCL(hcl string) (string, string, error) {
-	// First, see if tf2pulumi is on the PATH, or not.
-	path, err := exec.LookPath("tf2pulumi")
-	if err != nil {
-		return "", "", errTF2PulumiMissing
-	}
-
-	// Now create a temp dir and spill the HCL into it. Terraform's module loader assumes code is in a file.
+func convertHCL(hcl string, provider string, info tfbridge.ProviderInfo) (string, string, error) {
+	// Create a temp dir and spill the HCL into it. Terraform's module loader assumes code is in a file.
 	dir, err := ioutil.TempDir("", "pt-hcl-")
 	if err != nil {
 		return "", "", errors.Wrap(err, "creating temp HCL dir")
@@ -391,19 +403,18 @@ func convertHCL(hcl string) (string, string, error) {
 		return "", "", errors.Wrap(err, "writing temp HCL file")
 	}
 
-	// Now run the tf2pulumi command, streaming the results into a string. This explicitly does not use
-	// tf2pulumi in library form because it greatly complicates our modules/vendoring story.
-	stdout := &bytes.Buffer{}
-	stderr := &bytes.Buffer{}
-	tf2pulumi := exec.Command(path)
-	tf2pulumi.Dir = dir
-	tf2pulumi.Stdout = stdout
-	tf2pulumi.Stderr = stderr
-	if err = tf2pulumi.Run(); err != nil {
-		return "", stderr.String(), errors.Wrap(err, "converting HCL to Pulumi code")
+	// Now run the conversion.
+	result := &bytes.Buffer{}
+	opts := convert.Options{
+		Path:         dir,
+		Writer:       result,
+		ProviderInfo: staticProviderInfoSource{provider: &info},
+	}
+	if err := convert.Convert(opts); err != nil {
+		return "", "", errors.Wrap(err, "converting HCL to Pulumi code")
 	}
 
-	return stdout.String(), "", nil
+	return result.String(), "", nil
 }
 
 func cleanupDoc(doc parsedDoc) parsedDoc {
