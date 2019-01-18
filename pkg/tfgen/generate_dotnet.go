@@ -65,13 +65,6 @@ func (g *dotnetGenerator) moduleDir(mod *module) string {
 	return dir
 }
 
-// relativeRootDir returns the relative path to the root directory for the given module.
-func (g *dotnetGenerator) relativeRootDir(mod *module) string {
-	p, err := filepath.Rel(g.moduleDir(mod), g.outDir)
-	contract.IgnoreError(err)
-	return p
-}
-
 // openWriter opens a writer for the given module and file name, emitting the standard header automatically.
 func (g *dotnetGenerator) openWriter(mod *module, name string, needsSDK bool) (*tools.GenWriter, error) {
 	dir := g.moduleDir(mod)
@@ -172,17 +165,6 @@ func (g *dotnetGenerator) emitModuleMember(mod *module, namespace string, member
 		contract.Failf("unexpected member type: %v", reflect.TypeOf(member))
 		return nil
 	}
-}
-
-// emitConfigVariables emits all config vaiables in the given module, returning the resulting file.
-func (g *dotnetGenerator) emitConfigVariables(mod *module) (string, error) {
-	// Create a vars.ts file into which all configuration variables will go.
-	config := "vars"
-	return config, nil
-}
-
-func (g *dotnetGenerator) emitConfigVariable(w *tools.GenWriter, v *variable) {
-
 }
 
 func (g *dotnetGenerator) emitDocComment(w *tools.GenWriter, comment, prefix string) {
@@ -335,7 +317,9 @@ func (g *dotnetGenerator) emitResourceType(mod *module, namespace string, res *r
 	g.emitProperties(w, name, res.outprops, false, true, "		")
 
 	// Emit the ctor
-	w.Writefmtln("		public %s(string name, %s args, Pulumi.ResourceOptions opts = default(Pulumi.ResourceOptions))", name, args)
+	w.Writefmt("		public %s(string name", name)
+	w.Writefmt(", %s args", args)
+	w.Writefmtln(", Pulumi.ResourceOptions opts = default(Pulumi.ResourceOptions))")
 	w.Writefmtln("			: base(\"%s\", name, SerialiseArgs(args), opts) {", res.info.Tok)
 
 	// Emit the output transformers
@@ -352,7 +336,9 @@ func (g *dotnetGenerator) emitResourceType(mod *module, namespace string, res *r
 	w.Writefmtln("")
 
 	// Transform the resource arguments into Values.
-	w.Writefmtln("		private static Dictionary<string, Pulumi.IO<Google.Protobuf.WellKnownTypes.Value>> SerialiseArgs(%s args) {", args)
+	w.Writefmt("		private static Dictionary")
+	w.Writefmt("<string, Pulumi.IO<Google.Protobuf.WellKnownTypes.Value>>")
+	w.Writefmtln(" SerialiseArgs(%s args) {", args)
 	w.Writefmtln("			var props = new Dictionary<string, Pulumi.IO<Google.Protobuf.WellKnownTypes.Value>>();")
 	ins := make(map[string]bool)
 	for _, prop := range res.inprops {
@@ -374,16 +360,28 @@ func (g *dotnetGenerator) emitResourceType(mod *module, namespace string, res *r
 	return nil
 }
 
-func (g *dotnetGenerator) emitProperties(w *tools.GenWriter, class string, props []*variable, input, io bool, prefix string) {
+func (g *dotnetGenerator) emitProperties(w *tools.GenWriter,
+	class string,
+	props []*variable,
+	input, io bool,
+	prefix string) {
+
 	for _, prop := range props {
 		g.emitDoc(w, prop.doc, prop.rawdoc, prefix)
 		w.Writefmt(prefix)
-		w.Writefmtln("public %s %s { get; set; }", csType(class, prop.name, prop.schema, input, io), csName(prop.name))
+		typ := csType(class, prop.name, prop.schema, input, io)
+		name := csName(prop.name)
+		w.Writefmtln("public %s %s { get; set; }", typ, name)
 		w.Writefmtln("")
 	}
 }
 
-func (g *dotnetGenerator) emitStruct(w *tools.GenWriter, class string, argst *plainOldType, input, io bool, prefix string) string {
+func (g *dotnetGenerator) emitStruct(w *tools.GenWriter,
+	class string,
+	argst *plainOldType,
+	input, io bool,
+	prefix string) string {
+
 	g.emitDoc(w, argst.doc, "", prefix)
 
 	name := csName(argst.name)
@@ -530,7 +528,9 @@ func (g *dotnetGenerator) emitResourceFunc(mod *module, namespace string, fun *r
 	w.Writefmtln("	public static partial class %s {", modName)
 
 	g.emitDoc(w, fun.doc, "", "		")
-	w.Writefmtln("		public static System.Threading.Tasks.Task<%s> %s(%s args, Pulumi.InvokeOptions opts = default(Pulumi.InvokeOptions)) {", rets, name, args)
+	w.Writefmt("		public static System.Threading.Tasks.Task<%s>", rets)
+	w.Writefmt("%s(%s args", name, args)
+	w.Writefmtln(", Pulumi.InvokeOptions opts = default(Pulumi.InvokeOptions)) {")
 
 	// Copy the function arguments into a Struct.
 	w.Writefmtln("			var invokeArgs = new Google.Protobuf.WellKnownTypes.Struct();")
@@ -672,9 +672,8 @@ func csType(class, key string, sch *schema.Schema, input, io bool) string {
 
 	if io {
 		return fmt.Sprintf("Pulumi.IO<%s>", typeExpr)
-	} else {
-		return typeExpr
 	}
+	return typeExpr
 }
 
 func csName(name string) string {
