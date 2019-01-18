@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Pulling out some of the repeated strings tokens into constants would harm readability, so we just ignore the
+// goconst linter's warning.
+//
+// nolint: goconst
 package tfgen
 
 import (
@@ -435,6 +439,7 @@ func (g *nodeJSGenerator) emitPlainOldType(w *tools.GenWriter, pot *plainOldType
 	w.Writefmtln("}")
 }
 
+//nolint:lll
 func (g *nodeJSGenerator) emitResourceType(mod *module, res *resourceType) (string, error) {
 	// Create a resource module file into which all of this resource's types will go.
 	name := res.name
@@ -477,8 +482,8 @@ func (g *nodeJSGenerator) emitResourceType(mod *module, res *resourceType) (stri
 		w.Writefmtln("     * @param id The _unique_ provider ID of the resource to lookup.")
 		w.Writefmtln("     * @param state Any extra arguments used during the lookup.")
 		w.Writefmtln("     */")
-		w.Writefmtln("    public static get(name: string, id: pulumi.Input<pulumi.ID>, state?: %s): %s {", stateType, name)
-		w.Writefmtln("        return new %s(name, <any>state, { id });", name)
+		w.Writefmtln("    public static get(name: string, id: pulumi.Input<pulumi.ID>, state?: %s, opts?: pulumi.CustomResourceOptions): %s {", stateType, name)
+		w.Writefmtln("        return new %s(name, <any>state, { ...opts, id: id });", name)
 		w.Writefmtln("    }")
 		w.Writefmtln("")
 	}
@@ -744,7 +749,7 @@ func (g *nodeJSGenerator) emitNPMPackageMetadata(pack *pkg) error {
 			"build": "tsc",
 		},
 		DevDependencies: map[string]string{
-			"typescript": "^2.6.2",
+			"typescript": "^3.0.0",
 		},
 		Pulumi: npmPulumiManifest{
 			Resource: true,

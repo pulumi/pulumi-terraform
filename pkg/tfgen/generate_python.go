@@ -15,6 +15,7 @@
 package tfgen
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -39,20 +40,22 @@ import (
 // newPythonGenerator returns a language generator that understands how to produce Python packages.
 func newPythonGenerator(pkg, version string, info tfbridge.ProviderInfo, overlaysDir, outDir string) langGenerator {
 	return &pythonGenerator{
-		pkg:         pkg,
-		version:     version,
-		info:        info,
-		overlaysDir: overlaysDir,
-		outDir:      outDir,
+		pkg:                  pkg,
+		version:              version,
+		info:                 info,
+		overlaysDir:          overlaysDir,
+		outDir:               outDir,
+		snakeCaseToCamelCase: make(map[string]string),
 	}
 }
 
 type pythonGenerator struct {
-	pkg         string
-	version     string
-	info        tfbridge.ProviderInfo
-	overlaysDir string
-	outDir      string
+	pkg                  string
+	version              string
+	info                 tfbridge.ProviderInfo
+	overlaysDir          string
+	outDir               string
+	snakeCaseToCamelCase map[string]string // property mapping from snake case to camel case
 }
 
 // commentChars returns the comment characters to use for single-line comments.
@@ -100,9 +103,10 @@ func (g *pythonGenerator) openWriter(mod *module, name string, needsSDK bool) (*
 }
 
 func (g *pythonGenerator) emitSDKImport(mod *module, w *tools.GenWriter) {
+	w.Writefmtln("import json")
 	w.Writefmtln("import pulumi")
 	w.Writefmtln("import pulumi.runtime")
-	w.Writefmtln("from %s import utilities", g.relativeRootDir(mod))
+	w.Writefmtln("from %s import utilities, tables", g.relativeRootDir(mod))
 	w.Writefmtln("")
 }
 
@@ -116,6 +120,10 @@ func (g *pythonGenerator) emitPackage(pack *pkg) error {
 
 	// Generate a top-level index file that re-exports any child modules.
 	index := pack.modules.ensureModule("")
+	if pack.provider != nil {
+		index.members = append(index.members, pack.provider)
+	}
+
 	if err := g.emitModule(index, submodules); err != nil {
 		return err
 	}
@@ -191,6 +199,10 @@ func (g *pythonGenerator) emitModule(mod *module, submods []string) error {
 		if err := g.emitUtilities(mod); err != nil {
 			return errors.Wrap(err, "emitting utilities")
 		}
+
+		if err := g.emitPropertyConversionTables(mod); err != nil {
+			return errors.Wrap(err, "emitting conversion tables")
+		}
 	}
 
 	// Lastly, generate an index file for this module.
@@ -230,7 +242,7 @@ func (g *pythonGenerator) emitIndex(mod *module, exports, submods []string) erro
 		}
 		w.Writefmtln("# Export this package's modules as members:")
 		for _, exp := range exports {
-			w.Writefmtln("from %s import *", exp)
+			w.Writefmtln("from .%s import *", exp)
 		}
 	}
 
@@ -414,11 +426,13 @@ func (g *pythonGenerator) emitResourceType(mod *module, res *resourceType) (stri
 	}
 	defer contract.IgnoreClose(w)
 
-	// Produce a class definition with optional """ comment.
-	w.Writefmtln("class %s(pulumi.CustomResource):", pyClassName(res.name))
-	if res.doc != "" {
-		g.emitDocComment(w, res.doc, "    ")
+	baseType := "pulumi.CustomResource"
+	if res.IsProvider() {
+		baseType = "pulumi.ProviderResource"
 	}
+	// Produce a class definition with optional """ comment.
+	w.Writefmtln("class %s(%s):", pyClassName(res.name), baseType)
+	g.emitMembers(w, mod, res)
 
 	// Now generate an initializer with arguments for all input properties.
 	w.Writefmt("    def __init__(__self__, __name__, __opts__=None")
@@ -429,10 +443,10 @@ func (g *pythonGenerator) emitResourceType(mod *module, res *resourceType) (stri
 	}
 	w.Writefmtln("):")
 
-	w.Writefmtln(`        """Create a %s resource with the given unique name, props, and options."""`, res.name)
+	g.emitInitDocstring(w, mod, res)
 	w.Writefmtln("        if not __name__:")
 	w.Writefmtln("            raise TypeError('Missing resource name argument (for URN creation)')")
-	w.Writefmtln("        if not isinstance(__name__, basestring):")
+	w.Writefmtln("        if not isinstance(__name__, str):")
 	w.Writefmtln("            raise TypeError('Expected resource name to be a string')")
 	w.Writefmtln("        if __opts__ and not isinstance(__opts__, pulumi.ResourceOptions):")
 	w.Writefmtln("            raise TypeError('Expected resource options to be a ResourceOptions instance')")
@@ -445,35 +459,33 @@ func (g *pythonGenerator) emitResourceType(mod *module, res *resourceType) (stri
 
 	ins := make(map[string]bool)
 	for _, prop := range res.inprops {
+		g.recordProperty(prop.name, prop.schema, prop.info)
 		pname := pyName(prop.name)
-		ptype := pyType(prop)
 
 		// Fill in computed defaults for arguments.
 		if defaultValue := pyDefaultValue(prop); defaultValue != "" {
-			w.Writefmtln("        %s = %s", pname, defaultValue)
+			w.Writefmtln("        if not %s:", pname)
+			w.Writefmtln("            %s = %s", pname, defaultValue)
 		}
 
-		// Check that required arguments are present.  Also check that types are as expected.
+		// Check that required arguments are present.
 		if !prop.optional() {
 			w.Writefmtln("        if not %s:", pname)
 			w.Writefmtln("            raise TypeError('Missing required property %s')", pname)
-			w.Writefmt("        elif ")
-		} else {
-			w.Writefmt("        if %s and ", pname)
-		}
-		w.Writefmtln("not isinstance(%s, %s):", pname, ptype)
-		w.Writefmtln("            raise TypeError('Expected property %s to be a %s')", pname, ptype)
-
-		// Now perform the assignment, and follow it with a """ doc comment if there was one found.
-		w.Writefmtln("        __self__.%[1]s = %[1]s", pname)
-		if prop.doc != "" {
-			g.emitDocComment(w, prop.doc, "        ")
-		} else if prop.rawdoc != "" {
-			g.emitRawDocComment(w, prop.rawdoc, "        ")
 		}
 
 		// And add it to the dictionary.
-		w.Writefmtln("        __props__['%s'] = %s", prop.name, pname)
+		arg := pname
+
+		// If this resource is a provider then, regardless of the schema of the underlying provider type, we must
+		// project all properties as strings. For all properties that are not strings, we'll marshal them to JSON and
+		// use the JSON string as a string input.
+		//
+		// Note the use of the `json` package here - we must import it at the top of the file so that we can use it.
+		if res.IsProvider() && prop.schema != nil && prop.schema.Type != schema.TypeString {
+			arg = fmt.Sprintf("pulumi.Output.from_input(%s).apply(json.dumps) if %s is not None else None", arg, arg)
+		}
+		w.Writefmtln("        __props__['%s'] = %s", pname, arg)
 		w.Writefmtln("")
 
 		ins[prop.name] = true
@@ -481,15 +493,11 @@ func (g *pythonGenerator) emitResourceType(mod *module, res *resourceType) (stri
 
 	var wroteOuts bool
 	for _, prop := range res.outprops {
-		// Default any pure output properties to UNKNOWN.  This ensures they are available as properties, even if
+		g.recordProperty(prop.name, prop.schema, prop.info)
+		// Default any pure output properties to None.  This ensures they are available as properties, even if
 		// they don't ever get assigned a real value, and get documentation if available.
 		if !ins[prop.name] {
-			w.Writefmtln("        __self__.%s = pulumi.runtime.UNKNOWN", pyName(prop.name))
-			if prop.doc != "" {
-				g.emitDocComment(w, prop.doc, "        ")
-			} else if prop.rawdoc != "" {
-				g.emitRawDocComment(w, prop.rawdoc, "        ")
-			}
+			w.Writefmtln("        __props__['%s'] = None", pyName(prop.name))
 			wroteOuts = true
 		}
 	}
@@ -505,12 +513,15 @@ func (g *pythonGenerator) emitResourceType(mod *module, res *resourceType) (stri
 	w.Writefmtln("            __opts__)")
 	w.Writefmtln("")
 
-	// Now override the set_outputs function so that this resource can demangle names to assign output properties.
-	w.Writefmtln("    def set_outputs(self, outs):")
-	for _, prop := range res.outprops {
-		w.Writefmtln("        if '%s' in outs:", prop.name)
-		w.Writefmtln("            self.%s = outs['%s']", pyName(prop.name), prop.name)
-	}
+	// Override translate_{input|output}_property on each resource to translate between snake case and
+	// camel case when interacting with tfbridge.
+	w.Writefmtln(`
+    def translate_output_property(self, prop):
+        return tables._CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
+
+    def translate_input_property(self, prop):
+        return tables._SNAKE_TO_CAMEL_CASE_TABLE.get(prop) or prop
+`)
 
 	return name, nil
 }
@@ -531,7 +542,7 @@ func (g *pythonGenerator) emitResourceFunc(mod *module, fun *resourceFunc) (stri
 	}
 
 	// Write out the function signature.
-	w.Writefmt("def %s(", name)
+	w.Writefmt("async def %s(", name)
 	for i, arg := range fun.args {
 		if i > 0 {
 			w.Writefmt(", ")
@@ -554,7 +565,7 @@ func (g *pythonGenerator) emitResourceFunc(mod *module, fun *resourceFunc) (stri
 	}
 
 	// Now simply invoke the runtime function with the arguments.
-	w.Writefmtln("    __ret__ = pulumi.runtime.invoke('%s', __args__)", fun.info.Tok)
+	w.Writefmtln("    __ret__ = await pulumi.runtime.invoke('%s', __args__)", fun.info.Tok)
 	w.Writefmtln("")
 
 	// And copy the results to an object, if there are indeed any expected returns.
@@ -692,6 +703,172 @@ func (g *pythonGenerator) emitPackageMetadata(pack *pkg) error {
 	return nil
 }
 
+// Emits property conversion tables for all properties recorded using `recordProperty`. The two tables emitted here are
+// used to convert to and from snake case and camel case.
+func (g *pythonGenerator) emitPropertyConversionTables(tableModule *module) error {
+	w, err := g.openWriter(tableModule, "tables.py", false)
+	if err != nil {
+		return err
+	}
+
+	defer contract.IgnoreClose(w)
+	var allKeys []string
+	for key := range g.snakeCaseToCamelCase {
+		allKeys = append(allKeys, key)
+	}
+	sort.Strings(allKeys)
+
+	w.Writefmtln("_SNAKE_TO_CAMEL_CASE_TABLE = {")
+	for _, key := range allKeys {
+		value := g.snakeCaseToCamelCase[key]
+		if key != value {
+			w.Writefmtln("    %q: %q,", key, value)
+		}
+	}
+	w.Writefmtln("}")
+	w.Writefmtln("\n_CAMEL_TO_SNAKE_CASE_TABLE = {")
+	for _, value := range allKeys {
+		key := g.snakeCaseToCamelCase[value]
+		if key != value {
+			w.Writefmtln("    %q: %q,", key, value)
+		}
+	}
+	w.Writefmtln("}")
+	return nil
+}
+
+// recordProperty records the given property's name and member names. For each property name contained in the given
+// property, the name is converted to snake case and recorded in the snake case to camel case table.
+//
+// Once all resources have been emitted, the table is written out to a format usable for implementations of
+// translate_input_property and translate_output_property.
+func (g *pythonGenerator) recordProperty(name string, sch *schema.Schema, info *tfbridge.SchemaInfo) {
+	snakeCaseName := pyName(name)
+	g.snakeCaseToCamelCase[snakeCaseName] = name
+	g.recordPropertyRec(sch, info)
+}
+
+// recordPropertyRec recurses through a property's schema and recursively records any properties contained within it.
+func (g *pythonGenerator) recordPropertyRec(sch *schema.Schema, info *tfbridge.SchemaInfo) {
+	switch sch.Type {
+	case schema.TypeList, schema.TypeSet:
+		// If this property that we are recursing on is a list or a set, we do not need to record any properties at this
+		// step but we do need to recurse into the element schema of the list or set.
+		if elem, ok := sch.Elem.(*schema.Schema); ok {
+			var schInfo *tfbridge.SchemaInfo
+			if info != nil {
+				schInfo = info.Elem
+			}
+
+			g.recordPropertyRec(elem, schInfo)
+			return
+		}
+
+		// If this list or set doesn't have an element schema, it does not need to be recorded.
+	case schema.TypeMap:
+		// If this property that we are recursing on is a map, and that map has associated with it a Resource schema,
+		// this is a map with well-known keys that we will need to record in our table.
+		if res, ok := sch.Elem.(*schema.Resource); ok {
+			for _, prop := range stableSchemas(res.Schema) {
+				// If this field was overridden in SchemaInfo, keep track of that here.
+				var fldinfo *tfbridge.SchemaInfo
+				if info != nil {
+					fldinfo = info.Fields[prop]
+				}
+
+				childSchema := res.Schema[prop]
+				// If this field has a non-empty property name, record it.
+				if name := propertyName(prop, childSchema, fldinfo); name != "" {
+					// Note: recordProperty recurses into childSchema so there is no need to invoke recordPropertyRec
+					// to do so.
+					g.recordProperty(name, childSchema, fldinfo)
+				}
+			}
+		}
+
+		// If this map isn't a resource, there's no need to recurse any further.
+	default:
+		// Primitives do not need to be recorded.
+		return
+	}
+}
+
+// emitMembers emits property declarations and docstrings for all output properties of the given resource.
+func (g *pythonGenerator) emitMembers(w *tools.GenWriter, mod *module, res *resourceType) {
+	for _, prop := range res.outprops {
+		name := pyName(prop.name)
+		ty := pyType(prop)
+		w.Writefmtln("    %s: pulumi.Output[%s]", name, ty)
+		if prop.doc != "" {
+			g.emitDocComment(w, prop.doc, "    ")
+		}
+	}
+}
+
+// emitInitDocstring emits the docstring for the __init__ method of the given resource type.
+//
+// Sphinx (the documentation generator that we use to generate Python docs) does not draw a distinction between
+// documentation comments on the class itself and documentation comments on the __init__ method of a class. The docs
+// repo instructs Sphinx to concatenate the two together, which means that we don't need to emit docstrings on the class
+// at all as long as the __init__ docstring is good enough.
+//
+// The docstring we generate here describes both the class itself and the arguments to the class's constructor. The
+// format of the docstring is in "Sphinx form":
+//   1. Parameters are introduced using the syntax ":param <type> <name>: <comment>". Sphinx parses this and uses it
+//      to populate the list of parameters for this function.
+//   2. The doc string of parameters is expected to be indented to the same indentation as the type of the parameter.
+//      Sphinx will complain and make mistakes if this is not the case.
+//   3. The doc string can't have random newlines in it, or Sphinx will complain.
+//
+// This function does the best it can to navigate these constraints and produce a docstring that Sphinx can make sense
+// of.
+func (g *pythonGenerator) emitInitDocstring(w *tools.GenWriter, mod *module, res *resourceType) {
+	// "buf" contains the full text of the docstring, without the leading and trailing triple quotes.
+	var buf bytes.Buffer
+
+	// If this resource has documentation, write it at the top of the docstring, otherwise use a generic comment.
+	if res.doc != "" {
+		fmt.Fprintln(&buf, res.doc)
+	} else {
+		fmt.Fprintf(&buf, "Create a %s resource with the given unique name, props, and options.\n", res.name)
+	}
+	fmt.Fprintln(&buf, "")
+
+	// All resources have a __name__ parameter and __opts__ parameter.
+	fmt.Fprintln(&buf, ":param str __name__: The name of the resource.")
+	fmt.Fprintln(&buf, ":param pulumi.ResourceOptions __opts__: Options for the resource.")
+	for _, prop := range res.inprops {
+		name := pyName(prop.name)
+		ty := pyType(prop)
+		if prop.doc == "" {
+			fmt.Fprintf(&buf, ":param pulumi.Input[%s] %s\n", ty, name)
+			continue
+		}
+
+		// If this property has some documentation associated with it, we need to split it so that it is indented
+		// in a way that Sphinx can understand.
+		lines := strings.Split(prop.doc, "\n")
+		for i, docLine := range lines {
+			// Break if we get to the last line and it's empty.
+			if i == len(lines)-1 && strings.TrimSpace(docLine) == "" {
+				break
+			}
+
+			// If it's the first line, print the :param header.
+			if i == 0 {
+				fmt.Fprintf(&buf, ":param pulumi.Input[%s] %s: %s\n", ty, name, docLine)
+			} else {
+				// Otherwise, print out enough padding to align with the first "p" in "pulumi.Input"
+				//                 :param pulumi.Input[...]
+				fmt.Fprintf(&buf, "       %s\n", docLine)
+			}
+		}
+	}
+
+	// emitDocComment handles the prefix and triple quotes.
+	g.emitDocComment(w, buf.String(), "        ")
+}
+
 // pyType returns the expected runtime type for the given variable.  Of course, being a dynamic language, this
 // check is not exhaustive, but it should be good enough to catch 80% of the cases early on.
 func pyType(v *variable) string {
@@ -712,7 +889,7 @@ func pyTypeFromSchema(sch *schema.Schema, info *tfbridge.SchemaInfo) string {
 	case schema.TypeFloat:
 		return "float"
 	case schema.TypeString:
-		return "basestring"
+		return "str"
 	case schema.TypeSet, schema.TypeList:
 		if tfbridge.IsMaxItemsOne(sch, info) {
 			// This isn't supposed to be projected as a list; project it as a scalar.

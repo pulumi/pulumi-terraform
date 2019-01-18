@@ -363,12 +363,6 @@
   version = "v0.2.0"
 
 [[projects]]
-  name = "github.com/pelletier/go-toml"
-  packages = ["."]
-  revision = "16398bac157da96aa88f98a2df640c7f32af1da2"
-  version = "v1.0.1"
-
-[[projects]]
   name = "github.com/pkg/errors"
   packages = ["."]
   revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
@@ -392,6 +386,7 @@
   version = "v1.1"
 
 [[projects]]
+  branch = "master"
   name = "github.com/pulumi/pulumi"
   packages = [
     "pkg/diag",
@@ -403,6 +398,7 @@
     "pkg/resource/provider",
     "pkg/tokens",
     "pkg/tools",
+    "pkg/util/ciutil",
     "pkg/util/cmdutil",
     "pkg/util/contract",
     "pkg/util/fsutil",
@@ -416,8 +412,7 @@
     "pkg/workspace",
     "sdk/proto/go"
   ]
-  revision = "c7d3cc5731d0ca2b26ad5e18e6a23b43b74b44b7"
-  version = "v0.15.1"
+  revision = "0e868f15fc3aad99ac77eca29f8c0600a27b5ae3"
 
 [[projects]]
   branch = "master"
@@ -696,6 +691,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "8fb003c2592d8600f353f25e8816e349cc9dbdd558005ecae2d47d82fe4f600d"
+  inputs-digest = "c84bcc95d43b5026e8f529cffead3633f3dfa6ffc99a222a196b88d84b44cf9c"
   solver-name = "gps-cdcl"
   solver-version = 1

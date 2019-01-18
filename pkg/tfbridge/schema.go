@@ -55,7 +55,7 @@ func MakeTerraformInputs(res *PulumiResource, olds, news resource.PropertyMap,
 
 		var old resource.PropertyValue
 		if defaults && olds != nil {
-			old, _ = olds[key]
+			old = olds[key]
 		}
 
 		// And then translate the property value.
@@ -85,7 +85,7 @@ func MakeTerraformInputs(res *PulumiResource, olds, news resource.PropertyMap,
 				continue
 			}
 			sch := tfs[name]
-			if sch != nil && sch.Deprecated != "" && !sch.Required {
+			if sch != nil && (sch.Removed != "" || sch.Deprecated != "" && !sch.Required) {
 				continue
 			}
 
@@ -156,6 +156,9 @@ func MakeTerraformInputs(res *PulumiResource, olds, news resource.PropertyMap,
 
 		// Next, populate defaults from the Terraform schema.
 		for name, sch := range tfs {
+			if sch.Removed != "" {
+				continue
+			}
 			if sch.Deprecated != "" && !sch.Required {
 				continue
 			}
@@ -778,7 +781,7 @@ func getInfoFromPulumiName(key resource.PropertyKey,
 		// Otherwise, transform the Pulumi name to the Terraform name using the standard mangling scheme.
 		name = PulumiToTerraformName(ks, tfs)
 	}
-	return name, tfs[name], ps[ks]
+	return name, tfs[name], ps[name]
 }
 
 // CleanTerraformSchema recursively removes "Removed" properties from a map[string]*schema.Schema.

@@ -8,22 +8,27 @@
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
 package tfbridge
 
 import (
+	"context"
 	"os"
 	"strconv"
 	"testing"
 
+	"github.com/golang/protobuf/ptypes/struct"
 	"github.com/hashicorp/terraform/config"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/pulumi/pulumi/pkg/resource"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/pulumi/pulumi/pkg/resource"
+	"github.com/pulumi/pulumi/pkg/tokens"
+	pulumirpc "github.com/pulumi/pulumi/sdk/proto/go"
 )
 
 // TestTerraformInputs verifies that we translate Pulumi inputs into Terraform inputs.
@@ -360,6 +365,7 @@ func TestTerraformAttributes(t *testing.T) {
 			},
 			"set_property_value":            []interface{}{"set member 1", "set member 2"},
 			"string_with_bad_interpolation": "some ${interpolated:value} with syntax errors",
+			"removed_property_value":        "a removed property",
 		},
 		map[string]*schema.Schema{
 			"nil_property_value":    {Type: schema.TypeMap},
@@ -390,6 +396,10 @@ func TestTerraformAttributes(t *testing.T) {
 				Elem: &schema.Schema{Type: schema.TypeString},
 			},
 			"string_with_bad_interpolation": {Type: schema.TypeString},
+			"removed_property_value": {
+				Type:    schema.TypeString,
+				Removed: "Removed in the Terraform provider",
+			},
 		})
 
 	assert.NoError(t, err)
@@ -416,6 +426,7 @@ func TestTerraformAttributes(t *testing.T) {
 		"set_property_value.4237827189":                       "set member 1",
 		"string_property_value":                               "ognirts",
 		"string_with_bad_interpolation":                       "some ${interpolated:value} with syntax errors",
+		"removed_property_value":                              "a removed property",
 	})
 
 	// MapFieldWriter has issues with values of TypeMap. Build a schema without such values s.t. we can test
@@ -598,6 +609,8 @@ func TestDefaults(t *testing.T) {
 		"jjj": {Type: schema.TypeString},
 		"lll": {Type: schema.TypeString, Default: "TFL"},
 		"mmm": {Type: schema.TypeString},
+		"sss": {Type: schema.TypeString, Removed: "removed"},
+		"ttt": {Type: schema.TypeString, Removed: "removed", Default: "TFD"},
 		"uuu": {Type: schema.TypeString},
 		"vvv": {Type: schema.TypeInt},
 		"www": {Type: schema.TypeString, Deprecated: "deprecated", Required: true},
@@ -614,6 +627,7 @@ func TestDefaults(t *testing.T) {
 		"hhh": {Default: &DefaultInfo{Value: "PSH"}},
 		"iii": {Default: &DefaultInfo{Value: "PSI"}},
 		"mmm": {Default: &DefaultInfo{Value: "PSM"}},
+		"sss": {Default: &DefaultInfo{Value: "PSS"}},
 		"uuu": {Default: &DefaultInfo{Value: "PSU", EnvVars: []string{"PTFU", "PTFU2"}}},
 		"vvv": {Default: &DefaultInfo{Value: 42, EnvVars: []string{"PTFV", "PTFV2"}}},
 		"www": {Default: &DefaultInfo{Value: "PSW"}},
@@ -739,4 +753,115 @@ func TestCustomTransforms(t *testing.T) {
 		tfs, psi, nil, false, false)
 	assert.NoError(t, err)
 	assert.Equal(t, config.UnknownVariableValue, v4)
+}
+
+func TestImporterOnRead(t *testing.T) {
+	tfProvider := makeTestTFProvider(
+		map[string]*schema.Schema{
+			"required_for_import": {
+				Type: schema.TypeString,
+			},
+		},
+		func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+			importValue := d.Id() + "-imported"
+			mustSet(d, "required_for_import", importValue)
+
+			return []*schema.ResourceData{d}, nil
+		})
+
+	provider := &Provider{
+		tf: tfProvider,
+		resources: map[tokens.Type]Resource{
+			"importableResource": {
+				TF:     tfProvider.ResourcesMap["importable_resource"],
+				TFName: "importable_resource",
+				Schema: &ResourceInfo{
+					Tok: tokens.NewTypeToken("module", "importableResource"),
+				},
+			},
+		},
+	}
+
+	{
+		urn := resource.NewURN("s", "pr", "pa", "importableResource", "n")
+		resp, err := provider.Read(context.TODO(), &pulumirpc.ReadRequest{
+			Id:  "MyID",
+			Urn: string(urn),
+		})
+
+		assert.NoError(t, err)
+		assert.Equal(t, "MyID-imported", resp.Properties.Fields["requiredForImport"].GetStringValue())
+	}
+
+	{
+		urn := resource.NewURN("s", "pr", "pa", "importableResource", "n2")
+		resp, err := provider.Read(context.TODO(), &pulumirpc.ReadRequest{
+			Id:  "MyID",
+			Urn: string(urn),
+			Properties: &structpb.Struct{
+				Fields: map[string]*structpb.Value{
+					"name": {
+						Kind: &structpb.Value_StringValue{StringValue: "IAmAlreadyset"},
+					},
+				},
+			},
+		})
+		assert.NoError(t, err)
+		assert.Nil(t, resp.Properties.Fields["requiredForImport"])
+	}
+}
+
+func TestImporterWithNoResource(t *testing.T) {
+
+	tfProvider := makeTestTFProvider(map[string]*schema.Schema{},
+		func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+			// Return nothing
+			return []*schema.ResourceData{}, nil
+		})
+
+	provider := &Provider{
+		tf: tfProvider,
+		resources: map[tokens.Type]Resource{
+			"importableResource": {
+				TF:     tfProvider.ResourcesMap["importable_resource"],
+				TFName: "importable_resource",
+				Schema: &ResourceInfo{
+					Tok: tokens.NewTypeToken("module", "importableResource"),
+				},
+			},
+		},
+	}
+
+	{
+		urn := resource.NewURN("s", "pr", "pa", "importableResource", "n")
+		resp, err := provider.Read(context.TODO(), &pulumirpc.ReadRequest{
+			Id:  "MyID",
+			Urn: string(urn),
+		})
+
+		assert.NoError(t, err)
+		assert.Equal(t, &pulumirpc.ReadResponse{}, resp)
+	}
+}
+
+func makeTestTFProvider(schemaMap map[string]*schema.Schema, importer schema.StateFunc) *schema.Provider {
+	return &schema.Provider{
+		ResourcesMap: map[string]*schema.Resource{
+			"importable_resource": {
+				Schema: schemaMap,
+				Importer: &schema.ResourceImporter{
+					State: importer,
+				},
+				Read: func(d *schema.ResourceData, meta interface{}) error {
+					return nil
+				},
+				Create: func(d *schema.ResourceData, meta interface{}) error {
+					return nil
+				},
+				Delete: func(d *schema.ResourceData, meta interface{}) error {
+					return nil
+				},
+			},
+		},
+	}
 }
