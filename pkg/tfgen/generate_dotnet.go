@@ -308,7 +308,10 @@ func (g *dotnetGenerator) emitResourceType(mod *module, namespace string, res *r
 	}
 
 	// Emit the argument struct
-	args := g.emitStruct(w, name, res.argst, true, true, "	")
+	args := ""
+	if res.argst != nil {
+		args = g.emitStruct(w, name, res.argst, true, true, "	")
+	}
 
 	g.emitDoc(w, res.doc, "", "	")
 	w.Writefmtln("	public class %s : Pulumi.CustomResource {", name)
@@ -318,9 +321,15 @@ func (g *dotnetGenerator) emitResourceType(mod *module, namespace string, res *r
 
 	// Emit the ctor
 	w.Writefmt("		public %s(string name", name)
-	w.Writefmt(", %s args", args)
-	w.Writefmtln(", Pulumi.ResourceOptions opts = default(Pulumi.ResourceOptions))")
-	w.Writefmtln("			: base(\"%s\", name, SerialiseArgs(args), opts) {", res.info.Tok)
+	if args != "" {
+		w.Writefmt(", %s args, ", args)
+	}
+	w.Writefmtln("Pulumi.ResourceOptions opts = default(Pulumi.ResourceOptions))")
+	if args != "" {
+		w.Writefmtln("			: base(\"%s\", name, SerialiseArgs(args), opts) {", res.info.Tok)
+	} else {
+		w.Writefmtln("			: base(\"%s\", name, null, opts) {", res.info.Tok)
+	}
 
 	// Emit the output transformers
 	for _, arg := range res.inprops {
@@ -335,25 +344,27 @@ func (g *dotnetGenerator) emitResourceType(mod *module, namespace string, res *r
 	w.Writefmtln("		} // ctor")
 	w.Writefmtln("")
 
-	// Transform the resource arguments into Values.
-	w.Writefmt("		private static Dictionary")
-	w.Writefmt("<string, Pulumi.IO<Google.Protobuf.WellKnownTypes.Value>>")
-	w.Writefmtln(" SerialiseArgs(%s args) {", args)
-	w.Writefmtln("			var props = new Dictionary<string, Pulumi.IO<Google.Protobuf.WellKnownTypes.Value>>();")
-	ins := make(map[string]bool)
-	for _, prop := range res.inprops {
-		ins[prop.name] = true
-		expr := g.exprToProtobuf(fmt.Sprintf("args.%s", csName(prop.name)), prop.schema, 0)
-		w.Writefmtln("			props[\"%s\"] = %s;", prop.name, expr)
-	}
-	for _, prop := range res.outprops {
-		if !ins[prop.name] {
-			w.Writefmtln("			props[\"%s\"] = null; //out", prop.name)
+	if args != "" {
+		// Transform the resource arguments into Values.
+		w.Writefmt("		private static Dictionary")
+		w.Writefmt("<string, Pulumi.IO<Google.Protobuf.WellKnownTypes.Value>>")
+		w.Writefmtln(" SerialiseArgs(%s args) {", args)
+		w.Writefmtln("			var props = new Dictionary<string, Pulumi.IO<Google.Protobuf.WellKnownTypes.Value>>();")
+		ins := make(map[string]bool)
+		for _, prop := range res.inprops {
+			ins[prop.name] = true
+			expr := g.exprToProtobuf(fmt.Sprintf("args.%s", csName(prop.name)), prop.schema, 0)
+			w.Writefmtln("			props[\"%s\"] = %s;", prop.name, expr)
 		}
+		for _, prop := range res.outprops {
+			if !ins[prop.name] {
+				w.Writefmtln("			props[\"%s\"] = null; //out", prop.name)
+			}
+		}
+		w.Writefmtln("			return props;")
+		w.Writefmtln("		} // SerialiseArgs")
+		w.Writefmtln("")
 	}
-	w.Writefmtln("			return props;")
-	w.Writefmtln("		} // SerialiseArgs")
-	w.Writefmtln("")
 
 	w.Writefmtln("	} // %s", name)
 	w.Writefmtln("} // %s", namespace)
@@ -518,19 +529,32 @@ func (g *dotnetGenerator) emitResourceFunc(mod *module, namespace string, fun *r
 		g.emitSubstructures(w, name, prop.name, prop.schema, false, false)
 	}
 
-	// Emit the argument struct
-	args := g.emitStruct(w, name, fun.argst, true, false, "	")
+	// Emit the argument struct, if needed
+	args := ""
+	if fun.argst != nil {
+		args = g.emitStruct(w, name, fun.argst, true, false, "	")
+	}
 
-	// Emit the result struct
-	rets := g.emitStruct(w, name, fun.retst, false, false, "	")
+	// Emit the result struct, if needed
+	rets := ""
+	if fun.retst != nil {
+		rets = g.emitStruct(w, name, fun.retst, false, false, "	")
+	}
 
 	modName := csName(mod.name) + "Module"
 	w.Writefmtln("	public static partial class %s {", modName)
 
 	g.emitDoc(w, fun.doc, "", "		")
-	w.Writefmt("		public static System.Threading.Tasks.Task<%s>", rets)
-	w.Writefmt("%s(%s args", name, args)
-	w.Writefmtln(", Pulumi.InvokeOptions opts = default(Pulumi.InvokeOptions)) {")
+	if rets != "" {
+		w.Writefmt("		public static System.Threading.Tasks.Task<%s>", rets)
+	} else {
+		w.Writefmt("		public static System.Threading.Tasks.Task")
+	}
+	w.Writefmt(" %s(", name)
+	if args != "" {
+		w.Writefmt("%s args, ", args)
+	}
+	w.Writefmtln("Pulumi.InvokeOptions opts = default(Pulumi.InvokeOptions)) {")
 
 	// Copy the function arguments into a Struct.
 	w.Writefmtln("			var invokeArgs = new Google.Protobuf.WellKnownTypes.Struct();")
@@ -645,13 +669,17 @@ func csType(class, key string, sch *schema.Schema, input, io bool) string {
 			typeExpr = fmt.Sprintf("%s[]", subtype)
 		}
 	case schema.TypeMap:
-		typeExpr = "System.Collections.Generic.Dictionary<string, string>"
 		if subSchema, ok := sch.Elem.(*schema.Schema); ok {
-			if subSchema.Type != schema.TypeString {
+			if subSchema.Type == schema.TypeString {
+				typeExpr = "System.Collections.Generic.Dictionary<string, string>"
+			} else {
 				panic(fmt.Sprintf("%s was a TypeMap but it's subschema wasn't a string: %+v", key, sch))
 			}
+		} else if _, ok := sch.Elem.(*schema.Resource); ok {
+			subtype := csStructureName(class, key, input)
+			typeExpr = fmt.Sprintf("System.Collections.Generic.Dictionary<string, %s>", subtype)
 		} else if sch.Elem != nil {
-			panic(fmt.Sprintf("%s was a TypeMap but it's schema wasn't a schema string: %+v", key, sch))
+			panic(fmt.Sprintf("%s was a TypeMap but it's Elem field wasn't understood:\n%+v\n%+v", key, sch, sch.Elem))
 		}
 	case schema.TypeSet:
 		subtype := ""
