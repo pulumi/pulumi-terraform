@@ -1,6 +1,7 @@
 [[constraint]]
   name = "github.com/pulumi/pulumi"
-  branch = "master"
+  source = "github.com/Frassle/pulumi"
+  branch = "dotnet"
 
 # Redirect all Terraform references to our fork.
 [[override]]
