@@ -678,7 +678,9 @@ func csType(class, key string, sch *schema.Schema, input, io bool) string {
 		} else if _, ok := sch.Elem.(*schema.Resource); ok {
 			subtype := csStructureName(class, key, input)
 			typeExpr = fmt.Sprintf("System.Collections.Generic.Dictionary<string, %s>", subtype)
-		} else if sch.Elem != nil {
+		} else if sch.Elem == nil {
+			typeExpr = "System.Collections.Generic.Dictionary<string, string>"			
+		} else {
 			panic(fmt.Sprintf("%s was a TypeMap but it's Elem field wasn't understood:\n%+v\n%+v", key, sch, sch.Elem))
 		}
 	case schema.TypeSet:
