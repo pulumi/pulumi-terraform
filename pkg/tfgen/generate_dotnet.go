@@ -679,7 +679,8 @@ func csType(class, key string, sch *schema.Schema, input, io bool) string {
 				subtype = fmt.Sprintf("Pulumi.IO<%s>", subtype)
 			}
 		} else if elemSchema, ok := sch.Elem.(*schema.Schema); ok {
-			subtype = csType(class, key, elemSchema, input, io && input)
+			// Only wrap the subtype in IO if we're going to wrap in an array, otherwise we end up with IO<IO<>>
+			subtype = csType(class, key, elemSchema, input, io && input && !tfbridge.IsMaxItemsOne(sch, nil))
 		}
 		if tfbridge.IsMaxItemsOne(sch, nil) {
 			typeExpr = subtype
