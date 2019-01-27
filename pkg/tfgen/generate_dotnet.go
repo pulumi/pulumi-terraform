@@ -280,7 +280,7 @@ func (g *dotnetGenerator) emitSubstructures(w *tools.GenWriter, class, key strin
 			w.Writefmtln("			return new %s() {", name)
 			for _, s := range stableSchemas(e.Schema) {
 				sch := e.Schema[s]
-				expr := g.exprFromProtobuf(name, s, fmt.Sprintf("obj.Fields[\"%s\"]", s), sch, 0)
+				expr := g.exprFromProtobuf(name, s, fmt.Sprintf("obj.Fields[\"%s\"]", s), sch, io, 0)
 				w.Writefmtln("				%s = %s,", csName(s), expr)
 			}
 			w.Writefmtln("			};")
@@ -347,12 +347,12 @@ func (g *dotnetGenerator) emitResourceType(mod *module, namespace string, res *r
 			}
 		}
 		if !isOutput {
-			expr := g.exprFromProtobuf(name, csName(arg.name), "item", arg.schema, 1)
+			expr := g.exprFromProtobuf(name, csName(arg.name), "item", arg.schema, true, 1)
 			w.Writefmtln("			%s = Outputs[\"%s\"].Select(item => %s);", csName(arg.name), arg.name, expr)
 		}
 	}
 	for _, arg := range res.outprops {
-		expr := g.exprFromProtobuf(name, csName(arg.name), "item", arg.schema, 1)
+		expr := g.exprFromProtobuf(name, csName(arg.name), "item", arg.schema, true, 1)
 		w.Writefmtln("			%s = Outputs[\"%s\"].Select(item => %s);", csName(arg.name), arg.name, expr)
 	}
 
@@ -420,53 +420,58 @@ func (g *dotnetGenerator) emitStruct(w *tools.GenWriter,
 	return name
 }
 
-func (g *dotnetGenerator) exprFromProtobuf(class, key, expr string, sch *schema.Schema, depth int) string {
+func (g *dotnetGenerator) exprFromProtobuf(class, key, expr string, sch *schema.Schema, io bool, depth int) string {
 	item := "item"
 	if depth != 0 {
 		item = fmt.Sprintf("item%d", depth)
 	}
 
+	helper := "Protobuf"
+	if io {
+		helper = "IOProtobuf"
+	}
+
 	switch sch.Type {
 	case schema.TypeString:
-		expr = fmt.Sprintf("Protobuf.ToString(%s)", expr)
+		expr = fmt.Sprintf("%s.ToString(%s)", helper, expr)
 	case schema.TypeInt:
-		expr = fmt.Sprintf("Protobuf.ToInt(%s)", expr)
+		expr = fmt.Sprintf("%s.ToInt(%s)", helper, expr)
 	case schema.TypeFloat:
-		expr = fmt.Sprintf("Protobuf.ToDouble(%s)", expr)
+		expr = fmt.Sprintf("%s.ToDouble(%s)", helper, expr)
 	case schema.TypeBool:
-		expr = fmt.Sprintf("Protobuf.ToBool(%s)", expr)
+		expr = fmt.Sprintf("%s.ToBool(%s)", helper, expr)
 	case schema.TypeList:
 		if _, ok := sch.Elem.(*schema.Resource); ok {
 			name := csStructureName(class, key, false)
 			if tfbridge.IsMaxItemsOne(sch, nil) {
 				expr = fmt.Sprintf("%s.FromProtobuf(%s)", name, expr)
 			} else {
-				expr = fmt.Sprintf("Protobuf.ToList(%s, %s => %s.FromProtobuf(%s))", expr, item, name, item)
+				expr = fmt.Sprintf("%s.ToList(%s, %s => %s.FromProtobuf(%s))", helper, expr, item, name, item)
 			}
 		} else if elemSchema, ok := sch.Elem.(*schema.Schema); ok {
 			if tfbridge.IsMaxItemsOne(sch, nil) {
-				expr = g.exprFromProtobuf(class, key, expr, elemSchema, depth)
+				expr = g.exprFromProtobuf(class, key, expr, elemSchema, io, depth)
 			} else {
-				subexpr := g.exprFromProtobuf(class, key, item, elemSchema, depth+1)
-				expr = fmt.Sprintf("Protobuf.ToList(%s, %s => %s)", expr, item, subexpr)
+				subexpr := g.exprFromProtobuf(class, key, item, elemSchema, io, depth+1)
+				expr = fmt.Sprintf("%s.ToList(%s, %s => %s)", helper, expr, item, subexpr)
 			}
 		}
 	case schema.TypeMap:
-		expr = fmt.Sprintf("Protobuf.ToMap(%s)", expr)
+		expr = fmt.Sprintf("%s.ToMap(%s)", helper, expr)
 	case schema.TypeSet:
 		if _, ok := sch.Elem.(*schema.Resource); ok {
 			name := csStructureName(class, key, false)
 			if tfbridge.IsMaxItemsOne(sch, nil) {
 				expr = fmt.Sprintf("%s.FromProtobuf(%s)", name, expr)
 			} else {
-				expr = fmt.Sprintf("Protobuf.ToList(%s, %s => %s.FromProtobuf(%s))", expr, item, name, item)
+				expr = fmt.Sprintf("%s.ToList(%s, %s => %s.FromProtobuf(%s))", helper, expr, item, name, item)
 			}
 		} else if elemSchema, ok := sch.Elem.(*schema.Schema); ok {
 			if tfbridge.IsMaxItemsOne(sch, nil) {
-				expr = g.exprFromProtobuf(class, key, expr, elemSchema, depth)
+				expr = g.exprFromProtobuf(class, key, expr, elemSchema, io, depth)
 			} else {
-				subexpr := g.exprFromProtobuf(class, key, item, elemSchema, depth+1)
-				expr = fmt.Sprintf("Protobuf.ToList(%s, %s => %s)", expr, item, subexpr)
+				subexpr := g.exprFromProtobuf(class, key, item, elemSchema, io, depth+1)
+				expr = fmt.Sprintf("%s.ToList(%s, %s => %s)", helper, expr, item, subexpr)
 			}
 		}
 	}
@@ -590,7 +595,7 @@ func (g *dotnetGenerator) emitResourceFunc(mod *module, namespace string, fun *r
 	w.Writefmtln("				var protobuf = response.Result;")
 	w.Writefmtln("				var result = new %s();", rets)
 	for _, prop := range fun.rets {
-		expr := g.exprFromProtobuf(name, csName(prop.name), fmt.Sprintf("protobuf.Fields[\"%s\"]", prop.name), prop.schema, 0)
+		expr := g.exprFromProtobuf(name, csName(prop.name), fmt.Sprintf("protobuf.Fields[\"%s\"]", prop.name), prop.schema, true, 0)
 
 		// Now perform the assignment
 		w.Writefmtln("				if (protobuf.Fields.ContainsKey(\"%s\")) {", prop.name)
