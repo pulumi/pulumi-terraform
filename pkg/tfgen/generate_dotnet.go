@@ -239,6 +239,12 @@ func (g *dotnetGenerator) emitSubstructures(w *tools.GenWriter, class, key strin
 		g.emitSubstructures(w, class, key, e, input, io)
 	case *schema.Resource:
 		name := csStructureName(class, key, input)
+
+		for _, s := range stableSchemas(e.Schema) {
+			sch := e.Schema[s]
+			g.emitSubstructures(w, name, s, sch, input, io)
+		}
+
 		interfaceType := "Pulumi.IProtobuf"
 		if io {
 			interfaceType = "Pulumi.IIOProtobuf"
