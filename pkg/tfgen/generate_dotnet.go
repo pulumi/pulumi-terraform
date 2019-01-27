@@ -339,8 +339,17 @@ func (g *dotnetGenerator) emitResourceType(mod *module, namespace string, res *r
 
 	// Emit the output transformers
 	for _, arg := range res.inprops {
-		expr := g.exprFromProtobuf(name, csName(arg.name), "item", arg.schema, 1)
-		w.Writefmtln("			%s = Outputs[\"%s\"].Select(item => %s);", csName(arg.name), arg.name, expr)
+		isOutput := false
+		for _, outarg := range res.outprops {
+			if outarg.name == arg.name {
+				isOutput = true
+				break
+			}
+		}
+		if !isOutput {
+			expr := g.exprFromProtobuf(name, csName(arg.name), "item", arg.schema, 1)
+			w.Writefmtln("			%s = Outputs[\"%s\"].Select(item => %s);", csName(arg.name), arg.name, expr)
+		}
 	}
 	for _, arg := range res.outprops {
 		expr := g.exprFromProtobuf(name, csName(arg.name), "item", arg.schema, 1)
