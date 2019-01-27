@@ -60,7 +60,7 @@ func (g *dotnetGenerator) commentChars() string {
 func (g *dotnetGenerator) moduleDir(mod *module) string {
 	dir := g.outDir
 	if mod != nil && mod.name != "" {
-		dir = filepath.Join(dir, csName(mod.name))
+		dir = filepath.Join(dir, csName(mod.name, ""))
 	}
 	return dir
 }
@@ -93,7 +93,7 @@ func (g *dotnetGenerator) emitSDKImport(mod *module, w *tools.GenWriter) {
 }
 
 func (g *dotnetGenerator) emitPackage(pack *pkg) error {
-	namespace := "Pulumi." + csName(pack.name)
+	namespace := "Pulumi." + csName(pack.name, "")
 	err := g.emitModules(pack.modules, namespace)
 	if err != nil {
 		return err
@@ -134,7 +134,7 @@ func (g *dotnetGenerator) emitModule(mod *module, namespace string) error {
 		return errors.Wrapf(err, "creating module directory")
 	}
 
-	namespace = fmt.Sprintf("%s.%s", namespace, csName(mod.name))
+	namespace = fmt.Sprintf("%s.%s", namespace, csName(mod.name, ""))
 
 	for _, member := range mod.members {
 		err := g.emitModuleMember(mod, namespace, member)
@@ -252,7 +252,7 @@ func (g *dotnetGenerator) emitSubstructures(w *tools.GenWriter, class, key strin
 		w.Writefmtln("	public sealed class %s : %s {", name, interfaceType)
 		for _, s := range stableSchemas(e.Schema) {
 			sch := e.Schema[s]
-			w.Writefmtln("		public %s %s { get; set; }", csType(name, s, sch, input, io), csName(s))
+			w.Writefmtln("		public %s %s { get; set; }", csType(name, s, sch, input, io), csName(s, name))
 		}
 		w.Writefmtln("")
 
@@ -267,7 +267,7 @@ func (g *dotnetGenerator) emitSubstructures(w *tools.GenWriter, class, key strin
 				w.Writefmtln(",")
 			}
 			sch := e.Schema[s]
-			expr := g.exprToProtobuf(csName(s), sch, 0)
+			expr := g.exprToProtobuf(csName(s, name), sch, 0)
 			w.Writefmt("				new KeyValuePair<string, %s>(\"%s\", %s)", valueType, s, expr)
 		}
 		w.Writefmtln(");")
@@ -281,7 +281,7 @@ func (g *dotnetGenerator) emitSubstructures(w *tools.GenWriter, class, key strin
 			for _, s := range stableSchemas(e.Schema) {
 				sch := e.Schema[s]
 				expr := g.exprFromProtobuf(name, s, fmt.Sprintf("obj.Fields[\"%s\"]", s), sch, 0)
-				w.Writefmtln("				%s = %s,", csName(s), expr)
+				w.Writefmtln("				%s = %s,", csName(s, name), expr)
 			}
 			w.Writefmtln("			};")
 			w.Writefmtln("		} // FromProtobuf")
@@ -295,7 +295,7 @@ func (g *dotnetGenerator) emitSubstructures(w *tools.GenWriter, class, key strin
 
 func (g *dotnetGenerator) emitResourceType(mod *module, namespace string, res *resourceType) error {
 	// Create a resource file for this resource's module.
-	name := csName(res.name)
+	name := csName(res.name, "")
 	w, err := g.openWriter(mod, name+".cs", true)
 	if err != nil {
 		return err
@@ -347,13 +347,15 @@ func (g *dotnetGenerator) emitResourceType(mod *module, namespace string, res *r
 			}
 		}
 		if !isOutput {
-			expr := g.exprFromProtobuf(name, csName(arg.name), "item", arg.schema, 1)
-			w.Writefmtln("			%s = Outputs[\"%s\"].Select(item => %s);", csName(arg.name), arg.name, expr)
+			csArgName := csName(arg.name, name)
+			expr := g.exprFromProtobuf(name, csArgName, "item", arg.schema, 1)
+			w.Writefmtln("			%s = Outputs[\"%s\"].Select(item => %s);", csArgName, arg.name, expr)
 		}
 	}
 	for _, arg := range res.outprops {
-		expr := g.exprFromProtobuf(name, csName(arg.name), "item", arg.schema, 1)
-		w.Writefmtln("			%s = Outputs[\"%s\"].Select(item => %s);", csName(arg.name), arg.name, expr)
+		csArgName := csName(arg.name, name)
+		expr := g.exprFromProtobuf(name, csArgName, "item", arg.schema, 1)
+		w.Writefmtln("			%s = Outputs[\"%s\"].Select(item => %s);", csArgName, arg.name, expr)
 	}
 
 	w.Writefmtln("		} // ctor")
@@ -368,7 +370,7 @@ func (g *dotnetGenerator) emitResourceType(mod *module, namespace string, res *r
 		ins := make(map[string]bool)
 		for _, prop := range res.inprops {
 			ins[prop.name] = true
-			expr := g.exprToProtobuf(fmt.Sprintf("args.%s", csName(prop.name)), prop.schema, 0)
+			expr := g.exprToProtobuf(fmt.Sprintf("args.%s", csName(prop.name, name)), prop.schema, 0)
 			w.Writefmtln("			props[\"%s\"] = %s;", prop.name, expr)
 		}
 		for _, prop := range res.outprops {
@@ -396,7 +398,7 @@ func (g *dotnetGenerator) emitProperties(w *tools.GenWriter,
 		g.emitDoc(w, prop.doc, prop.rawdoc, prefix)
 		w.Writefmt(prefix)
 		typ := csType(class, prop.name, prop.schema, input, io)
-		name := csName(prop.name)
+		name := csName(prop.name, class)
 		w.Writefmtln("public %s %s { get; set; }", typ, name)
 		w.Writefmtln("")
 	}
@@ -410,7 +412,7 @@ func (g *dotnetGenerator) emitStruct(w *tools.GenWriter,
 
 	g.emitDoc(w, argst.doc, "", prefix)
 
-	name := csName(argst.name)
+	name := csName(argst.name, class)
 	w.Writefmtln("%spublic struct %s {", prefix, name)
 
 	g.emitProperties(w, class, argst.props, input, io, prefix+"	")
@@ -526,7 +528,7 @@ func (g *dotnetGenerator) exprToProtobuf(expr string, sch *schema.Schema, depth 
 }
 
 func (g *dotnetGenerator) emitResourceFunc(mod *module, namespace string, fun *resourceFunc) error {
-	name := csName(fun.name)
+	name := csName(fun.name, "")
 	w, err := g.openWriter(mod, name+".cs", true)
 	if err != nil {
 		return err
@@ -556,7 +558,7 @@ func (g *dotnetGenerator) emitResourceFunc(mod *module, namespace string, fun *r
 		rets = g.emitStruct(w, name, fun.retst, false, false, "	")
 	}
 
-	modName := csName(mod.name) + "Module"
+	modName := csName(mod.name, "") + "Module"
 	w.Writefmtln("	public static partial class %s {", modName)
 
 	g.emitDoc(w, fun.doc, "", "		")
@@ -574,7 +576,7 @@ func (g *dotnetGenerator) emitResourceFunc(mod *module, namespace string, fun *r
 	// Copy the function arguments into a Struct.
 	w.Writefmtln("			var invokeArgs = new Google.Protobuf.WellKnownTypes.Struct();")
 	for _, arg := range fun.args {
-		expr := g.exprToProtobuf(fmt.Sprintf("args.%s", csName(arg.name)), arg.schema, 0)
+		expr := g.exprToProtobuf(fmt.Sprintf("args.%s", csName(arg.name, name)), arg.schema, 0)
 		w.Writefmt("			")
 		w.Writefmtln("invokeArgs.Fields[\"%s\"] = %s;", arg.name, expr)
 
@@ -590,11 +592,12 @@ func (g *dotnetGenerator) emitResourceFunc(mod *module, namespace string, fun *r
 	w.Writefmtln("				var protobuf = response.Result;")
 	w.Writefmtln("				var result = new %s();", rets)
 	for _, prop := range fun.rets {
-		expr := g.exprFromProtobuf(name, csName(prop.name), fmt.Sprintf("protobuf.Fields[\"%s\"]", prop.name), prop.schema, 0)
+		csPropName := csName(prop.name, name)
+		expr := g.exprFromProtobuf(name, csPropName, fmt.Sprintf("protobuf.Fields[\"%s\"]", prop.name), prop.schema, 0)
 
 		// Now perform the assignment
 		w.Writefmtln("				if (protobuf.Fields.ContainsKey(\"%s\")) {", prop.name)
-		w.Writefmtln("					result.%s = %s;", csName(prop.name), expr)
+		w.Writefmtln("					result.%s = %s;", csPropName, expr)
 		w.Writefmtln("				}")
 	}
 	w.Writefmtln("				return result;")
@@ -621,7 +624,7 @@ func (g *dotnetGenerator) emitOverlay(mod *module, overlay *overlayFile) error {
 func (g *dotnetGenerator) emitPackageMetadata(pack *pkg) error {
 	// The generator already emitted Pulumi.yaml, so that just leaves the `Pulumi.csproj`.
 
-	projectName := "Pulumi." + csName(pack.name) + ".csproj"
+	projectName := "Pulumi." + csName(pack.name, "") + ".csproj"
 	w, err := tools.NewGenWriter(tfgen, filepath.Join(g.outDir, projectName))
 	if err != nil {
 		return err
@@ -721,8 +724,12 @@ func csType(class, key string, sch *schema.Schema, input, io bool) string {
 	return typeExpr
 }
 
-func csName(name string) string {
-	return tfbridge.TerraformToPulumiName(name, nil, true)
+func csName(name, enclosingType string) string {
+	csName := tfbridge.TerraformToPulumiName(name, nil, true)
+	if csName == enclosingType {
+		return "_" + csName
+	}
+	return csName
 }
 
 // Used for substructure names. We only have the terrafrom key to look at and it's nearly always a plural form
