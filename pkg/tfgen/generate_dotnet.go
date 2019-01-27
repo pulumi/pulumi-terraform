@@ -252,7 +252,7 @@ func (g *dotnetGenerator) emitSubstructures(w *tools.GenWriter, class, key strin
 		w.Writefmtln("	public sealed class %s : %s {", name, interfaceType)
 		for _, s := range stableSchemas(e.Schema) {
 			sch := e.Schema[s]
-			w.Writefmtln("		public %s %s { get; set; }", csType(class, s, sch, input, io), csName(s))
+			w.Writefmtln("		public %s %s { get; set; }", csType(name, s, sch, input, io), csName(s))
 		}
 		w.Writefmtln("")
 
@@ -261,7 +261,7 @@ func (g *dotnetGenerator) emitSubstructures(w *tools.GenWriter, class, key strin
 			valueType = fmt.Sprintf("Pulumi.IO<%s>", valueType)
 		}
 		w.Writefmtln("		public %s ToProtobuf() {", valueType)
-		w.Writefmtln("			return Pulumi.Protobuf.ToProtobuf(")
+		w.Writefmtln("			return Protobuf.ToProtobuf(")
 		for i, s := range stableSchemas(e.Schema) {
 			if i != 0 {
 				w.Writefmtln(",")
@@ -280,7 +280,7 @@ func (g *dotnetGenerator) emitSubstructures(w *tools.GenWriter, class, key strin
 			w.Writefmtln("			return new %s() {", name)
 			for _, s := range stableSchemas(e.Schema) {
 				sch := e.Schema[s]
-				expr := g.exprFromProtobuf(class, key, fmt.Sprintf("obj.Fields[\"%s\"]", s), sch, 0)
+				expr := g.exprFromProtobuf(name, s, fmt.Sprintf("obj.Fields[\"%s\"]", s), sch, 0)
 				w.Writefmtln("				%s = %s,", csName(s), expr)
 			}
 			w.Writefmtln("			};")
