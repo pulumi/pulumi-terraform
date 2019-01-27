@@ -349,13 +349,13 @@ func (g *dotnetGenerator) emitResourceType(mod *module, namespace string, res *r
 		if !isOutput {
 			csArgName := csName(arg.name, name)
 			expr := g.exprFromProtobuf(name, csArgName, "item", arg.schema, 1)
-			w.Writefmtln("			%s = Outputs[\"%s\"].Select(item => %s);", csArgName, arg.name, expr)
+			w.Writefmtln("			%s = base.Outputs[\"%s\"].Select(item => %s);", csArgName, arg.name, expr)
 		}
 	}
 	for _, arg := range res.outprops {
 		csArgName := csName(arg.name, name)
 		expr := g.exprFromProtobuf(name, csArgName, "item", arg.schema, 1)
-		w.Writefmtln("			%s = Outputs[\"%s\"].Select(item => %s);", csArgName, arg.name, expr)
+		w.Writefmtln("			%s = base.Outputs[\"%s\"].Select(item => %s);", csArgName, arg.name, expr)
 	}
 
 	w.Writefmtln("		} // ctor")
