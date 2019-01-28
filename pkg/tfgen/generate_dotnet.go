@@ -506,7 +506,11 @@ func (g *dotnetGenerator) exprToProtobuf(expr string, sch *schema.Schema, depth 
 			}
 		}
 	case schema.TypeMap:
-		expr = fmt.Sprintf("Protobuf.ToProtobuf(%s)", expr)
+		if _, ok := sch.Elem.(*schema.Resource); ok {
+			expr = fmt.Sprintf("Protobuf.ToProtobuf(%s, %s => Protobuf.ToProtobuf(%s))", expr, item, item)
+		} else {
+			expr = fmt.Sprintf("Protobuf.ToProtobuf(%s)", expr)			
+		}
 	case schema.TypeSet:
 		if _, ok := sch.Elem.(*schema.Resource); ok {
 			if tfbridge.IsMaxItemsOne(sch, nil) {
