@@ -454,7 +454,12 @@ func (g *dotnetGenerator) exprFromProtobuf(class, key, expr string, sch *schema.
 			}
 		}
 	case schema.TypeMap:
-		expr = fmt.Sprintf("Protobuf.ToMap(%s)", expr)
+		if _, ok := sch.Elem.(*schema.Resource); ok {
+			name := csStructureName(class, key, false)
+			expr = fmt.Sprintf("Protobuf.ToMap(%s, %s => %s.FromProtobuf(%s))", expr, item, name, item)
+		} else {
+			expr = fmt.Sprintf("Protobuf.ToMap(%s)", expr)			
+		}
 	case schema.TypeSet:
 		if _, ok := sch.Elem.(*schema.Resource); ok {
 			name := csStructureName(class, key, false)
