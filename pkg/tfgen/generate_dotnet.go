@@ -277,13 +277,15 @@ func (g *dotnetGenerator) emitSubstructures(w *tools.GenWriter, class, key strin
 		if !input {
 			w.Writefmtln("		public static %s FromProtobuf(Google.Protobuf.WellKnownTypes.Value value) {", name)
 			w.Writefmtln("			var obj = value.StructValue;")
-			w.Writefmtln("			return new %s() {", name)
+			w.Writefmtln("			var result = new %s();", name)
 			for _, s := range stableSchemas(e.Schema) {
 				sch := e.Schema[s]
 				expr := g.exprFromProtobuf(name, s, fmt.Sprintf("obj.Fields[\"%s\"]", s), sch, 0)
-				w.Writefmtln("				%s = %s,", csName(s, name), expr)
+				w.Writefmtln("				if (obj.Fields.ContainsKey(\"%s\")) {", s)
+				w.Writefmtln("					result.%s = %s;", csName(s, name), expr)
+				w.Writefmtln("				}")
 			}
-			w.Writefmtln("			};")
+			w.Writefmtln("			return result;")
 			w.Writefmtln("		} // FromProtobuf")
 			w.Writefmtln("")
 		}
