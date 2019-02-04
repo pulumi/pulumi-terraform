@@ -444,14 +444,15 @@ func (g *pythonGenerator) emitResourceType(mod *module, res *resourceType) (stri
 	}
 
 	// Old versions of TFGen emitted parameters named __name__ and __opts__. In order to preserve backwards
-	// compatability, we still emit them, but we don't emit documentation for them.
+	// compatibility, we still emit them, but we don't emit documentation for them.
 	w.Writefmtln(", __name__=None, __opts__=None):")
 	g.emitInitDocstring(w, mod, res)
 	w.Writefmtln("        if __name__ is not None:")
 	w.Writefmtln(`            warnings.warn("explicit use of __name__ is deprecated", DeprecationWarning)`)
 	w.Writefmtln("            resource_name = __name__")
 	w.Writefmtln("        if __opts__ is not None:")
-	w.Writefmtln(`            warnings.warn("explicit use of __opts__ is deprecated, use 'opts' instead", DeprecationWarning)`)
+	w.Writefmtln(
+		`            warnings.warn("explicit use of __opts__ is deprecated, use 'opts' instead", DeprecationWarning)`)
 	w.Writefmtln("            opts = __opts__")
 	w.Writefmtln("        if not resource_name:")
 	w.Writefmtln("            raise TypeError('Missing resource name argument (for URN creation)')")
