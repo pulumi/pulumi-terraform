@@ -775,6 +775,10 @@ func (p *Provider) Delete(ctx context.Context, req *pulumirpc.DeleteRequest) (*p
 func (p *Provider) Invoke(ctx context.Context, req *pulumirpc.InvokeRequest) (*pulumirpc.InvokeResponse, error) {
 	p.setLoggingContext(ctx)
 	tok := tokens.ModuleMember(req.GetTok())
+	if tok == "pulumi:list" {
+		return p.list(ctx, req)
+	}
+
 	ds, has := p.dataSources[tok]
 	if !has {
 		return nil, errors.Errorf("unrecognized data function (Invoke): %s", tok)
@@ -850,6 +854,43 @@ func (p *Provider) Invoke(ctx context.Context, req *pulumirpc.InvokeRequest) (*p
 		Return:   ret,
 		Failures: failures,
 	}, nil
+}
+
+// List lists all resources of a given type.
+func (p *Provider) list(ctx context.Context, req *pulumirpc.InvokeRequest) (*pulumirpc.InvokeResponse, error) {
+	// Unmarshal the arguments.
+	args, err := plugin.UnmarshalProperties(req.GetArgs(), plugin.MarshalOptions{
+		Label: "list.args", KeepUnknowns: true, SkipNulls: true})
+	if err != nil {
+		return nil, err
+	}
+
+	t := args["type"]
+	res, has := p.resources[tokens.Type(t.V.(string))]
+	if !has {
+		return nil, errors.Errorf("unrecognized resource type (List): %s", t)
+	}
+
+	if res.Schema.List == nil {
+		return nil, errors.Errorf("cannot list resources of type %s", t)
+	}
+
+	ids, err := res.Schema.List(p.tf.Meta())
+	if err != nil {
+		return nil, err
+	}
+
+	props := resource.NewPropertyMapFromMap(map[string]interface{}{
+		"ids": ids,
+	})
+	ret, err := plugin.MarshalProperties(
+		props,
+		plugin.MarshalOptions{Label: "list.returns"})
+	if err != nil {
+		return nil, err
+	}
+
+	return &pulumirpc.InvokeResponse{Return: ret}, nil
 }
 
 // GetPluginInfo implements an RPC call that returns the version of this plugin.
