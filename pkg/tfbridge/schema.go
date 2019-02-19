@@ -464,6 +464,10 @@ func MakeTerraformOutput(v interface{},
 
 	// We use reflection instead of a type switch so that we can support mapping values whose underlying type is
 	// supported into a Pulumi value, even if they stored as a wrapper type (such as a strongly-typed enum).
+	//
+	// That said, Terraform often returns values of type String for fields whose schema does not indicate that the
+	// value is actually a string. If we are given a string, and we'd otherwise return a string property, we'll also
+	// inspect the schema if one exists to determine the actual value that we should return.
 	val := reflect.ValueOf(v)
 	switch val.Kind() {
 	case reflect.Bool:
@@ -480,6 +484,34 @@ func MakeTerraformOutput(v interface{},
 			return resource.NewComputedProperty(
 				resource.Computed{Element: resource.NewStringProperty("")})
 		}
+
+		// It's just a string. It might be another value, depending on the schema. Do we have a schema available?
+		if tfs == nil {
+			// If not, it's probably an ID or some other Pulumi-specific output. Leave it alone.
+			return resource.NewStringProperty(t)
+		}
+
+		switch tfs.Type {
+		case schema.TypeInt:
+			intVal, err := strconv.ParseInt(t, 0, 0)
+			if err != nil {
+				return resource.NewStringProperty(t)
+			}
+			return resource.NewNumberProperty(float64(intVal))
+		case schema.TypeBool:
+			boolVal, err := strconv.ParseBool(t)
+			if err != nil {
+				return resource.NewStringProperty(t)
+			}
+			return resource.NewBoolProperty(boolVal)
+		case schema.TypeFloat:
+			floatVal, err := strconv.ParseFloat(t, 64)
+			if err != nil {
+				return resource.NewStringProperty(t)
+			}
+			return resource.NewNumberProperty(floatVal)
+		}
+
 		// Else it's just a string.
 		return resource.NewStringProperty(t)
 	case reflect.Slice:

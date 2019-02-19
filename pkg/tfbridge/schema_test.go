@@ -865,3 +865,29 @@ func makeTestTFProvider(schemaMap map[string]*schema.Schema, importer schema.Sta
 		},
 	}
 }
+
+func TestStringOutputsWithSchema(t *testing.T) {
+	result := MakeTerraformOutputs(
+		map[string]interface{}{
+			"bool_property_value":      "false",
+			"number_property_value":    "42",
+			"float_property_value":     "42.0",
+			"no_schema_property_value": "42",
+		},
+		map[string]*schema.Schema{
+			"bool_property_value":   {Type: schema.TypeBool},
+			"number_property_value": {Type: schema.TypeInt},
+			"float_property_value":  {Type: schema.TypeFloat},
+		},
+		map[string]*SchemaInfo{},
+		nil,   /* assets */
+		false, /* useRawNames */
+	)
+
+	assert.Equal(t, resource.NewPropertyMapFromMap(map[string]interface{}{
+		"boolPropertyValue":     false,
+		"numberPropertyValue":   42,
+		"floatPropertyValue":    42.0,
+		"noSchemaPropertyValue": "42",
+	}), result)
+}
