@@ -578,6 +578,7 @@ func (g *generator) gatherResource(rawname string,
 			outprop := propertyVariable(key, propschema, propinfo, doc, rawdoc, docURL, true /*out*/)
 			if outprop != nil {
 				res.outprops = append(res.outprops, outprop)
+				res.resultprops = append(res.resultprops, outprop)
 			}
 		}
 
@@ -586,7 +587,6 @@ func (g *generator) gatherResource(rawname string,
 			inprop := propertyVariable(key, propschema, propinfo, doc, rawdoc, docURL, false /*out*/)
 			if inprop != nil {
 				res.inprops = append(res.inprops, inprop)
-				res.resultprops = append(res.resultprops, inprop)
 				if !inprop.optional() {
 					res.reqprops[name] = true
 				}

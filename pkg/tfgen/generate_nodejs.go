@@ -103,6 +103,9 @@ func (g *nodeJSGenerator) openWriter(mod *module, name string, needsSDK bool) (*
 func (g *nodeJSGenerator) emitSDKImport(mod *module, w *tools.GenWriter) {
 	w.Writefmtln("import * as pulumi from \"@pulumi/pulumi\";")
 	w.Writefmtln("import * as utilities from \"%s/utilities\";", g.relativeRootDir(mod))
+	w.Writefmtln(`import * as rxjs from "rxjs";`)
+	w.Writefmtln(`import * as operators from "rxjs/operators";`)
+
 	w.Writefmtln("")
 }
 
@@ -484,6 +487,20 @@ func (g *nodeJSGenerator) emitResourceType(mod *module, res *resourceType) (stri
 		w.Writefmtln("     */")
 		w.Writefmtln("    public static get(name: string, id: pulumi.Input<pulumi.ID>, state?: %s, opts?: pulumi.CustomResourceOptions): %s {", stateType, name)
 		w.Writefmtln("        return new %s(name, <any>state, { ...opts, id: id });", name)
+		w.Writefmtln("    }")
+		w.Writefmtln("")
+
+		w.Writefmtln("    public static list(): rxjs.Observable<%sResult> {", name)
+		w.Writefmtln("        return rxjs.from(")
+		w.Writefmtln("            pulumi.runtime")
+		w.Writefmtln("                .invoke('pulumi:pulumi:readStackResourceOutputs', {")
+		w.Writefmtln("                    stackName: pulumi.runtime.getStack(),")
+		w.Writefmtln("                    type: '%s',", res.info.Tok)
+		w.Writefmtln("                })")
+		w.Writefmtln("                .then(o => Object.keys(o.outputs).map(k => o.outputs[k]))")
+		w.Writefmtln("        ).pipe(")
+		w.Writefmtln("            operators.mergeAll(),")
+		w.Writefmtln("        );")
 		w.Writefmtln("    }")
 		w.Writefmtln("")
 	}
