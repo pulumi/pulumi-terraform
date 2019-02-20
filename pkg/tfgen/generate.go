@@ -232,17 +232,19 @@ func optionalComplex(sch *schema.Schema, info *tfbridge.SchemaInfo, out, config 
 
 // resourceType is a generated resource type that represents a Pulumi CustomResource definition.
 type resourceType struct {
-	name       string
-	doc        string
-	isProvider bool
-	inprops    []*variable
-	outprops   []*variable
-	reqprops   map[string]bool
-	argst      *plainOldType // input properties.
-	statet     *plainOldType // output properties (all optional).
-	schema     *schema.Resource
-	info       *tfbridge.ResourceInfo
-	docURL     string
+	name        string
+	doc         string
+	isProvider  bool
+	inprops     []*variable
+	outprops    []*variable
+	resultprops []*variable
+	reqprops    map[string]bool
+	argst       *plainOldType // input properties.
+	statet      *plainOldType // output properties (all optional).
+	resultt     *plainOldType // query properties.
+	schema      *schema.Resource
+	info        *tfbridge.ResourceInfo
+	docURL      string
 }
 
 func (rt *resourceType) Name() string { return rt.name }
@@ -584,6 +586,7 @@ func (g *generator) gatherResource(rawname string,
 			inprop := propertyVariable(key, propschema, propinfo, doc, rawdoc, docURL, false /*out*/)
 			if inprop != nil {
 				res.inprops = append(res.inprops, inprop)
+				res.resultprops = append(res.resultprops, inprop)
 				if !inprop.optional() {
 					res.reqprops[name] = true
 				}
@@ -608,6 +611,13 @@ func (g *generator) gatherResource(rawname string,
 		name:  fmt.Sprintf("%sArgs", res.name),
 		doc:   fmt.Sprintf("The set of arguments for constructing a %s resource.", name),
 		props: res.inprops,
+	}
+
+	// Next, generate the args interface for this class, and add it first to the list (since the res type uses it).
+	res.resultt = &plainOldType{
+		name:  fmt.Sprintf("%sResult", res.name),
+		doc:   fmt.Sprintf("The live %s resource.", name),
+		props: res.resultprops,
 	}
 
 	// Ensure there weren't any custom fields that were unrecognized.
