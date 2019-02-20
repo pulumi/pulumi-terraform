@@ -477,43 +477,7 @@ func MakeTerraformOutput(v interface{},
 	case reflect.Float64:
 		return resource.NewNumberProperty(val.Float())
 	case reflect.String:
-		// If the string is the special unknown property sentinel, reflect back an unknown computed property.  Note that
-		// Terraform doesn't carry the types along with it, so the best we can do is give back a computed string.
-		t := val.String()
-		if t == config.UnknownVariableValue {
-			return resource.NewComputedProperty(
-				resource.Computed{Element: resource.NewStringProperty("")})
-		}
-
-		// It's just a string. It might be another value, depending on the schema. Do we have a schema available?
-		if tfs == nil {
-			// If not, it's probably an ID or some other Pulumi-specific output. Leave it alone.
-			return resource.NewStringProperty(t)
-		}
-
-		switch tfs.Type {
-		case schema.TypeInt:
-			intVal, err := strconv.ParseInt(t, 0, 0)
-			if err != nil {
-				return resource.NewStringProperty(t)
-			}
-			return resource.NewNumberProperty(float64(intVal))
-		case schema.TypeBool:
-			boolVal, err := strconv.ParseBool(t)
-			if err != nil {
-				return resource.NewStringProperty(t)
-			}
-			return resource.NewBoolProperty(boolVal)
-		case schema.TypeFloat:
-			floatVal, err := strconv.ParseFloat(t, 64)
-			if err != nil {
-				return resource.NewStringProperty(t)
-			}
-			return resource.NewNumberProperty(floatVal)
-		}
-
-		// Else it's just a string.
-		return resource.NewStringProperty(t)
+		return CoerceTerraformStringOutput(tfs, val.String())
 	case reflect.Slice:
 		elems := []interface{}{}
 		for i := 0; i < val.Len(); i++ {
@@ -829,4 +793,50 @@ func CleanTerraformSchema(tfs map[string]*schema.Schema) map[string]*schema.Sche
 		}
 	}
 	return cleaned
+}
+
+// CoerceTerraformStringOutput coerces a field with the given Terraform schema to a PropertyValue. Terraform often
+// produces Go values of type String for resources whose schema indicates that the type is not String - usually Int,
+// Bool, or Float. In this case, CoerceTerraformStringOutput inspects the schema and, if the schema is present, coerces
+// the string value to the requested type and returns a PropertyValue for it.
+//
+// If the schema is not present (i.e. this is a Pulumi-specific field), there is an error coercing the string value,
+// or the schema indicates the field is not of type Int, Bool, or Float, the string is returned verbatim.
+func CoerceTerraformStringOutput(sch *schema.Schema, stringValue string) resource.PropertyValue {
+	// If the string is the special unknown property sentinel, reflect back an unknown computed property.  Note that
+	// Terraform doesn't carry the types along with it, so the best we can do is give back a computed string.
+	if stringValue == config.UnknownVariableValue {
+		return resource.NewComputedProperty(
+			resource.Computed{Element: resource.NewStringProperty("")})
+	}
+
+	// It's just a string. It might be another value, depending on the schema. Do we have a schema available?
+	if sch == nil {
+		// If not, it's probably an ID or some other Pulumi-specific output. Leave it alone.
+		return resource.NewStringProperty(stringValue)
+	}
+
+	switch sch.Type {
+	case schema.TypeInt:
+		intVal, err := strconv.ParseInt(stringValue, 0, 0)
+		if err != nil {
+			return resource.NewStringProperty(stringValue)
+		}
+		return resource.NewNumberProperty(float64(intVal))
+	case schema.TypeBool:
+		boolVal, err := strconv.ParseBool(stringValue)
+		if err != nil {
+			return resource.NewStringProperty(stringValue)
+		}
+		return resource.NewBoolProperty(boolVal)
+	case schema.TypeFloat:
+		floatVal, err := strconv.ParseFloat(stringValue, 64)
+		if err != nil {
+			return resource.NewStringProperty(stringValue)
+		}
+		return resource.NewNumberProperty(floatVal)
+	}
+
+	// Else it's just a string.
+	return resource.NewStringProperty(stringValue)
 }
