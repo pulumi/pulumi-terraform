@@ -873,11 +873,17 @@ func TestStringOutputsWithSchema(t *testing.T) {
 			"number_property_value":    "42",
 			"float_property_value":     "42.0",
 			"no_schema_property_value": "42",
+			"not_an_int_value":         "lmao",
+			"not_a_bool_value":         "lmao2",
+			"not_a_float_value":        "lmao3",
 		},
 		map[string]*schema.Schema{
 			"bool_property_value":   {Type: schema.TypeBool},
 			"number_property_value": {Type: schema.TypeInt},
 			"float_property_value":  {Type: schema.TypeFloat},
+			"not_an_int_value":      {Type: schema.TypeInt},
+			"not_a_bool_value":      {Type: schema.TypeBool},
+			"not_a_float_value":     {Type: schema.TypeFloat},
 		},
 		map[string]*SchemaInfo{},
 		nil,   /* assets */
@@ -889,5 +895,8 @@ func TestStringOutputsWithSchema(t *testing.T) {
 		"numberPropertyValue":   42,
 		"floatPropertyValue":    42.0,
 		"noSchemaPropertyValue": "42",
+		"notAnIntValue":         "lmao",
+		"notABoolValue":         "lmao2",
+		"notAFloatValue":        "lmao3",
 	}), result)
 }
