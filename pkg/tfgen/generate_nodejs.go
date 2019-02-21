@@ -350,7 +350,7 @@ func (g *nodeJSGenerator) emitConfigVariable(w *tools.GenWriter, v *variable) {
 	}
 	if v.schema.Type != schema.TypeString {
 		// Only try to parse a JSON object if the config isn't a straight string.
-		getfunc = fmt.Sprintf("%sObject<%s>", getfunc, tsType(v, false /*noflags*/, !v.out /*wrapInput*/))
+		getfunc = fmt.Sprintf("%sObject<%s>", getfunc, tsType(v, false /*noflags*/))
 	}
 	var anycast string
 	if v.info != nil && v.info.Type != "" {
@@ -372,7 +372,7 @@ func (g *nodeJSGenerator) emitConfigVariable(w *tools.GenWriter, v *variable) {
 		}
 	}
 
-	w.Writefmtln("export let %s: %s = %s%s;", v.name, tsType(v, true /*noflags*/, !v.out /*wrapInput*/), anycast,
+	w.Writefmtln("export let %s: %s = %s%s;", v.name, tsType(v, true /*noflags*/), anycast,
 		configFetch)
 }
 
@@ -434,7 +434,7 @@ func (g *nodeJSGenerator) emitPlainOldType(w *tools.GenWriter, pot *plainOldType
 		} else if prop.rawdoc != "" {
 			g.emitRawDocComment(w, prop.rawdoc, "    ")
 		}
-		w.Writefmtln("    readonly %s%s: %s;", prop.name, tsFlags(prop), tsType(prop, false, wrapInput))
+		w.Writefmtln("    readonly %s%s: %s;", prop.name, tsFlags(prop), tsType(prop, false))
 	}
 	w.Writefmtln("}")
 }
@@ -508,7 +508,7 @@ func (g *nodeJSGenerator) emitResourceType(mod *module, res *resourceType) (stri
 		}
 
 		w.Writefmtln("    public %sreadonly %s: pulumi.Output<%s>;",
-			outcomment, prop.name, tsType(prop, true /*noflags*/, !prop.out /*wrapInput*/))
+			outcomment, prop.name, tsType(prop, true /*noflags*/))
 	}
 	w.Writefmtln("")
 
@@ -539,14 +539,14 @@ func (g *nodeJSGenerator) emitResourceType(mod *module, res *resourceType) (stri
 		optionsType = "ResourceOptions"
 	}
 
-	w.Writefmtln("    constructor(name: string, args%s: %s, opts?: pulumi.%s)%s", argsFlags, argsType,
+	w.Writefmtln("    constructor(name: string, args%s: pulumi.InputObject<%s>, opts?: pulumi.%s)%s", argsFlags, argsType,
 		optionsType, trailingBrace)
 
 	if !res.IsProvider() {
 		// Now write out a general purpose constructor implementation that can handle the public signautre as well as the
 		// signature to support construction via `.get`.  And then emit the body preamble which will pluck out the
 		// conditional state into sensible variables using dynamic type tests.
-		w.Writefmtln("    constructor(name: string, argsOrState?: %s | %s, opts?: pulumi.CustomResourceOptions) {",
+		w.Writefmtln("    constructor(name: string, argsOrState?: pulumi.InputObject<%s> | pulumi.InputObject<%s>, opts?: pulumi.CustomResourceOptions) {",
 			argsType, stateType)
 		w.Writefmtln("        let inputs: pulumi.Inputs = {};")
 		// The lookup case:
@@ -962,12 +962,12 @@ func tsFlagsComplex(sch *schema.Schema, info *tfbridge.SchemaInfo, opt, out, con
 // that represents the optional nature of a variable, even when flags will not be present; this is often needed when
 // turning the type into a generic type argument, for example, since there will be no opportunity for "?" there.
 // wrapInput can be set to true to cause the generated type to be deeply wrapped with `pulumi.Input<T>`.
-func tsType(v *variable, noflags, wrapInput bool) string {
-	return tsTypeComplex(v.schema, v.info, noflags, v.out, wrapInput, v.config)
+func tsType(v *variable, noflags bool) string {
+	return tsTypeComplex(v.schema, v.info, noflags, v.out, v.config)
 }
 
 // tsTypeComplex is just like tsType, but permits recursing using component pieces rather than a true variable.
-func tsTypeComplex(sch *schema.Schema, info *tfbridge.SchemaInfo, noflags, out, wrapInput, config bool) string {
+func tsTypeComplex(sch *schema.Schema, info *tfbridge.SchemaInfo, noflags, out, config bool) string {
 	// First, see if there is a custom override.  If yes, use it directly.
 	var t string
 	var elem *tfbridge.SchemaInfo
@@ -982,15 +982,8 @@ func tsTypeComplex(sch *schema.Schema, info *tfbridge.SchemaInfo, noflags, out, 
 					}
 				}
 			}
-			if wrapInput {
-				t = fmt.Sprintf("pulumi.Input<%s>", t)
-			}
 		} else if info.Asset != nil {
 			t = "pulumi.asset." + info.Asset.Type()
-
-			if wrapInput {
-				t = fmt.Sprintf("pulumi.Input<%s>", t)
-			}
 		}
 
 		elem = info.Elem
@@ -999,7 +992,7 @@ func tsTypeComplex(sch *schema.Schema, info *tfbridge.SchemaInfo, noflags, out, 
 	// If nothing was found, generate the primitive type name for this.
 	if t == "" {
 		flatten := tfbridge.IsMaxItemsOne(sch, info)
-		t = tsPrimitive(sch.Type, sch.Elem, elem, flatten, out, wrapInput, config)
+		t = tsPrimitive(sch.Type, sch.Elem, elem, flatten, out, config)
 	}
 
 	// If we aren't using optional flags, we need to use TypeScript union types to permit undefined values.
@@ -1014,7 +1007,7 @@ func tsTypeComplex(sch *schema.Schema, info *tfbridge.SchemaInfo, noflags, out, 
 
 // tsPrimitive returns the TypeScript type name for a given schema value type and element kind.
 func tsPrimitive(vt schema.ValueType, elem interface{}, eleminfo *tfbridge.SchemaInfo,
-	flatten, out, wrapInput, config bool) string {
+	flatten, out, config bool) string {
 
 	// First figure out the raw type.
 	var t string
@@ -1026,7 +1019,7 @@ func tsPrimitive(vt schema.ValueType, elem interface{}, eleminfo *tfbridge.Schem
 	case schema.TypeString:
 		t = "string"
 	case schema.TypeSet, schema.TypeList:
-		elemType := tsElemType(elem, eleminfo, out, wrapInput, config)
+		elemType := tsElemType(elem, eleminfo, out, config)
 		if flatten {
 			return elemType
 		}
@@ -1034,7 +1027,7 @@ func tsPrimitive(vt schema.ValueType, elem interface{}, eleminfo *tfbridge.Schem
 	case schema.TypeMap:
 		// If this map has a "resource" element type, just use the generated element type. This works around a bug in
 		// TF that effectively forces this behavior.
-		elemType := tsElemType(elem, eleminfo, out, wrapInput, config)
+		elemType := tsElemType(elem, eleminfo, out, config)
 		if _, hasResourceElem := elem.(*schema.Resource); hasResourceElem {
 			return elemType
 		}
@@ -1043,16 +1036,12 @@ func tsPrimitive(vt schema.ValueType, elem interface{}, eleminfo *tfbridge.Schem
 		contract.Failf("Unrecognized schema type: %v", vt)
 	}
 
-	if wrapInput {
-		t = fmt.Sprintf("pulumi.Input<%s>", t)
-	}
-
 	return t
 }
 
 // tsElemType returns the TypeScript type for a given schema element.  This element may be either a simple schema
 // property or a complex structure.  In the case of a complex structure, this will expand to its nominal type.
-func tsElemType(elem interface{}, info *tfbridge.SchemaInfo, out, wrapInput, config bool) string {
+func tsElemType(elem interface{}, info *tfbridge.SchemaInfo, out, config bool) string {
 	// If there is no element type specified, we will accept anything.
 	if elem == nil {
 		return "any"
@@ -1060,10 +1049,10 @@ func tsElemType(elem interface{}, info *tfbridge.SchemaInfo, out, wrapInput, con
 
 	switch e := elem.(type) {
 	case schema.ValueType:
-		return tsPrimitive(e, nil, info, false, out, wrapInput, config)
+		return tsPrimitive(e, nil, info, false, out, config)
 	case *schema.Schema:
 		// A simple type, just return its type name.
-		return tsTypeComplex(e, info, true /*noflags*/, out, wrapInput, config)
+		return tsTypeComplex(e, info, true /*noflags*/, out, config)
 	case *schema.Resource:
 		// A complex type, just expand to its nominal type name.
 		// TODO: spill all complex structures in advance so that we don't have insane inline expansions.
@@ -1080,15 +1069,12 @@ func tsElemType(elem interface{}, info *tfbridge.SchemaInfo, out, wrapInput, con
 					t += ", "
 				}
 				flg := tsFlagsComplex(sch, fldinfo, false, out, config)
-				typ := tsTypeComplex(sch, fldinfo, false /*noflags*/, out, wrapInput, config)
+				typ := tsTypeComplex(sch, fldinfo, false /*noflags*/, out, config)
 				t += fmt.Sprintf("%s%s: %s", name, flg, typ)
 				c++
 			}
 		}
 		t += " }"
-		if wrapInput {
-			t = fmt.Sprintf("pulumi.Input<%s>", t)
-		}
 		return t
 	default:
 		contract.Failf("Unrecognized schema element type: %v", e)

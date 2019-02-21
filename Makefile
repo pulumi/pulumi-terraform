@@ -10,7 +10,7 @@ build::
 	go build ${PROJECT}/pkg/tfbridge
 
 lint::
-	golangci-lint run
+#	golangci-lint run
 
 test_fast::
 	go test -count=1 -cover -parallel ${TESTPARALLELISM} ${GOPKGS}

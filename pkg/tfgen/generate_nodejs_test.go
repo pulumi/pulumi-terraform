@@ -36,25 +36,25 @@ var tsTypeTests = []typeTest{
 		// Bool Schema
 		schema:         &schema.Schema{Type: schema.TypeBool},
 		expectedOutput: "boolean",
-		expectedInput:  "pulumi.Input<boolean>",
+		expectedInput:  "boolean",
 	},
 	{
 		// Int Schema
 		schema:         &schema.Schema{Type: schema.TypeInt},
 		expectedOutput: "number",
-		expectedInput:  "pulumi.Input<number>",
+		expectedInput:  "number",
 	},
 	{
 		// Float Schema
 		schema:         &schema.Schema{Type: schema.TypeFloat},
 		expectedOutput: "number",
-		expectedInput:  "pulumi.Input<number>",
+		expectedInput:  "number",
 	},
 	{
 		// String Schema
 		schema:         &schema.Schema{Type: schema.TypeString},
 		expectedOutput: "string",
-		expectedInput:  "pulumi.Input<string>",
+		expectedInput:  "string",
 	},
 	{
 		// Basic Set Schema
@@ -63,7 +63,7 @@ var tsTypeTests = []typeTest{
 			Elem: &schema.Schema{Type: schema.TypeString},
 		},
 		expectedOutput: "string[]",
-		expectedInput:  "pulumi.Input<pulumi.Input<string>[]>",
+		expectedInput:  "string[]",
 	},
 	{
 		// Basic List Schema
@@ -72,7 +72,7 @@ var tsTypeTests = []typeTest{
 			Elem: &schema.Schema{Type: schema.TypeString},
 		},
 		expectedOutput: "string[]",
-		expectedInput:  "pulumi.Input<pulumi.Input<string>[]>",
+		expectedInput:  "string[]",
 	},
 	{
 		// Basic Map Schema
@@ -81,7 +81,7 @@ var tsTypeTests = []typeTest{
 			Elem: &schema.Schema{Type: schema.TypeString},
 		},
 		expectedOutput: "{[key: string]: string}",
-		expectedInput:  "pulumi.Input<{[key: string]: pulumi.Input<string>}>",
+		expectedInput:  "{[key: string]: string}",
 	},
 	{
 		// Resource Map Schema
@@ -94,7 +94,7 @@ var tsTypeTests = []typeTest{
 			},
 		},
 		expectedOutput: "{ foo: string }",
-		expectedInput:  "pulumi.Input<{ foo: pulumi.Input<string> }>",
+		expectedInput:  "{ foo: string }",
 	},
 	{
 		// Basic alt types
@@ -103,7 +103,7 @@ var tsTypeTests = []typeTest{
 			AltTypes: []tokens.Type{"Foo"},
 		},
 		expectedOutput: "string",
-		expectedInput:  "pulumi.Input<string | Foo>",
+		expectedInput:  "string | Foo",
 	},
 }
 
@@ -118,11 +118,11 @@ func Test_TsTypes(t *testing.T) {
 
 		// Output
 		v.out = true
-		assert.Equal(t, test.expectedOutput, tsType(v, false, false))
+		assert.Equal(t, test.expectedOutput, tsType(v, false))
 
 		// Input
 		v.out = false
-		assert.Equal(t, test.expectedInput, tsType(v, false, true))
+		assert.Equal(t, test.expectedInput, tsType(v, false))
 	}
 }
 
@@ -137,11 +137,11 @@ func Test_Issue130(t *testing.T) {
 		name:   "condition",
 		schema: schema,
 		out:    true,
-	}, false, false))
+	}, false))
 
-	assert.Equal(t, "pulumi.Input<string>", tsType(&variable{
+	assert.Equal(t, "string", tsType(&variable{
 		name:   "condition",
 		schema: schema,
 		out:    false,
-	}, false, true))
+	}, false))
 }
