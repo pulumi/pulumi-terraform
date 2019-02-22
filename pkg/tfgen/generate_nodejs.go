@@ -539,14 +539,14 @@ func (g *nodeJSGenerator) emitResourceType(mod *module, res *resourceType) (stri
 		optionsType = "ResourceOptions"
 	}
 
-	w.Writefmtln("    constructor(name: string, args%s: pulumi.InputObject<%s>, opts?: pulumi.%s)%s", argsFlags, argsType,
+	w.Writefmtln("    constructor(name: string, args%s: pulumi.WrappedObject<%s>, opts?: pulumi.%s)%s", argsFlags, argsType,
 		optionsType, trailingBrace)
 
 	if !res.IsProvider() {
 		// Now write out a general purpose constructor implementation that can handle the public signautre as well as the
 		// signature to support construction via `.get`.  And then emit the body preamble which will pluck out the
 		// conditional state into sensible variables using dynamic type tests.
-		w.Writefmtln("    constructor(name: string, argsOrState?: pulumi.InputObject<%s> | pulumi.InputObject<%s>, opts?: pulumi.CustomResourceOptions) {",
+		w.Writefmtln("    constructor(name: string, argsOrState?: pulumi.WrappedObject<%s> | pulumi.WrappedObject<%s>, opts?: pulumi.CustomResourceOptions) {",
 			argsType, stateType)
 		w.Writefmtln("        let inputs: pulumi.Inputs = {};")
 		// The lookup case:
