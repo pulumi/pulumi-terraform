@@ -29,6 +29,7 @@ func TestPulumiToTerraformName(t *testing.T) {
 	assert.Equal(t, "test_name", PulumiToTerraformName("test_name", nil))
 	assert.Equal(t, "test_name_", PulumiToTerraformName("testName_", nil))
 	assert.Equal(t, "t_e_s_t_n_a_m_e", PulumiToTerraformName("TESTNAME", nil))
+	assert.Equal(t, "use_32_bit_worker_process", PulumiToTerraformName("use32BitWorkerProcess", nil))
 }
 
 func TestTerraformToPulumiName(t *testing.T) {
@@ -37,11 +38,13 @@ func TestTerraformToPulumiName(t *testing.T) {
 	assert.Equal(t, "testName", TerraformToPulumiName("test_name", nil, false))
 	assert.Equal(t, "testName_", TerraformToPulumiName("testName_", nil, false))
 	assert.Equal(t, "tESTNAME", TerraformToPulumiName("t_e_s_t_n_a_m_e", nil, false))
+	assert.Equal(t, "use32BitWorkerProcess", TerraformToPulumiName("use_32_bit_worker_process", nil, false))
 	assert.Equal(t, "", TerraformToPulumiName("", nil, true))
 	assert.Equal(t, "Test", TerraformToPulumiName("test", nil, true))
 	assert.Equal(t, "TestName", TerraformToPulumiName("test_name", nil, true))
 	assert.Equal(t, "TestName_", TerraformToPulumiName("testName_", nil, true))
 	assert.Equal(t, "TESTNAME", TerraformToPulumiName("t_e_s_t_n_a_m_e", nil, true))
+	assert.Equal(t, "Use32BitWorkerProcess", TerraformToPulumiName("use_32_bit_worker_process", nil, true))
 }
 
 func TestPluralize(t *testing.T) {

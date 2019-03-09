@@ -34,6 +34,13 @@ func PulumiToTerraformName(name string, tfs map[string]*schema.Schema) string {
 				result += "_"
 			}
 			result += string(unicode.ToLower(c))
+		} else if c >= '0' && c <= '9' {
+			// If the last character is not a number, add a separator
+			lastChar := result[len(result)-1]
+			if lastChar < '0' || lastChar > '9' {
+				result += "_"
+			}
+			result += string(c)
 		} else {
 			result += string(c)
 		}
