@@ -17,16 +17,18 @@ package tfbridge
 import (
 	"context"
 	"os"
+	"sort"
 	"strconv"
 	"testing"
 
-	"github.com/golang/protobuf/ptypes/struct"
+	structpb "github.com/golang/protobuf/ptypes/struct"
 	"github.com/hashicorp/terraform/config"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/pulumi/pulumi/pkg/resource"
+	"github.com/pulumi/pulumi/pkg/resource/plugin"
 	"github.com/pulumi/pulumi/pkg/tokens"
 	pulumirpc "github.com/pulumi/pulumi/sdk/proto/go"
 )
@@ -570,6 +572,12 @@ func TestEmptyListAttribute(t *testing.T) {
 	})
 }
 
+func sortDefaultsList(m resource.PropertyMap) {
+	defs := m[defaultsKey].ArrayValue()
+	sort.Slice(defs, func(i, j int) bool { return defs[i].StringValue() < defs[j].StringValue() })
+	m[defaultsKey] = resource.NewArrayProperty(defs)
+}
+
 func TestDefaults(t *testing.T) {
 	// Produce maps with the following properties, and then validate them:
 	//     - aaa string; no defaults, no inputs => empty
@@ -587,7 +595,9 @@ func TestDefaults(t *testing.T) {
 	//     - iii string; old default "OLI", TF default "TFI", PS default "PSI", no input => "OLD"
 	//     - jjj string: old input "OLJ", no defaults, no input => no merged input
 	//     - lll: old default "OLL", TF default "TFL", no input => "OLL"
+	//     - ll2: old input "OLL", TF default "TFL", no input => "TL2"
 	//     - mmm: old default "OLM", PS default "PSM", no input => "OLM"
+	//     - mm2: old input "OLM", PS default "PM2", no input => "PM2"
 	//     - uuu: PS default "PSU", envvars w/o valiues => "PSU"
 	//     - vvv: PS default 42, envvars with values => 1337
 	//     - www: old default "OLW", deprecated, required, no input -> "OLW"
@@ -608,7 +618,9 @@ func TestDefaults(t *testing.T) {
 		"iii": {Type: schema.TypeString, Default: "TFI"},
 		"jjj": {Type: schema.TypeString},
 		"lll": {Type: schema.TypeString, Default: "TFL"},
+		"ll2": {Type: schema.TypeString, Default: "TL2"},
 		"mmm": {Type: schema.TypeString},
+		"mm2": {Type: schema.TypeString},
 		"sss": {Type: schema.TypeString, Removed: "removed"},
 		"ttt": {Type: schema.TypeString, Removed: "removed", Default: "TFD"},
 		"uuu": {Type: schema.TypeString},
@@ -627,6 +639,7 @@ func TestDefaults(t *testing.T) {
 		"hhh": {Default: &DefaultInfo{Value: "PSH"}},
 		"iii": {Default: &DefaultInfo{Value: "PSI"}},
 		"mmm": {Default: &DefaultInfo{Value: "PSM"}},
+		"mm2": {Default: &DefaultInfo{Value: "PM2"}},
 		"sss": {Default: &DefaultInfo{Value: "PSS"}},
 		"uuu": {Default: &DefaultInfo{Value: "PSU", EnvVars: []string{"PTFU", "PTFU2"}}},
 		"vvv": {Default: &DefaultInfo{Value: 42, EnvVars: []string{"PTFV", "PTFV2"}}},
@@ -634,10 +647,15 @@ func TestDefaults(t *testing.T) {
 		"zzz": {Asset: &AssetTranslation{Kind: FileAsset}},
 	}
 	olds := resource.PropertyMap{
+		defaultsKey: resource.NewPropertyValue([]interface{}{
+			"iii", "jjj", "lll", "mmm", "www", "xxx",
+		}),
 		"iii": resource.NewStringProperty("OLI"),
 		"jjj": resource.NewStringProperty("OLJ"),
 		"lll": resource.NewStringProperty("OLL"),
+		"ll2": resource.NewStringProperty("OL2"),
 		"mmm": resource.NewStringProperty("OLM"),
+		"mm2": resource.NewStringProperty("OM2"),
 		"www": resource.NewStringProperty("OLW"),
 		"xxx": resource.NewStringProperty("OLX"),
 	}
@@ -653,7 +671,13 @@ func TestDefaults(t *testing.T) {
 	inputs, err := MakeTerraformInputs(nil, olds, props, tfs, ps, assets, true, false)
 	assert.NoError(t, err)
 	outputs := MakeTerraformOutputs(inputs, tfs, ps, assets, false)
+
+	// sort the defaults list before the equality test below.
+	sortDefaultsList(outputs)
 	assert.Equal(t, resource.NewPropertyMapFromMap(map[string]interface{}{
+		defaultsKey: []interface{}{
+			"cc2", "ccc", "ee2", "eee", "ggg", "iii", "ll2", "lll", "mm2", "mmm", "uuu", "vvv", "www",
+		},
 		"bbb": "BBB",
 		"ccc": "CCC",
 		"cc2": "CC2",
@@ -667,7 +691,45 @@ func TestDefaults(t *testing.T) {
 		"hhh": "HHH",
 		"iii": "OLI",
 		"lll": "OLL",
+		"ll2": "TL2",
 		"mmm": "OLM",
+		"mm2": "PM2",
+		"uuu": "PSU",
+		"vvv": 1337,
+		"www": "OLW",
+		"zzz": asset,
+	}), outputs)
+
+	// Now delete the defaults list from the olds and re-run. This will affect the values for "ll2" and "mm2", which
+	// will be pulled from the old inputs instead of regenerated.
+	delete(olds, defaultsKey)
+	assets = make(AssetTable)
+	inputs, err = MakeTerraformInputs(nil, olds, props, tfs, ps, assets, true, false)
+	assert.NoError(t, err)
+	outputs = MakeTerraformOutputs(inputs, tfs, ps, assets, false)
+
+	// sort the defaults list before the equality test below.
+	sortDefaultsList(outputs)
+	assert.Equal(t, resource.NewPropertyMapFromMap(map[string]interface{}{
+		defaultsKey: []interface{}{
+			"cc2", "ccc", "ee2", "eee", "ggg", "iii", "ll2", "lll", "mm2", "mmm", "uuu", "vvv", "www",
+		},
+		"bbb": "BBB",
+		"ccc": "CCC",
+		"cc2": "CC2",
+		"ddd": "DDD",
+		"dd2": "DDD",
+		"eee": "EEE",
+		"ee2": "EE2",
+		"fff": "FFF",
+		"ff2": "FFF",
+		"ggg": "PSG",
+		"hhh": "HHH",
+		"iii": "OLI",
+		"lll": "OLL",
+		"ll2": "OL2",
+		"mmm": "OLM",
+		"mm2": "OM2",
 		"uuu": "PSU",
 		"vvv": 1337,
 		"www": "OLW",
@@ -687,7 +749,7 @@ func TestComputedAsset(t *testing.T) {
 	props := resource.PropertyMap{
 		"zzz": resource.NewStringProperty(config.UnknownVariableValue),
 	}
-	inputs, err := MakeTerraformInputs(nil, olds, props, tfs, ps, assets, true, false)
+	inputs, err := MakeTerraformInputs(nil, olds, props, tfs, ps, assets, false, false)
 	assert.NoError(t, err)
 	outputs := MakeTerraformOutputs(inputs, tfs, ps, assets, false)
 	assert.Equal(t, resource.PropertyMap{
@@ -707,7 +769,7 @@ func TestInvalidAsset(t *testing.T) {
 	props := resource.PropertyMap{
 		"zzz": resource.NewStringProperty("invalid"),
 	}
-	inputs, err := MakeTerraformInputs(nil, olds, props, tfs, ps, assets, true, false)
+	inputs, err := MakeTerraformInputs(nil, olds, props, tfs, ps, assets, false, false)
 	assert.NoError(t, err)
 	outputs := MakeTerraformOutputs(inputs, tfs, ps, assets, false)
 	assert.Equal(t, resource.PropertyMap{
@@ -899,4 +961,98 @@ func TestStringOutputsWithSchema(t *testing.T) {
 		"notABoolValue":         "lmao2",
 		"notAFloatValue":        "lmao3",
 	}), result)
+}
+
+func TestExtractInputsFromOutputs(t *testing.T) {
+	tfProvider := makeTestTFProvider(
+		map[string]*schema.Schema{
+			"input_a": {Type: schema.TypeString, Required: true},
+			"input_b": {Type: schema.TypeString, Optional: true},
+			"inout_c": {Type: schema.TypeString, Optional: true, Computed: true},
+			"inout_d": {Type: schema.TypeString, Optional: true, Computed: true, Default: "inout_d_default"},
+			"input_e": {
+				Type: schema.TypeList,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"field_a": {Type: schema.TypeString, Optional: true, Default: "field_a_default"},
+					},
+				},
+				MaxItems: 1,
+				Optional: true,
+			},
+			"input_f":  {Type: schema.TypeString, Required: true},
+			"output_g": {Type: schema.TypeString},
+		},
+		func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+			return []*schema.ResourceData{d}, nil
+		})
+
+	tfres := tfProvider.ResourcesMap["importable_resource"]
+	tfres.Read = func(d *schema.ResourceData, meta interface{}) error {
+		if _, ok := d.GetOk("input_a"); !ok {
+			d.Set("input_a", "input_a_read")
+		}
+		if _, ok := d.GetOk("inout_c"); !ok {
+			d.Set("inout_c", "inout_c_read")
+		}
+		d.Set("inout_d", "inout_d_read")
+		d.Set("output_g", "output_g_read")
+		return nil
+	}
+	tfres.Create = func(d *schema.ResourceData, meta interface{}) error {
+		d.SetId("MyID")
+		if _, ok := d.GetOk("inout_c"); !ok {
+			d.Set("inout_c", "inout_c_create")
+		}
+		d.Set("output_g", "output_g_create")
+		return nil
+	}
+
+	p := &Provider{
+		tf: tfProvider,
+		resources: map[tokens.Type]Resource{
+			"importableResource": {
+				TF:     tfProvider.ResourcesMap["importable_resource"],
+				TFName: "importable_resource",
+				Schema: &ResourceInfo{
+					Tok: tokens.NewTypeToken("module", "importableResource"),
+					Fields: map[string]*SchemaInfo{
+						"input_f": {
+							Default: &DefaultInfo{
+								Value: "input_f_default",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	urn := resource.NewURN("s", "pr", "pa", "importableResource", "n")
+	id := resource.ID("MyID")
+
+	resp, err := p.Read(context.Background(), &pulumirpc.ReadRequest{
+		Id:  string(id),
+		Urn: string(urn),
+	})
+	assert.NoError(t, err)
+
+	outs, err := plugin.UnmarshalProperties(resp.GetProperties(), plugin.MarshalOptions{})
+	assert.NoError(t, err)
+	assert.Equal(t, resource.NewPropertyMapFromMap(map[string]interface{}{
+		"id":      "MyID",
+		"inputA":  "input_a_read",
+		"inoutC":  "inout_c_read",
+		"inoutD":  "inout_d_read",
+		"outputG": "output_g_read",
+	}), outs)
+
+	ins, err := plugin.UnmarshalProperties(resp.GetInputs(), plugin.MarshalOptions{})
+	assert.NoError(t, err)
+	assert.Equal(t, resource.NewPropertyMapFromMap(map[string]interface{}{
+		defaultsKey: []interface{}{},
+		"inputA":    "input_a_read",
+		"inoutC":    "inout_c_read",
+		"inoutD":    "inout_d_read",
+	}), ins)
 }
