@@ -30,6 +30,7 @@ import (
 	"github.com/pulumi/pulumi/pkg/resource"
 	"github.com/pulumi/pulumi/pkg/resource/plugin"
 	"github.com/pulumi/pulumi/pkg/tokens"
+	"github.com/pulumi/pulumi/pkg/util/contract"
 	pulumirpc "github.com/pulumi/pulumi/sdk/proto/go"
 )
 
@@ -987,24 +988,28 @@ func TestExtractInputsFromOutputs(t *testing.T) {
 			return []*schema.ResourceData{d}, nil
 		})
 
+	set := func(d *schema.ResourceData, key string, value interface{}) {
+		contract.IgnoreError(d.Set(key, value))
+	}
+
 	tfres := tfProvider.ResourcesMap["importable_resource"]
 	tfres.Read = func(d *schema.ResourceData, meta interface{}) error {
 		if _, ok := d.GetOk("input_a"); !ok {
-			d.Set("input_a", "input_a_read")
+			set(d, "input_a", "input_a_read")
 		}
 		if _, ok := d.GetOk("inout_c"); !ok {
-			d.Set("inout_c", "inout_c_read")
+			set(d, "inout_c", "inout_c_read")
 		}
-		d.Set("inout_d", "inout_d_read")
-		d.Set("output_g", "output_g_read")
+		set(d, "inout_d", "inout_d_read")
+		set(d, "output_g", "output_g_read")
 		return nil
 	}
 	tfres.Create = func(d *schema.ResourceData, meta interface{}) error {
 		d.SetId("MyID")
 		if _, ok := d.GetOk("inout_c"); !ok {
-			d.Set("inout_c", "inout_c_create")
+			set(d, "inout_c", "inout_c_create")
 		}
-		d.Set("output_g", "output_g_create")
+		set(d, "output_g", "output_g_create")
 		return nil
 	}
 
@@ -1031,6 +1036,7 @@ func TestExtractInputsFromOutputs(t *testing.T) {
 	urn := resource.NewURN("s", "pr", "pa", "importableResource", "n")
 	id := resource.ID("MyID")
 
+	// Case 1: read a resource that has no old state (this is the read/import case)
 	resp, err := p.Read(context.Background(), &pulumirpc.ReadRequest{
 		Id:  string(id),
 		Urn: string(urn),
@@ -1055,4 +1061,101 @@ func TestExtractInputsFromOutputs(t *testing.T) {
 		"inoutC":    "inout_c_read",
 		"inoutD":    "inout_d_read",
 	}), ins)
+
+	// Case 2: read a resource that has old state (this is the refresh case)
+	//
+	// Though test is fairly verbose, it is conceptually pretty simple: we construct an input bag, pass it through
+	// Check, pass the result to Create, and then call Read with the result of Create. We expect the information
+	// about defaults and inputs that gets smuggled along in our various property bags to be persisted throughout, with
+	// removal of defaults where necessary when calculating the new input set.
+
+	// Step 1: create and check an input bag. We should see information about which properties were populated using
+	// defaults in the result.
+	pulumiIns, err := plugin.MarshalProperties(resource.NewPropertyMapFromMap(map[string]interface{}{
+		"inputA": "input_a_create",
+		"inputE": map[string]interface{}{},
+	}), plugin.MarshalOptions{})
+	assert.NoError(t, err)
+	checkResp, err := p.Check(context.Background(), &pulumirpc.CheckRequest{
+		Urn:  string(urn),
+		News: pulumiIns,
+	})
+	assert.NoError(t, err)
+	checkedIns, err := plugin.UnmarshalProperties(checkResp.GetInputs(), plugin.MarshalOptions{})
+	assert.NoError(t, err)
+	sortDefaultsList(checkedIns)
+	assert.Equal(t, resource.NewPropertyMapFromMap(map[string]interface{}{
+		defaultsKey: []interface{}{"inoutD", "inputF"},
+		"inputA":    "input_a_create",
+		"inoutD":    "inout_d_default",
+		"inputE": map[string]interface{}{
+			defaultsKey: []interface{}{"fieldA"},
+			"fieldA":    "field_a_default",
+		},
+		"inputF": "input_f_default",
+	}), checkedIns)
+
+	// Step 2: create a resource using the checked input bag. The inputs should be smuggled along with the state.
+	createResp, err := p.Create(context.Background(), &pulumirpc.CreateRequest{
+		Urn:        string(urn),
+		Properties: checkResp.GetInputs(),
+	})
+	assert.NoError(t, err)
+
+	outs, err = plugin.UnmarshalProperties(createResp.GetProperties(), plugin.MarshalOptions{})
+	assert.NoError(t, err)
+	assert.Equal(t, resource.NewPropertyMapFromMap(map[string]interface{}{
+		"id":     "MyID",
+		"inputA": "input_a_create",
+		"inoutC": "inout_c_create",
+		"inoutD": "inout_d_default",
+		"inputE": map[string]interface{}{
+			"fieldA": "field_a_default",
+		},
+		"inputF":  "input_f_default",
+		"outputG": "output_g_create",
+	}), outs)
+
+	// Step 3: read the resource we just created. The read should make the following changes to the inputs:
+	// - "inoutC" should now be present in the input map. This is because it has a value in the state and the schema
+	//   indicates that it may be an input property. We could probably avoid this by checking to see if the value in
+	//   the new state matches the value in the olds state.
+	// - "inoutD" should change from "inout_d_default" to "inout_d_read", and should no longer be present in the list
+	//   of properties that were populated from defaults.
+	resp, err = p.Read(context.Background(), &pulumirpc.ReadRequest{
+		Id:         string(id),
+		Urn:        string(urn),
+		Properties: createResp.GetProperties(),
+		Inputs:     checkResp.GetInputs(),
+	})
+	assert.NoError(t, err)
+
+	outs, err = plugin.UnmarshalProperties(resp.GetProperties(), plugin.MarshalOptions{})
+	assert.NoError(t, err)
+	assert.Equal(t, resource.NewPropertyMapFromMap(map[string]interface{}{
+		"id":     "MyID",
+		"inputA": "input_a_create",
+		"inoutC": "inout_c_create",
+		"inoutD": "inout_d_read",
+		"inputE": map[string]interface{}{
+			"fieldA": "field_a_default",
+		},
+		"inputF":  "input_f_default",
+		"outputG": "output_g_read",
+	}), outs)
+
+	ins, err = plugin.UnmarshalProperties(resp.GetInputs(), plugin.MarshalOptions{})
+	assert.NoError(t, err)
+	assert.Equal(t, resource.NewPropertyMapFromMap(map[string]interface{}{
+		defaultsKey: []interface{}{"inputF"},
+		"inputA":    "input_a_create",
+		"inoutC":    "inout_c_create",
+		"inoutD":    "inout_d_read",
+		"inputE": map[string]interface{}{
+			defaultsKey: []interface{}{"fieldA"},
+			"fieldA":    "field_a_default",
+		},
+		"inputF": "input_f_default",
+	}), ins)
+
 }
