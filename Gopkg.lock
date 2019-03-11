@@ -858,6 +858,7 @@
     "github.com/hashicorp/terraform/helper/logging",
     "github.com/hashicorp/terraform/helper/schema",
     "github.com/hashicorp/terraform/terraform",
+    "github.com/mitchellh/copystructure",
     "github.com/pkg/errors",
     "github.com/pulumi/pulumi/pkg/diag",
     "github.com/pulumi/pulumi/pkg/resource",
