@@ -622,7 +622,7 @@ func (p *Provider) Read(ctx context.Context, req *pulumirpc.ReadRequest) (*pulum
 
 	// Manufacture Terraform attributes and state with the provided properties, in preparation for reading.
 	oldInputs, err := plugin.UnmarshalProperties(req.GetInputs(), plugin.MarshalOptions{
-		Label: fmt.Sprintf("%s.inputss", label), KeepUnknowns: true, SkipNulls: true})
+		Label: fmt.Sprintf("%s.inputs", label), KeepUnknowns: true, SkipNulls: true})
 	if err != nil {
 		return nil, err
 	}
