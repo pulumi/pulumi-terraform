@@ -34,8 +34,11 @@ import (
 	"github.com/pulumi/pulumi/pkg/util/contract"
 )
 
-// defaultsKey is the name of the property that is used in inputs and state to track which input property
-// values were populated with default values.
+// defaultsKey is the name of the input property that is used to track which property keys were populated using
+// default values from the resource's schema. This information is used to inform which input properties should be
+// populated using old defaults in subsequent updates. When populating the default value for an input property, the
+// property's old value will only be used as the default if the property's key is present in the defaults list for
+// the old property bag.
 const defaultsKey = "__defaults"
 
 // AssetTable is used to record which properties in a call to MakeTerraformInputs were assets so that they can be
