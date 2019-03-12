@@ -622,11 +622,38 @@ func MakeTerraformConfigFromRPC(res *PulumiResource, m *pbstruct.Struct,
 	return cfg, nil
 }
 
+// makeConfig is a helper for MakeTerraformConfigFromInputs that performs a deep-ish copy of its input, recursively
+// removing Pulumi-internal properties as it goes.
+func makeConfig(v interface{}) interface{} {
+	switch v := v.(type) {
+	case []interface{}:
+		r := make([]interface{}, len(v))
+		for i, e := range v {
+			r[i] = makeConfig(e)
+		}
+		return r
+	case map[string]interface{}:
+		r := make(map[string]interface{})
+		for k, e := range v {
+			// If this is a reserved property, ignore it.
+			switch k {
+			case defaultsKey, metaKey:
+				continue
+			}
+			r[k] = makeConfig(e)
+		}
+		return r
+	default:
+		return v
+	}
+}
+
 // MakeTerraformConfigFromInputs creates a new Terraform configuration object from a set of Terraform inputs.
 func MakeTerraformConfigFromInputs(inputs map[string]interface{}) (*terraform.ResourceConfig, error) {
+	raw := makeConfig(inputs).(map[string]interface{})
 	return &terraform.ResourceConfig{
-		Raw:    inputs,
-		Config: inputs,
+		Raw:    raw,
+		Config: raw,
 	}, nil
 }
 

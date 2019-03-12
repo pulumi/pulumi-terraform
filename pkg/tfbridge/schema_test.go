@@ -994,6 +994,9 @@ func TestExtractInputsFromOutputs(t *testing.T) {
 
 	tfres := tfProvider.ResourcesMap["importable_resource"]
 	tfres.Read = func(d *schema.ResourceData, meta interface{}) error {
+		_, ok := d.GetOk(defaultsKey)
+		assert.False(t, ok)
+
 		if _, ok := d.GetOk("input_a"); !ok {
 			set(d, "input_a", "input_a_read")
 		}
@@ -1005,6 +1008,9 @@ func TestExtractInputsFromOutputs(t *testing.T) {
 		return nil
 	}
 	tfres.Create = func(d *schema.ResourceData, meta interface{}) error {
+		_, ok := d.GetOk(defaultsKey)
+		assert.False(t, ok)
+
 		d.SetId("MyID")
 		if _, ok := d.GetOk("inout_c"); !ok {
 			set(d, "inout_c", "inout_c_create")
