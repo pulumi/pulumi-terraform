@@ -494,6 +494,13 @@ func (g *nodeJSGenerator) emitResourceType(mod *module, res *resourceType) (stri
 		w.Writefmtln("        return ctx.list({...args, type: '%s'});", res.info.Tok)
 		w.Writefmtln("    }")
 		w.Writefmtln("")
+
+		w.Writefmtln("    public static addAdmissionPolicy(policy: pulumi.policy.AdmissionPolicy): void {")
+		w.Writefmtln("        pulumi.runtime.addAdmissionPolicy({")
+		w.Writefmtln("            ...policy,")
+		w.Writefmtln("            pulumiType: '%s',", res.info.Tok)
+		w.Writefmtln("        });")
+		w.Writefmtln("    }")
 	}
 
 	// Emit all properties (using their output types).
