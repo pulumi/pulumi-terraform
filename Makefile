@@ -8,6 +8,7 @@ TESTPARALLELISM = 10
 build::
 	go build ${PROJECT}/pkg/tfgen
 	go build ${PROJECT}/pkg/tfbridge
+	cd sdk/nodejs && npm install && npm run build
 
 lint::
 	golangci-lint run
@@ -18,6 +19,7 @@ test_fast::
 
 test_all::
 	$(GO_TEST) ${GOPKGS}
+	cd sdk/nodejs && npm run test
 
 .PHONY: publish_packages
 	$(call STEP_MESSAGE)
