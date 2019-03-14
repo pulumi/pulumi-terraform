@@ -1,6 +1,6 @@
 {
   "name": "@pulumi/terraform",
-  "version": "0.1.0",
+  "version": "${VERSION}",
   "description": "Helpers for migrating Terraform code to Pulumi",
   "license": "Apache-2.0",
   "repository": "https://github.com/pulumi/pulumi-terraform/sdk/nodejs",
