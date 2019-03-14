@@ -19,6 +19,7 @@
     "@types/validator": "^9.4.4",
     "chai": "^4.2.0",
     "mocha": "^5.2.0",
+    "ts-node": "^8.0.3",
     "tslint": "^5.14.0",
     "typescript": "^3.3.3333",
     "validator": "^10.11.0"
