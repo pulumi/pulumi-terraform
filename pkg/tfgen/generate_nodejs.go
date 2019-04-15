@@ -732,9 +732,14 @@ func (g *nodeJSGenerator) emitNPMPackageMetadata(pack *pkg) error {
 	}
 	defer contract.IgnoreClose(w)
 
+	packageName := g.info.JavaScript.PackageName
+	if packageName == "" {
+		packageName = fmt.Sprintf("@pulumi/%s", pack.name)
+	}
+
 	// Create info that will get serialized into an NPM package.json.
 	npminfo := npmPackage{
-		Name:        fmt.Sprintf("@pulumi/%s", pack.name),
+		Name:        packageName,
 		Version:     "${VERSION}",
 		Description: g.info.Description,
 		Keywords:    g.info.Keywords,
