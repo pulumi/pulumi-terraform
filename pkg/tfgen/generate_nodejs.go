@@ -815,10 +815,8 @@ func (g *nodeJSGenerator) emitTypeScriptProjectFile(pack *pkg, files []string) e
         "stripInternal": true,
         "experimentalDecorators": true,
         "noFallthroughCasesInSwitch": true,
-        "noImplicitAny": true,
-        "noImplicitReturns": true,
         "forceConsistentCasingInFileNames": true,
-        "strictNullChecks": true
+        "strict": true
     },
     "files": [`)
 	for i, file := range files {
