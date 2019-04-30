@@ -507,7 +507,7 @@ func (g *nodeJSGenerator) emitResourceType(mod *module, res *resourceType) (stri
 			outcomment = "/*out*/ "
 		}
 
-		w.Writefmtln("    public %sreadonly %s: pulumi.Output<%s>;",
+		w.Writefmtln("    public %sreadonly %s!: pulumi.Output<%s>;",
 			outcomment, prop.name, tsType(prop, true /*noflags*/, !prop.out /*wrapInput*/))
 	}
 	w.Writefmtln("")
