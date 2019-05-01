@@ -662,6 +662,15 @@ func (g *nodeJSGenerator) emitResourceFunc(mod *module, fun *resourceFunc) (stri
 		w.Writefmtln("    args = args || {};")
 	}
 
+	// If the caller didn't request a specific version, supply one using the version of this library.
+	w.Writefmtln("    if (!opts) {")
+	w.Writefmtln("        opts = {}")
+	w.Writefmtln("    }")
+	w.Writefmtln("")
+	w.Writefmtln("    if (!opts.version) {")
+	w.Writefmtln("        opts.version = utilities.getVersion();")
+	w.Writefmtln("    }")
+
 	// Now simply invoke the runtime function with the arguments, returning the results.
 	w.Writefmtln("    return pulumi.runtime.invoke(\"%s\", {", fun.info.Tok)
 	for _, arg := range fun.args {
