@@ -519,6 +519,12 @@ func (g *pythonGenerator) emitResourceType(mod *module, res *resourceType) (stri
 		w.Writefmtln("")
 	}
 
+	// If the caller explicitly specified a version, use it, otherwise inject this package's version.
+	w.Writefmtln("        if opts is None:")
+	w.Writefmtln("            opts = pulumi.ResourceOptions()")
+	w.Writefmtln("        if opts.version is None:")
+	w.Writefmtln("            opts.version = utilities.get_version()")
+
 	// Finally, chain to the base constructor, which will actually register the resource.
 	w.Writefmtln("        super(%s, __self__).__init__(", res.name)
 	w.Writefmtln("            '%s',", res.info.Tok)
