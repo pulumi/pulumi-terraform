@@ -589,6 +589,15 @@ func (g *nodeJSGenerator) emitResourceType(mod *module, res *resourceType) (stri
 	}
 	w.Writefmtln("        }")
 
+	// If the caller didn't request a specific version, supply one using the version of this library.
+	w.Writefmtln("        if (!opts) {")
+	w.Writefmtln("            opts = {}")
+	w.Writefmtln("        }")
+	w.Writefmtln("")
+	w.Writefmtln("        if (!opts.version) {")
+	w.Writefmtln("            opts.version = utilities.getVersion();")
+	w.Writefmtln("        }")
+
 	// Now invoke the super constructor with the type, name, and a property map.
 	w.Writefmtln(`        super("%s", name, inputs, opts);`, res.info.Tok)
 

@@ -49,4 +49,8 @@ export function requireWithDefault<T>(req: () => T, def: T | undefined): T {
     }
     return def;
 }
+
+export function getVersion(): string {
+    return require('./package.json').version.slice(1);
+}
 `
