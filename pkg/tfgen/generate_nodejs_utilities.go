@@ -51,6 +51,12 @@ export function requireWithDefault<T>(req: () => T, def: T | undefined): T {
 }
 
 export function getVersion(): string {
-    return require('./package.json').version.slice(1);
+    let version = require('./package.json').version;
+    // Node allows for the version to be prefixed by a "v", while semver doesn't.
+    // If there is a v, strip it off.
+    if (version.indexOf('v') === 0) {
+        version = version.slice(1);
+    }
+    return version;
 }
 `
