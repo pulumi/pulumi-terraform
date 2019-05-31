@@ -316,7 +316,8 @@ func (p *Provider) DiffConfig(ctx context.Context, req *pulumirpc.DiffRequest) (
 }
 
 // Configure configures the underlying Terraform provider with the live Pulumi variable state.
-func (p *Provider) Configure(ctx context.Context, req *pulumirpc.ConfigureRequest) (*pbempty.Empty, error) {
+func (p *Provider) Configure(ctx context.Context,
+	req *pulumirpc.ConfigureRequest) (*pulumirpc.ConfigureResponse, error) {
 	p.setLoggingContext(ctx)
 	// Fetch the map of tokens to values.  It will be in the form of fully qualified tokens, so
 	// we will need to translate into simply the configuration variable names.
@@ -411,7 +412,7 @@ func (p *Provider) Configure(ctx context.Context, req *pulumirpc.ConfigureReques
 		return nil, err
 	}
 
-	return &pbempty.Empty{}, nil
+	return &pulumirpc.ConfigureResponse{}, nil
 }
 
 // Check validates that the given property bag is valid for a resource of the given type.
