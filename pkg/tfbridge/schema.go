@@ -461,13 +461,24 @@ const metaKey = "__meta"
 // MakeTerraformResult expands a Terraform state into an expanded Pulumi resource property map.  This respects
 // the property maps so that results end up with their correct Pulumi names when shipping back to the engine.
 func MakeTerraformResult(state *terraform.InstanceState,
-	tfs map[string]*schema.Schema, ps map[string]*SchemaInfo) resource.PropertyMap {
+	tfs map[string]*schema.Schema, ps map[string]*SchemaInfo) (resource.PropertyMap, error) {
 	var outs map[string]interface{}
 	if state != nil {
 		outs = make(map[string]interface{})
 		attrs := state.Attributes
+
+		reader := &schema.MapFieldReader{
+			Schema: tfs,
+			Map:    schema.BasicMapReader(attrs),
+		}
 		for _, key := range flatmap.Map(attrs).Keys() {
-			outs[key] = flatmap.Expand(attrs, key)
+			res, err := reader.ReadField([]string{key})
+			if err != nil {
+				return nil, err
+			}
+			if res.Value != nil {
+				outs[key] = res.Value
+			}
 		}
 	}
 	outMap := MakeTerraformOutputs(outs, tfs, ps, nil, false)
@@ -479,7 +490,7 @@ func MakeTerraformResult(state *terraform.InstanceState,
 		outMap[metaKey] = resource.NewStringProperty(string(metaJSON))
 	}
 
-	return outMap
+	return outMap, nil
 }
 
 // MakeTerraformOutputs takes an expanded Terraform property map and returns a Pulumi equivalent.  This respects
@@ -522,6 +533,11 @@ func MakeTerraformOutput(v interface{},
 
 	if v == nil {
 		return resource.NewNullProperty()
+	}
+
+	// Marshal sets as their list value.
+	if set, isset := v.(*schema.Set); isset {
+		v = set.List()
 	}
 
 	// We use reflection instead of a type switch so that we can support mapping values whose underlying type is
@@ -615,7 +631,7 @@ func MakeTerraformOutput(v interface{},
 		obj := MakeTerraformOutputs(outs, tfflds, psflds, assets, rawNames || useRawNames(tfs))
 		return resource.NewObjectProperty(obj)
 	default:
-		contract.Failf("Unexpected TF output property value: %v", v)
+		contract.Failf("Unexpected TF output property value: %#v", v)
 		return resource.NewNullProperty()
 	}
 }
