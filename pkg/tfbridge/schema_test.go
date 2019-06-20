@@ -617,9 +617,6 @@ func TestResultAttributesRoundTrip(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, attrs)
 
-	// We do not fill in the "id" field. Remove it before diffing.
-	delete(state.Attributes, "id")
-
 	// We may add extra "%" fields to represent map counts. These diffs are innocuous. If we only see them in the
 	// attributes produced by MakeTerraformResult, ignore them.
 	for k, v := range attrs {
@@ -1125,6 +1122,7 @@ func TestExtractInputsFromOutputs(t *testing.T) {
 	outs, err := plugin.UnmarshalProperties(resp.GetProperties(), plugin.MarshalOptions{})
 	assert.NoError(t, err)
 	assert.Equal(t, resource.NewPropertyMapFromMap(map[string]interface{}{
+		"id":      "MyID",
 		"inputA":  "input_a_read",
 		"inoutC":  "inout_c_read",
 		"inoutD":  "inout_d_read",
@@ -1183,6 +1181,7 @@ func TestExtractInputsFromOutputs(t *testing.T) {
 	outs, err = plugin.UnmarshalProperties(createResp.GetProperties(), plugin.MarshalOptions{})
 	assert.NoError(t, err)
 	assert.Equal(t, resource.NewPropertyMapFromMap(map[string]interface{}{
+		"id":     "MyID",
 		"inputA": "input_a_create",
 		"inoutC": "inout_c_create",
 		"inoutD": "inout_d_default",
@@ -1210,6 +1209,7 @@ func TestExtractInputsFromOutputs(t *testing.T) {
 	outs, err = plugin.UnmarshalProperties(resp.GetProperties(), plugin.MarshalOptions{})
 	assert.NoError(t, err)
 	assert.Equal(t, resource.NewPropertyMapFromMap(map[string]interface{}{
+		"id":     "MyID",
 		"inputA": "input_a_create",
 		"inoutC": "inout_c_create",
 		"inoutD": "inout_d_read",

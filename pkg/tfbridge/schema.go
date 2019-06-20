@@ -480,6 +480,9 @@ func MakeTerraformResult(state *terraform.InstanceState,
 				outs[key] = res.Value
 			}
 		}
+		if _, ok := outs["id"]; !ok {
+			outs["id"] = attrs["id"]
+		}
 	}
 	outMap := MakeTerraformOutputs(outs, tfs, ps, nil, false)
 
