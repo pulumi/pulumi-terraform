@@ -480,6 +480,9 @@ func MakeTerraformResult(state *terraform.InstanceState,
 				outs[key] = res.Value
 			}
 		}
+
+		// Populate the "id" property if it is not set. Most schemas do not include this property, and leaving it out
+		// can cause unnecessary diffs when refreshing/updating resources after a provider upgrade.
 		if _, ok := outs["id"]; !ok {
 			outs["id"] = attrs["id"]
 		}
