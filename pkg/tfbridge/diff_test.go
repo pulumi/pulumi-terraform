@@ -399,7 +399,11 @@ func TestListUpdateReplace(t *testing.T) {
 func TestSetAdd(t *testing.T) {
 	diffTest(t,
 		map[string]*schema.Schema{
-			"prop": {Type: schema.TypeSet, Set: func(_ interface{}) int { return 0 }, Elem: &schema.Schema{Type: schema.TypeString}},
+			"prop": {
+				Type: schema.TypeSet,
+				Set:  func(_ interface{}) int { return 0 },
+				Elem: &schema.Schema{Type: schema.TypeString},
+			},
 			"outp": {Type: schema.TypeString, Computed: true},
 		},
 		map[string]*SchemaInfo{},
@@ -417,7 +421,11 @@ func TestSetAdd(t *testing.T) {
 func TestSetAddReplace(t *testing.T) {
 	diffTest(t,
 		map[string]*schema.Schema{
-			"prop": {Type: schema.TypeSet, Set: func(_ interface{}) int { return 0 }, Elem: &schema.Schema{Type: schema.TypeString}, ForceNew: true},
+			"prop": {
+				Type: schema.TypeSet,
+				Set:  func(_ interface{}) int { return 0 },
+				Elem: &schema.Schema{Type: schema.TypeString},
+			},
 			"outp": {Type: schema.TypeString, Computed: true},
 		},
 		map[string]*SchemaInfo{},
@@ -435,7 +443,11 @@ func TestSetAddReplace(t *testing.T) {
 func TestSetDelete(t *testing.T) {
 	diffTest(t,
 		map[string]*schema.Schema{
-			"prop": {Type: schema.TypeSet, Set: func(_ interface{}) int { return 0 }, Elem: &schema.Schema{Type: schema.TypeString}},
+			"prop": {
+				Type: schema.TypeSet,
+				Set:  func(_ interface{}) int { return 0 },
+				Elem: &schema.Schema{Type: schema.TypeString},
+			},
 			"outp": {Type: schema.TypeString, Computed: true},
 		},
 		map[string]*SchemaInfo{},
@@ -452,7 +464,11 @@ func TestSetDelete(t *testing.T) {
 func TestSetDeleteReplace(t *testing.T) {
 	diffTest(t,
 		map[string]*schema.Schema{
-			"prop": {Type: schema.TypeSet, Set: func(_ interface{}) int { return 0 }, Elem: &schema.Schema{Type: schema.TypeString}, ForceNew: true},
+			"prop": {
+				Type: schema.TypeSet,
+				Set:  func(_ interface{}) int { return 0 },
+				Elem: &schema.Schema{Type: schema.TypeString},
+			},
 			"outp": {Type: schema.TypeString, Computed: true},
 		},
 		map[string]*SchemaInfo{},
@@ -511,7 +527,7 @@ func TestSetNestedUpdate(t *testing.T) {
 				Type: schema.TypeSet,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"nest": &schema.Schema{Type: schema.TypeString, Required: true},
+						"nest": {Type: schema.TypeString, Required: true},
 					},
 				},
 			},
@@ -537,7 +553,7 @@ func TestSetNestedUpdateReplace(t *testing.T) {
 				Type: schema.TypeSet,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"nest": &schema.Schema{Type: schema.TypeString, Required: true, ForceNew: true},
+						"nest": {Type: schema.TypeString, Required: true, ForceNew: true},
 					},
 				},
 			},
