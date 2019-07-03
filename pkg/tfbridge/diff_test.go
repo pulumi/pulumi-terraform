@@ -422,9 +422,10 @@ func TestSetAddReplace(t *testing.T) {
 	diffTest(t,
 		map[string]*schema.Schema{
 			"prop": {
-				Type: schema.TypeSet,
-				Set:  func(_ interface{}) int { return 0 },
-				Elem: &schema.Schema{Type: schema.TypeString},
+				Type:     schema.TypeSet,
+				Set:      func(_ interface{}) int { return 0 },
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				ForceNew: true,
 			},
 			"outp": {Type: schema.TypeString, Computed: true},
 		},
@@ -465,9 +466,10 @@ func TestSetDeleteReplace(t *testing.T) {
 	diffTest(t,
 		map[string]*schema.Schema{
 			"prop": {
-				Type: schema.TypeSet,
-				Set:  func(_ interface{}) int { return 0 },
-				Elem: &schema.Schema{Type: schema.TypeString},
+				Type:     schema.TypeSet,
+				Set:      func(_ interface{}) int { return 0 },
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				ForceNew: true,
 			},
 			"outp": {Type: schema.TypeString, Computed: true},
 		},
