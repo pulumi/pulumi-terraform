@@ -420,7 +420,7 @@ func (p *Provider) Configure(ctx context.Context,
 var requiredFieldRegex = regexp.MustCompile("\"(.*?)\": required field is not set")
 
 func (p *Provider) formatFailureReason(res Resource, reason string) string {
-	// If required field is missing and the value can be set via config, extend the error with a hint to set the proper config value
+	// If a required field is missing and the value can be set via config, extend the error with a hint to set the proper config value
 	name := requiredFieldRegex.FindStringSubmatch(reason)
 	if len(name) == 2 {
 		field := res.Schema.Fields[name[1]]
