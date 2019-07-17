@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"regexp"
 	"strings"
 
 	"github.com/golang/glog"
@@ -416,6 +417,23 @@ func (p *Provider) Configure(ctx context.Context,
 	return &pulumirpc.ConfigureResponse{}, nil
 }
 
+var requiredFieldRegex = regexp.MustCompile("\"(.*?)\": required field is not set")
+
+func (p *Provider) formatFailureReason(res Resource, reason string) string {
+	// If required field is missing and the value can be set via config, extend the error with a hint to set the proper config value
+	name := requiredFieldRegex.FindStringSubmatch(reason)
+	if len(name) == 2 {
+		field := res.Schema.Fields[name[1]]
+		if field != nil && field.Default != nil {
+			if configKey := field.Default.Config; configKey != "" {
+				return fmt.Sprintf("%s. Either set it explicitly or configure it with 'pulumi config set %s:%s <value>'.", reason, p.module, configKey)
+			}
+		}
+	}
+
+	return reason
+}
+
 // Check validates that the given property bag is valid for a resource of the given type.
 func (p *Provider) Check(ctx context.Context, req *pulumirpc.CheckRequest) (*pulumirpc.CheckResponse, error) {
 	p.setLoggingContext(ctx)
@@ -473,7 +491,7 @@ func (p *Provider) Check(ctx context.Context, req *pulumirpc.CheckRequest) (*pul
 	var failures []*pulumirpc.CheckFailure
 	for _, err := range errs {
 		failures = append(failures, &pulumirpc.CheckFailure{
-			Reason: err.Error(),
+			Reason: p.formatFailureReason(res, err.Error()),
 		})
 	}
 

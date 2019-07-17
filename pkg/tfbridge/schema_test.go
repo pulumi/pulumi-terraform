@@ -1355,3 +1355,63 @@ func TestExtractInputsFromOutputs(t *testing.T) {
 	}), ins)
 
 }
+
+func TestFailureReasonForMissingRequiredFields(t *testing.T) {
+	// Define two required inputs
+	tfProvider := makeTestTFProvider(
+		map[string]*schema.Schema{
+			"input_x": {Type: schema.TypeString, Required: true},
+			"input_y": {Type: schema.TypeString, Required: true},
+		},
+		func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+			return []*schema.ResourceData{d}, nil
+		})
+
+	// Input Y has a default info pointing to a config key
+	p := &Provider{
+		tf: tfProvider,
+		resources: map[tokens.Type]Resource{
+			"importableResource": {
+				TF:     tfProvider.ResourcesMap["importable_resource"],
+				TFName: "importable_resource",
+				Schema: &ResourceInfo{
+					Tok: tokens.NewTypeToken("module", "importableResource"),
+					Fields: map[string]*SchemaInfo{
+						"input_y": {
+							Default: &DefaultInfo{
+								Config: "input_y_config",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	p.module = "test"
+
+	urn := resource.NewURN("s", "pr", "pa", "importableResource", "n")
+
+	// Pass no input values
+	pulumiIns, err := plugin.MarshalProperties(resource.NewPropertyMapFromMap(map[string]interface{}{}), plugin.MarshalOptions{})
+	assert.NoError(t, err)
+
+	// Check the inputs
+	checkResp, err := p.Check(context.Background(), &pulumirpc.CheckRequest{
+		Urn:  string(urn),
+		News: pulumiIns,
+	})
+	assert.NoError(t, err)
+
+	// Expect two failures: one for each field
+	failures := checkResp.Failures
+	assert.Equal(t, 2, len(failures))
+
+	x, y := failures[0].Reason, failures[1].Reason
+	if strings.Contains(x, "input_y") {
+		x, y = y, x
+	}
+
+	// Check that Y error reason has been amended with a hint about the config, while X reason is unaffected
+	assert.False(t, strings.Contains(x, "pulumi config"), "No mention of pulumi config expected in '%s'", x)
+	assert.True(t, strings.Contains(y, "'pulumi config set test:input_y_config <value>'"), "Expected a hint of how to set the property value via a config command in '%s'", y)
+}
