@@ -1392,7 +1392,8 @@ func TestFailureReasonForMissingRequiredFields(t *testing.T) {
 	urn := resource.NewURN("s", "pr", "pa", "importableResource", "n")
 
 	// Pass no input values
-	pulumiIns, err := plugin.MarshalProperties(resource.NewPropertyMapFromMap(map[string]interface{}{}), plugin.MarshalOptions{})
+	pulumiIns, err := plugin.MarshalProperties(
+		resource.NewPropertyMapFromMap(map[string]interface{}{}), plugin.MarshalOptions{})
 	assert.NoError(t, err)
 
 	// Check the inputs
@@ -1413,5 +1414,6 @@ func TestFailureReasonForMissingRequiredFields(t *testing.T) {
 
 	// Check that Y error reason has been amended with a hint about the config, while X reason is unaffected
 	assert.False(t, strings.Contains(x, "pulumi config"), "No mention of pulumi config expected in '%s'", x)
-	assert.True(t, strings.Contains(y, "'pulumi config set test:input_y_config <value>'"), "Expected a hint of how to set the property value via a config command in '%s'", y)
+	assert.True(t, strings.Contains(y, "'pulumi config set test:input_y_config <value>'"),
+		"Expected a hint of how to set the property value via a config command in '%s'", y)
 }
