@@ -7,7 +7,7 @@ This CHANGELOG details important changes made in each version of the
 
 - Terraform-based providers can now communicate detailed information about the difference between a resource's desired and actual state during a Pulumi update.
 - Add the ability to inject CustomTimeouts into the InstanceDiff during a pulumi update.
-- Better error message for missing required fields with default config (#400).
+- Better error message for missing required fields with default config ([#400](https://github.com/pulumi/pulumi-terraform/issues/400)).
 
 ## v0.18.3 (Released June 20, 2019)
 

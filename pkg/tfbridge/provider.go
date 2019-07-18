@@ -417,6 +417,8 @@ func (p *Provider) Configure(ctx context.Context,
 	return &pulumirpc.ConfigureResponse{}, nil
 }
 
+// Parse the TF error of a missing field:
+// https://github.com/hashicorp/terraform/blob/7f5ffbfe9027c34c4ce1062a42b6e8d80b5504e0/helper/schema/schema.go#L1356
 var requiredFieldRegex = regexp.MustCompile("\"(.*?)\": required field is not set")
 
 func (p *Provider) formatFailureReason(res Resource, reason string) string {
