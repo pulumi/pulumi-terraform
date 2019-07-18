@@ -1377,7 +1377,7 @@ func TestFailureReasonForMissingRequiredFields(t *testing.T) {
 				Schema: &ResourceInfo{
 					Tok: tokens.NewTypeToken("module", "importableResource"),
 					Fields: map[string]*SchemaInfo{
-						"input_y": {
+						"inputY": {
 							Default: &DefaultInfo{
 								Config: "input_y_config",
 							},
@@ -1408,12 +1408,12 @@ func TestFailureReasonForMissingRequiredFields(t *testing.T) {
 	assert.Equal(t, 2, len(failures))
 
 	x, y := failures[0].Reason, failures[1].Reason
-	if strings.Contains(x, "input_y") {
+	if strings.Contains(x, "inputY") {
 		x, y = y, x
 	}
 
 	// Check that Y error reason has been amended with a hint about the config, while X reason is unaffected
-	assert.False(t, strings.Contains(x, "pulumi config"), "No mention of pulumi config expected in '%s'", x)
-	assert.True(t, strings.Contains(y, "'pulumi config set test:input_y_config <value>'"),
-		"Expected a hint of how to set the property value via a config command in '%s'", y)
+	assert.Equal(t, "Missing required property 'inputX'", x)
+	assert.Equal(t, "Missing required property 'inputY'. Either set it explicitly or configure it "+
+		"with 'pulumi config set test:input_y_config <value>'.", y)
 }

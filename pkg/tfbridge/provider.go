@@ -422,16 +422,23 @@ func (p *Provider) Configure(ctx context.Context,
 var requiredFieldRegex = regexp.MustCompile("\"(.*?)\": required field is not set")
 
 func (p *Provider) formatFailureReason(res Resource, reason string) string {
-	// If a required field is missing and the value can be set via config,
-	// extend the error with a hint to set the proper config value
-	name := requiredFieldRegex.FindStringSubmatch(reason)
-	if len(name) == 2 {
-		field := res.Schema.Fields[name[1]]
-		if field != nil && field.Default != nil {
-			if configKey := field.Default.Config; configKey != "" {
-				hint := "%s. Either set it explicitly or configure it with 'pulumi config set %s:%s <value>'."
-				return fmt.Sprintf(hint, reason, p.module, configKey)
+	// Translate the name in missing-required-field error from TF to Pulumi naming scheme
+	parts := requiredFieldRegex.FindStringSubmatch(reason)
+	if len(parts) == 2 {
+		schema := res.TF.Schema[parts[1]]
+		if schema != nil {
+			name := TerraformToPulumiName(parts[1], schema, false)
+			message := fmt.Sprintf("Missing required property '%s'", name)
+			// If a required field is missing and the value can be set via config,
+			// extend the error with a hint to set the proper config value
+			field := res.Schema.Fields[name]
+			if field != nil && field.Default != nil {
+				if configKey := field.Default.Config; configKey != "" {
+					format := "%s. Either set it explicitly or configure it with 'pulumi config set %s:%s <value>'."
+					return fmt.Sprintf(format, message, p.module, configKey)
+				}
 			}
+			return message
 		}
 	}
 
