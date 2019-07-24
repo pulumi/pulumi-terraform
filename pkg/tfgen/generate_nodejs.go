@@ -103,7 +103,6 @@ func (g *nodeJSGenerator) openWriter(mod *module, name string, needsSDK bool) (*
 func (g *nodeJSGenerator) emitSDKImport(mod *module, w *tools.GenWriter) {
 	w.Writefmtln("import * as pulumi from \"@pulumi/pulumi\";")
 	w.Writefmtln("import * as utilities from \"%s/utilities\";", g.relativeRootDir(mod))
-	w.Writefmtln("import * as utils from \"%s/utils\";", g.relativeRootDir(mod))
 	w.Writefmtln("")
 }
 
@@ -238,7 +237,7 @@ func (g *nodeJSGenerator) ensureReadme(dir string) error {
 	}
 	defer contract.IgnoreClose(w)
 
-	w.Writefmtln(standardDocReadme, g.pkg)
+	w.Writefmtln(standardDocReadme, g.pkg, g.info.Name)
 	return nil
 }
 
@@ -476,7 +475,16 @@ func (g *nodeJSGenerator) emitPlainOldType(w *tools.GenWriter, pot *plainOldType
 func (g *nodeJSGenerator) emitResourceType(mod *module, res *resourceType) (string, error) {
 	// Create a resource module file into which all of this resource's types will go.
 	name := res.name
-	w, file, err := g.openWriter(mod, lowerFirst(name)+".ts", true)
+	filename := lowerFirst(name)
+
+	// We need to check if the resource is called index or utilities. If so then we will have problems
+	// based on the fact that we need to generate an index.ts based on the package contents
+	// Therefore, we are going to append _ into the name to allow us to continue
+	if filename == "index" || filename == "utilities" {
+		filename = fmt.Sprintf("%s_", filename)
+	}
+
+	w, file, err := g.openWriter(mod, filename+".ts", true)
 	if err != nil {
 		return "", err
 	}
@@ -704,7 +712,8 @@ func (g *nodeJSGenerator) emitResourceFunc(mod *module, fun *resourceFunc) (stri
 	} else {
 		retty = fun.retst.name
 	}
-	w.Writefmtln("export function %s(%sopts?: pulumi.InvokeOptions): %s {", fun.name, argsig, retty)
+	w.Writefmtln("export function %s(%sopts?: pulumi.InvokeOptions): Promise<%s> & %s {",
+		fun.name, argsig, retty, retty)
 
 	// Zero initialize the args if empty and necessary.
 	if len(fun.args) > 0 && len(fun.reqargs) == 0 {
@@ -729,7 +738,7 @@ func (g *nodeJSGenerator) emitResourceFunc(mod *module, fun *resourceFunc) (stri
 	}
 	w.Writefmtln("    }, opts);")
 	w.Writefmtln("")
-	w.Writefmtln("    return utils.promiseResult(promise);")
+	w.Writefmtln("    return pulumi.utils.liftProperties(promise, opts);")
 	w.Writefmtln("}")
 
 	// If there are argument and/or return types, emit them.
