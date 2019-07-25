@@ -665,7 +665,7 @@ func (g *nodeJSGenerator) emitResourceType(mod *module, res *resourceType) (stri
 				w.Writefmt(", ")
 			}
 
-			writeAlias(w, alias)
+			g.writeAlias(w, alias)
 		}
 
 		w.Writefmtln(`]);`)
@@ -690,7 +690,7 @@ func (g *nodeJSGenerator) emitResourceType(mod *module, res *resourceType) (stri
 	return file, nil
 }
 
-func writeAlias(w *tools.GenWriter, alias tfbridge.AliasInfo) {
+func (g *nodeJSGenerator) writeAlias(w *tools.GenWriter, alias tfbridge.AliasInfo) {
 	w.WriteString("{ ")
 	parts := []string{}
 	if alias.Name != nil {

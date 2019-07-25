@@ -548,6 +548,20 @@ func (g *pythonGenerator) emitResourceType(mod *module, res *resourceType) (stri
 	// w.Writefmtln("        if opts.version is None:")
 	// w.Writefmtln("            opts.version = utilities.get_version()")
 
+	if len(res.info.Aliases) > 0 {
+		w.Writefmt(`        opts = pulumi.with_aliases(opts, [`)
+
+		for i, alias := range res.info.Aliases {
+			if i > 0 {
+				w.Writefmt(", ")
+			}
+
+			g.writeAlias(w, alias)
+		}
+
+		w.Writefmtln(`]);`)
+	}
+
 	// Finally, chain to the base constructor, which will actually register the resource.
 	w.Writefmtln("        super(%s, __self__).__init__(", res.name)
 	w.Writefmtln("            '%s',", res.info.Tok)
@@ -567,6 +581,30 @@ func (g *pythonGenerator) emitResourceType(mod *module, res *resourceType) (stri
 `)
 
 	return name, nil
+}
+
+func (g *pythonGenerator) writeAlias(w *tools.GenWriter, alias tfbridge.AliasInfo) {
+	w.WriteString("pulumi.Alias(")
+	parts := []string{}
+	if alias.Name != nil {
+		parts = append(parts, fmt.Sprintf("name=\"%v\"", *alias.Name))
+	}
+	if alias.Project != nil {
+		parts = append(parts, fmt.Sprintf("project=\"%v\"", *alias.Project))
+	}
+	if alias.Type != nil {
+		parts = append(parts, fmt.Sprintf("type_=\"%v\"", *alias.Type))
+	}
+
+	for i, part := range parts {
+		if i > 0 {
+			w.Writefmt(", ")
+		}
+
+		w.WriteString(part)
+	}
+
+	w.WriteString(")")
 }
 
 func (g *pythonGenerator) emitResourceFunc(mod *module, fun *resourceFunc) (string, error) {
