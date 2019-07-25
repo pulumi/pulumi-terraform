@@ -694,13 +694,13 @@ func writeAlias(w *tools.GenWriter, alias tfbridge.AliasInfo) {
 	w.WriteString("{ ")
 	parts := []string{}
 	if alias.Name != nil {
-		parts = append(parts, fmt.Sprintf("name: \"%v\"", alias.Name))
+		parts = append(parts, fmt.Sprintf("name: \"%v\"", *alias.Name))
 	}
 	if alias.Project != nil {
-		parts = append(parts, fmt.Sprintf("project: \"%v\"", alias.Project))
+		parts = append(parts, fmt.Sprintf("project: \"%v\"", *alias.Project))
 	}
 	if alias.Type != nil {
-		parts = append(parts, fmt.Sprintf("type: \"%v\"", alias.Type))
+		parts = append(parts, fmt.Sprintf("type: \"%v\"", *alias.Type))
 	}
 
 	for i, part := range parts {
