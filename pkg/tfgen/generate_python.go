@@ -559,7 +559,7 @@ func (g *pythonGenerator) emitResourceType(mod *module, res *resourceType) (stri
 			g.writeAlias(w, alias)
 		}
 
-		w.Writefmtln(`]);`)
+		w.Writefmtln(`])`)
 	}
 
 	// Finally, chain to the base constructor, which will actually register the resource.
