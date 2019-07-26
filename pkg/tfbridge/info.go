@@ -84,7 +84,7 @@ type ResourceInfo struct {
 	IDFields            []string               // an optional list of ID alias fields.
 	Docs                *DocInfo               // overrides for finding and mapping TF docs.
 	DeleteBeforeReplace bool                   // if true, Pulumi will delete before creating new replacement resources.
-	Aliases             []AliasInfo            // sliases for this resources, if any.
+	Aliases             []AliasInfo            // aliases for this resources, if any.
 }
 
 // DataSourceInfo can be used to override a data source's standard name mangling and argument/return information.
