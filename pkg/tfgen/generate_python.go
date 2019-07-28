@@ -702,6 +702,7 @@ func (g *pythonGenerator) emitPackageMetadata(pack *pkg) error {
 	w.EmitHeaderWarning(g.commentChars())
 
 	// Now create a standard Python package from the metadata.
+	w.Writefmtln("import errno")
 	w.Writefmtln("from setuptools import setup, find_packages")
 	w.Writefmtln("from setuptools.command.install import install")
 	w.Writefmtln("from subprocess import check_call")
@@ -711,8 +712,20 @@ func (g *pythonGenerator) emitPackageMetadata(pack *pkg) error {
 	w.Writefmtln("class InstallPluginCommand(install):")
 	w.Writefmtln("    def run(self):")
 	w.Writefmtln("        install.run(self)")
-	w.Writefmtln("        check_call(['pulumi', 'plugin', 'install', 'resource', '%s', '${PLUGIN_VERSION}'])",
+	w.Writefmtln("        try:")
+	w.Writefmtln("            check_call(['pulumi', 'plugin', 'install', 'resource', '%s', '${PLUGIN_VERSION}'])",
 		pack.name)
+	w.Writefmtln("        except OSError as error:")
+	w.Writefmtln("            if error.errno == errno.ENOENT:")
+	w.Writefmtln("                print(\"\"\"")
+	w.Writefmtln("                There was an error installing the %s resource provider plugin.", pack.name)
+	w.Writefmtln("                It looks like `pulumi` is not installed on your system.")
+	w.Writefmtln("                Please visit https://pulumi.com/ to get Pulumi.")
+	w.Writefmtln("                You may try to manually installing the plugin by running")
+	w.Writefmtln("                `pulumi plugin install resource %s ${PLUGIN_VERSION}`", pack.name)
+	w.Writefmtln("                \"\"\")")
+	w.Writefmtln("            else:")
+	w.Writefmtln("                raise")
 	w.Writefmtln("")
 
 	// Generate a readme method which will load README.rst, we use this to fill out the
