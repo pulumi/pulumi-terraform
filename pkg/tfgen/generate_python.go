@@ -549,9 +549,7 @@ func (g *pythonGenerator) emitResourceType(mod *module, res *resourceType) (stri
 	// w.Writefmtln("            opts.version = utilities.get_version()")
 
 	if len(res.info.Aliases) > 0 {
-		w.Writefmt(`        if opts is None:`)
-		w.Writefmt(`            opts = pulumi.ResourceOptions()`)
-		w.Writefmt(`            opts = opts.merge_options(opts, [`)
+		w.Writefmt(`        alias_opts = ResourceOptions(aliases=[`)
 
 		for i, alias := range res.info.Aliases {
 			if i > 0 {
@@ -562,6 +560,7 @@ func (g *pythonGenerator) emitResourceType(mod *module, res *resourceType) (stri
 		}
 
 		w.Writefmtln(`])`)
+		w.Writefmtln(`        opts = alias_opts if opts is None else opts.merge(alias_opts)`)
 	}
 
 	// Finally, chain to the base constructor, which will actually register the resource.
