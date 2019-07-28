@@ -658,7 +658,7 @@ func (g *nodeJSGenerator) emitResourceType(mod *module, res *resourceType) (stri
 	// Now invoke the super constructor with the type, name, and a property map.
 
 	if len(res.info.Aliases) > 0 {
-		w.Writefmt(`        opts = pulumi.withAliases(opts, [`)
+		w.Writefmt(`        opts = pulumi.mergeOptions(opts, [`)
 
 		for i, alias := range res.info.Aliases {
 			if i > 0 {

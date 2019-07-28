@@ -549,7 +549,9 @@ func (g *pythonGenerator) emitResourceType(mod *module, res *resourceType) (stri
 	// w.Writefmtln("            opts.version = utilities.get_version()")
 
 	if len(res.info.Aliases) > 0 {
-		w.Writefmt(`        opts = pulumi.with_aliases(opts, [`)
+		w.Writefmt(`        if opts is None:`)
+		w.Writefmt(`            opts = pulumi.ResourceOptions()`)
+		w.Writefmt(`            opts = opts.merge_options(opts, [`)
 
 		for i, alias := range res.info.Aliases {
 			if i > 0 {
