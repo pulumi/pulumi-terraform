@@ -14,6 +14,7 @@ This CHANGELOG details important changes made in each version of the
 - Allow a provider to depend on a specific version of TypeScript.
 - Allow users to specify a specific provider version.
 - Add the ability to deprecate resources and datasources.
+- Emit an appropriate user warning when Pulumi binary not found in Python setup.py.
 
 ## v0.18.3 (Released June 20, 2019)
 

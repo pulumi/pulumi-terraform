@@ -552,12 +552,11 @@ func (g *pythonGenerator) emitResourceType(mod *module, res *resourceType) (stri
 		w.Writefmtln("")
 	}
 
-	// TODO[pulumi/pulumi#2753]: We should re-enable this code once we have a solution for #2753.
 	// If the caller explicitly specified a version, use it, otherwise inject this package's version.
-	// w.Writefmtln("        if opts is None:")
-	// w.Writefmtln("            opts = pulumi.ResourceOptions()")
-	// w.Writefmtln("        if opts.version is None:")
-	// w.Writefmtln("            opts.version = utilities.get_version()")
+	w.Writefmtln("        if opts is None:")
+	w.Writefmtln("            opts = pulumi.ResourceOptions()")
+	w.Writefmtln("        if opts.version is None:")
+	w.Writefmtln("            opts.version = utilities.get_version()")
 
 	if len(res.info.Aliases) > 0 {
 		w.Writefmt(`        alias_opts = pulumi.ResourceOptions(aliases=[`)
@@ -662,12 +661,11 @@ func (g *pythonGenerator) emitResourceFunc(mod *module, fun *resourceFunc) (stri
 		w.Writefmtln("    __args__['%s'] = %s", arg.name, pycodegen.PyName(arg.name))
 	}
 
-	// TODO[pulumi/pulumi#2753]: We should re-enable this code once we have a solution for #2753.
-	// // If the caller explicitly specified a version, use it, otherwise inject this package's version.
-	// w.Writefmtln("    if opts is None:")
-	// w.Writefmtln("        opts = pulumi.ResourceOptions()")
-	// w.Writefmtln("    if opts.version is None:")
-	// w.Writefmtln("        opts.version = utilities.get_version()")
+	// If the caller explicitly specified a version, use it, otherwise inject this package's version.
+	w.Writefmtln("    if opts is None:")
+	w.Writefmtln("        opts = pulumi.ResourceOptions()")
+	w.Writefmtln("    if opts.version is None:")
+	w.Writefmtln("        opts.version = utilities.get_version()")
 
 	// Now simply invoke the runtime function with the arguments.
 	w.Writefmtln("    __ret__ = await pulumi.runtime.invoke('%s', __args__, opts=opts)", fun.info.Tok)
@@ -721,6 +719,7 @@ func (g *pythonGenerator) emitPackageMetadata(pack *pkg) error {
 	w.EmitHeaderWarning(g.commentChars())
 
 	// Now create a standard Python package from the metadata.
+	w.Writefmtln("import errno")
 	w.Writefmtln("from setuptools import setup, find_packages")
 	w.Writefmtln("from setuptools.command.install import install")
 	w.Writefmtln("from subprocess import check_call")
@@ -730,8 +729,20 @@ func (g *pythonGenerator) emitPackageMetadata(pack *pkg) error {
 	w.Writefmtln("class InstallPluginCommand(install):")
 	w.Writefmtln("    def run(self):")
 	w.Writefmtln("        install.run(self)")
-	w.Writefmtln("        check_call(['pulumi', 'plugin', 'install', 'resource', '%s', '${PLUGIN_VERSION}'])",
+	w.Writefmtln("        try:")
+	w.Writefmtln("            check_call(['pulumi', 'plugin', 'install', 'resource', '%s', '${PLUGIN_VERSION}'])",
 		pack.name)
+	w.Writefmtln("        except OSError as error:")
+	w.Writefmtln("            if error.errno == errno.ENOENT:")
+	w.Writefmtln("                print(\"\"\"")
+	w.Writefmtln("                There was an error installing the %s resource provider plugin.", pack.name)
+	w.Writefmtln("                It looks like `pulumi` is not installed on your system.")
+	w.Writefmtln("                Please visit https://pulumi.com/ to install the Pulumi CLI.")
+	w.Writefmtln("                You may try manually installing the plugin by running")
+	w.Writefmtln("                `pulumi plugin install resource %s ${PLUGIN_VERSION}`", pack.name)
+	w.Writefmtln("                \"\"\")")
+	w.Writefmtln("            else:")
+	w.Writefmtln("                raise")
 	w.Writefmtln("")
 
 	// Generate a readme method which will load README.rst, we use this to fill out the
