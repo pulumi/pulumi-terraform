@@ -720,7 +720,7 @@ func (g *pythonGenerator) emitPackageMetadata(pack *pkg) error {
 	w.Writefmtln("                print(\"\"\"")
 	w.Writefmtln("                There was an error installing the %s resource provider plugin.", pack.name)
 	w.Writefmtln("                It looks like `pulumi` is not installed on your system.")
-	w.Writefmtln("                Please visit https://pulumi.com/ to get Pulumi.")
+	w.Writefmtln("                Please visit https://pulumi.com/ to install the Pulumi CLI.")
 	w.Writefmtln("                You may try manually installing the plugin by running")
 	w.Writefmtln("                `pulumi plugin install resource %s ${PLUGIN_VERSION}`", pack.name)
 	w.Writefmtln("                \"\"\")")
