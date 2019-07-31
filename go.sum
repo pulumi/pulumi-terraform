@@ -191,6 +191,8 @@ github.com/gofrs/flock v0.7.0/go.mod h1:F1TvTiK9OcQqauNUHlbJvyl9Qa1QvF/gOUDKA14j
 github.com/gogo/protobuf v1.1.1/go.mod h1:r8qH/GZQm5c6nD/R0oafs1akxWv10x8SbQlK7atdtwQ=
 github.com/gogo/protobuf v1.2.0 h1:xU6/SpYbvkNYiptHJYEDRseDLvYE7wSqhYYNy0QSUzI=
 github.com/gogo/protobuf v1.2.0/go.mod h1:r8qH/GZQm5c6nD/R0oafs1akxWv10x8SbQlK7atdtwQ=
+github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b h1:VKtxabqXZkF25pY9ekfRL6a582T4P37/31XEstQ5p58=
+github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b/go.mod h1:SBH7ygxi8pfUlaOkMMuAQtPIUF8ecWP5IEl/CR7VP2Q=
 github.com/golang/groupcache v0.0.0-20180513044358-24b0969c4cb7 h1:u4bArs140e9+AfE52mFHOXVFnOSBJBRlzTHrOPLOIhE=
 github.com/golang/groupcache v0.0.0-20180513044358-24b0969c4cb7/go.mod h1:cIg4eruTrX1D+g88fzRXU5OdNfaM+9IcxsU14FzY7Hc=
 github.com/golang/lint v0.0.0-20180702182130-06c8688daad7/go.mod h1:tluoj9z5200jBnyusfRPU2LqT6J+DAorxEvtC7LHB+E=
@@ -344,6 +346,8 @@ github.com/hashicorp/yamux v0.0.0-20180604194846-3520598351bb h1:b5rjCoWHc7eqmAS
 github.com/hashicorp/yamux v0.0.0-20180604194846-3520598351bb/go.mod h1:+NfK9FKeTrX5uv1uIXGdwYDTeHna2qgaIlx54MXqjAM=
 github.com/hpcloud/tail v1.0.0 h1:nfCOvKYfkgYP8hkirhJocXT2+zOD8yUNjXaWfTlyFKI=
 github.com/hpcloud/tail v1.0.0/go.mod h1:ab1qPbhIpdTxEkNHXyeSf5vhxWSCs/tWer42PpOxQnU=
+github.com/ijc/Gotty v0.0.0-20170406111628-a8b993ba6abd h1:anPrsicrIi2ColgWTVPk+TrN42hJIWlfPHSBP9S0ZkM=
+github.com/ijc/Gotty v0.0.0-20170406111628-a8b993ba6abd/go.mod h1:3LVOLeyx9XVvwPgrt2be44XgSqndprz1G18rSk8KD84=
 github.com/ijc25/Gotty v0.0.0-20170406111628-a8b993ba6abd h1:a0nQYN5aGC2AiAbRXGtbhFXVFEYhI8m0qm0rS4BZrlo=
 github.com/ijc25/Gotty v0.0.0-20170406111628-a8b993ba6abd/go.mod h1:QopjCNf6gQxOJhr9a9vIq91MYGj/R6js7dQqtFsXID0=
 github.com/inconshreveable/mousetrap v1.0.0 h1:Z8tu5sraLXCXIcARxBp/8cbvlwVa7Z1NHg9XEKhtSvM=
@@ -520,6 +524,8 @@ github.com/pulumi/pulumi v0.17.23-0.20190715212628-02ffff88409f h1:3K/cssb6A3pEE
 github.com/pulumi/pulumi v0.17.23-0.20190715212628-02ffff88409f/go.mod h1:d+ivoM5WASR34nx+EJwBMfWtuU8oczAY5lMTrXsdboM=
 github.com/pulumi/pulumi v0.17.26-0.20190723034217-ed5b8437d126 h1:ZeaZksXFGJEHznfEEjGm5y0vW4hih6NxxYERmpnSZ0I=
 github.com/pulumi/pulumi v0.17.26-0.20190723034217-ed5b8437d126/go.mod h1:KWwOOr07OHTwyPA4cACn8zLfZ9tTEktb0wu3P7nfSto=
+github.com/pulumi/pulumi v0.17.28-0.20190730225144-7bdd59058641 h1:oUhBE2tbRAlnQowhfmNKVZ7O5GuuR/DwPiBZoFAWddE=
+github.com/pulumi/pulumi v0.17.28-0.20190730225144-7bdd59058641/go.mod h1:qX+j2m7SHvJunwvBe1KSSKO/uvOCNNVebdpSE8YALss=
 github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a/go.mod h1:bCqnVzQkZxMG4s8nGwiZ5l3QUCyqpo9Y+/ZMZ9VjZe4=
 github.com/reconquest/loreley v0.0.0-20160708080500-2ab6b7470a54 h1:J2RvHxEMIzMV6XbaZIj9s5G4lG3hhqWxS7Cl1Jii44c=
 github.com/reconquest/loreley v0.0.0-20160708080500-2ab6b7470a54/go.mod h1:1NF/j951kWm+ZnRXpOkBqweImgwhlzFVwTA4A0V7TEU=

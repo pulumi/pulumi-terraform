@@ -21,8 +21,6 @@ import (
 	"sort"
 	"strconv"
 
-	"github.com/golang/glog"
-
 	pbstruct "github.com/golang/protobuf/ptypes/struct"
 	"github.com/hashicorp/terraform/config/hcl2shim"
 	"github.com/hashicorp/terraform/flatmap"
@@ -30,6 +28,7 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/mitchellh/copystructure"
 	"github.com/pkg/errors"
+	"github.com/pulumi/glog"
 	"github.com/pulumi/pulumi/pkg/resource"
 	"github.com/pulumi/pulumi/pkg/resource/plugin"
 	"github.com/pulumi/pulumi/pkg/util/contract"

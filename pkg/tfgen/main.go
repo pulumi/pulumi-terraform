@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/golang/glog"
+	"github.com/pulumi/glog"
 	"github.com/pulumi/pulumi/pkg/util/cmdutil"
 	"github.com/pulumi/pulumi/pkg/util/contract"
 	"github.com/spf13/cobra"
