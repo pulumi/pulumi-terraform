@@ -47,6 +47,9 @@ func containsComputedValues(v resource.PropertyValue) bool {
 	}
 }
 
+// A propertyVisitor is called for each property value in `visitPropertyValue` with the TF attribute key, Pulumi
+// property name, and the value itself. If the visitor returns `false`, `visitPropertyValue` will not recurse into
+// the value.
 type propertyVisitor func(attributeKey, propertyPath string, value resource.PropertyValue) bool
 
 // visitPropertyDiff checks the given property for diffs and invokes the given callback if a diff is found.
