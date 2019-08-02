@@ -529,7 +529,7 @@ func (g *nodeJSGenerator) emitResourceType(mod *module, res *resourceType) (stri
 		w.Writefmtln("     */")
 		w.Writefmtln("    public static get(name: string, id: pulumi.Input<pulumi.ID>, state?: %s, opts?: pulumi.CustomResourceOptions): %s {", stateType, name)
 		if res.info.DeprecationMessage != "" {
-			w.Writefmtln("		pulumi.log.warn(\"%s is deprecated: %s\")", name, res.info.DeprecationMessage)
+			w.Writefmtln("        pulumi.log.warn(\"%s is deprecated: %s\")", name, res.info.DeprecationMessage)
 		}
 		w.Writefmtln("        return new %s(name, <any>state, { ...opts, id: id });", name)
 		w.Writefmtln("    }")
@@ -618,7 +618,7 @@ func (g *nodeJSGenerator) emitResourceType(mod *module, res *resourceType) (stri
 		w.Writefmtln("    constructor(name: string, argsOrState?: %s | %s, opts?: pulumi.CustomResourceOptions) {",
 			argsType, stateType)
 		if res.info.DeprecationMessage != "" {
-			w.Writefmtln("	pulumi.log.warn(\"%s is deprecated: %s\")", name, res.info.DeprecationMessage)
+			w.Writefmtln("        pulumi.log.warn(\"%s is deprecated: %s\")", name, res.info.DeprecationMessage)
 		}
 		w.Writefmtln("        let inputs: pulumi.Inputs = {};")
 		// The lookup case:
@@ -775,7 +775,7 @@ func (g *nodeJSGenerator) emitResourceFunc(mod *module, fun *resourceFunc) (stri
 	w.Writefmtln("export function %s(%sopts?: pulumi.InvokeOptions): Promise<%s> & %s {",
 		fun.name, argsig, retty, retty)
 	if fun.info.DeprecationMessage != "" {
-		w.Writefmtln("	pulumi.log.warn(\"%s is deprecated: %s\")", fun.name, fun.info.DeprecationMessage)
+		w.Writefmtln("    pulumi.log.warn(\"%s is deprecated: %s\")", fun.name, fun.info.DeprecationMessage)
 	}
 
 	// Zero initialize the args if empty and necessary.
