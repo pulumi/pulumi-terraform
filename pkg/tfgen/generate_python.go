@@ -539,10 +539,6 @@ func (g *pythonGenerator) emitResourceType(mod *module, res *resourceType) (stri
 		// Default any pure output properties to None.  This ensures they are available as properties, even if
 		// they don't ever get assigned a real value, and get documentation if available.
 		if !ins[prop.name] {
-			if !wroteOuts {
-				w.Writefmtln("")
-			}
-
 			w.Writefmtln("        __props__['%s'] = None", pycodegen.PyName(prop.name))
 			wroteOuts = true
 		}
