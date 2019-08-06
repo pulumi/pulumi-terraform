@@ -90,6 +90,20 @@ func newPkg(name string, version string, language language, path string) *pkg {
 	}
 }
 
+func extractModuleName(name string) string {
+	// TODO[pulumi/pulumi-terraform#107]: for now, while we migrate to the new structure, just ignore sub-modules.
+	//     After we are sure our customers have upgraded to the new bits, we can remove this logic.  In fact, in the
+	//     end we may actually want to support this structure, but probably in a different way, and not right now.
+	sepix := strings.IndexRune(name, filepath.Separator)
+	if sepix != -1 {
+		name = name[:sepix] // temporarily whack everything after the /.
+	}
+	if name == "index" {
+		name = "" // temporarily change index to "".
+	}
+	return name
+}
+
 // addModule registers a new module in the given package.  If one already exists under the name, we will merge
 // the entry with the existing module (where merging simply appends the members).
 func (p *pkg) addModule(m *module) {
@@ -123,16 +137,7 @@ func (m moduleMap) values() []*module {
 }
 
 func (m moduleMap) ensureModule(name string) *module {
-	// TODO[pulumi/pulumi-terraform#107]: for now, while we migrate to the new structure, just ignore sub-modules.
-	//     After we are sure our customers have upgraded to the new bits, we can remove this logic.  In fact, in the
-	//     end we may actually want to support this structure, but probably in a different way, and not right now.
-	sepix := strings.IndexRune(name, filepath.Separator)
-	if sepix != -1 {
-		name = name[:sepix] // temporarily whack everything after the /.
-	}
-	if name == "index" {
-		name = "" // temporarily change index to "".
-	}
+	name = extractModuleName(name)
 	if _, ok := m[name]; !ok {
 		m[name] = newModule(name)
 	}
@@ -542,7 +547,7 @@ func (g *generator) gatherResource(rawname string,
 	// Collect documentation information
 	var parsedDocs parsedDoc
 	if !isProvider {
-		pd, err := getDocsForProvider(g.language, g.info.GetGitHubOrg(), g.info.Name,
+		pd, err := getDocsForProvider(g, g.info.GetGitHubOrg(), g.info.Name,
 			g.info.GetResourcePrefix(), ResourceDocs, rawname, info.Docs)
 		if err != nil {
 			return "", nil, err
@@ -695,7 +700,7 @@ func (g *generator) gatherDataSource(rawname string,
 	name, module := dataSourceName(g.info.Name, rawname, info)
 
 	// Collect documentation information for this data source.
-	parsedDocs, err := getDocsForProvider(g.language, g.info.GetGitHubOrg(), g.info.Name,
+	parsedDocs, err := getDocsForProvider(g, g.info.GetGitHubOrg(), g.info.Name,
 		g.info.GetResourcePrefix(), DataSourceDocs, rawname, info.Docs)
 	if err != nil {
 		return "", nil, err
