@@ -58,7 +58,7 @@ const (
 // getDocsForProvider extracts documentation details for the given package from
 // TF website documentation markdown content
 func getDocsForProvider(g *generator, org string, provider string, resourcePrefix string, kind DocKind,
-	rawname string, docinfo *tfbridge.DocInfo) (parsedDoc, error) {
+	rawname string, info tfbridge.ResourceOrDataSourceInfo) (parsedDoc, error) {
 	repo, err := getRepoDir(org, provider)
 	if err != nil {
 		return parsedDoc{}, err
@@ -74,6 +74,12 @@ func getDocsForProvider(g *generator, org string, provider string, resourcePrefi
 		rawname + ".markdown",
 		rawname + ".html.md",
 	}
+
+	var docinfo *tfbridge.DocInfo
+	if info != nil {
+		docinfo = info.GetDocs()
+	}
+
 	if docinfo != nil && docinfo.Source != "" {
 		possibleMarkdownNames = append(possibleMarkdownNames, docinfo.Source)
 	}
@@ -85,14 +91,14 @@ func getDocsForProvider(g *generator, org string, provider string, resourcePrefi
 		return parsedDoc{}, nil
 	}
 
-	doc, err := parseTFMarkdown(g, kind, string(markdownBytes), resourcePrefix, rawname)
+	doc, err := parseTFMarkdown(g, info, kind, string(markdownBytes), resourcePrefix, rawname)
 	if err != nil {
 		return parsedDoc{}, nil
 	}
 
 	if docinfo != nil {
 		// Merge Attributes from source into target
-		if err := mergeDocs(g, org, provider, resourcePrefix, kind, doc.Attributes, docinfo.IncludeAttributesFrom,
+		if err := mergeDocs(g, info, org, provider, resourcePrefix, kind, doc.Attributes, docinfo.IncludeAttributesFrom,
 			func(s parsedDoc) map[string]string {
 				return s.Attributes
 			},
@@ -101,7 +107,7 @@ func getDocsForProvider(g *generator, org string, provider string, resourcePrefi
 		}
 
 		// Merge Arguments from source into Attributes of target
-		if err := mergeDocs(g, org, provider, resourcePrefix, kind, doc.Attributes,
+		if err := mergeDocs(g, info, org, provider, resourcePrefix, kind, doc.Attributes,
 			docinfo.IncludeAttributesFromArguments,
 			func(s parsedDoc) map[string]string {
 				return s.Arguments
@@ -111,7 +117,7 @@ func getDocsForProvider(g *generator, org string, provider string, resourcePrefi
 		}
 
 		// Merge Arguments from source into target
-		if err := mergeDocs(g, org, provider, provider, kind, doc.Arguments, docinfo.IncludeArgumentsFrom,
+		if err := mergeDocs(g, info, org, provider, provider, kind, doc.Arguments, docinfo.IncludeArgumentsFrom,
 			func(s parsedDoc) map[string]string {
 				return s.Arguments
 			},
@@ -138,7 +144,7 @@ func readMarkdown(repo string, kind DocKind, possibleLocations []string) ([]byte
 }
 
 // mergeDocs adds the docs specified by extractDoc from sourceFrom into the targetDocs
-func mergeDocs(g *generator, org string, provider string, resourcePrefix string, kind DocKind,
+func mergeDocs(g *generator, info tfbridge.ResourceOrDataSourceInfo, org string, provider string, resourcePrefix string, kind DocKind,
 	targetDocs map[string]string, sourceFrom string, extractDocs func(d parsedDoc) map[string]string) error {
 
 	if sourceFrom != "" {
@@ -210,7 +216,9 @@ func getDocsIndexURL(p string) string {
 
 // parseTFMarkdown takes a TF website markdown doc and extracts a structured representation for use in
 // generating doc comments
-func parseTFMarkdown(g *generator, kind DocKind, markdown, resourcePrefix, rawname string) (parsedDoc, error) {
+func parseTFMarkdown(g *generator, info tfbridge.ResourceOrDataSourceInfo, kind DocKind,
+	markdown, resourcePrefix, rawname string) (parsedDoc, error) {
+
 	ret := parsedDoc{
 		Arguments:  make(map[string]string),
 		Attributes: make(map[string]string),
@@ -380,7 +388,7 @@ func parseTFMarkdown(g *generator, kind DocKind, markdown, resourcePrefix, rawna
 		}
 	}
 
-	return cleanupDoc(g, ret), nil
+	return cleanupDoc(g, info, ret), nil
 }
 
 var (
@@ -568,17 +576,17 @@ func convertHCL(hcl string) (string, string, error) {
 	return stdout.String(), "", nil
 }
 
-func cleanupDoc(g *generator, doc parsedDoc) parsedDoc {
+func cleanupDoc(g *generator, info tfbridge.ResourceOrDataSourceInfo, doc parsedDoc) parsedDoc {
 	newargs := make(map[string]string, len(doc.Arguments))
 	for k, v := range doc.Arguments {
-		newargs[k] = cleanupText(g, v)
+		newargs[k] = cleanupText(g, info, v)
 	}
 	newattrs := make(map[string]string, len(doc.Attributes))
 	for k, v := range doc.Attributes {
-		newattrs[k] = cleanupText(g, v)
+		newattrs[k] = cleanupText(g, info, v)
 	}
 	return parsedDoc{
-		Description: cleanupText(g, doc.Description),
+		Description: cleanupText(g, info, doc.Description),
 		Arguments:   newargs,
 		Attributes:  newattrs,
 		URL:         doc.URL,
@@ -591,7 +599,7 @@ var codeLikeSingleWord = regexp.MustCompile("([\\s`\"\\[])(([0-9a-z]+_)+[0-9a-z]
 const elidedDocComment = "<elided>"
 
 // cleanupText processes markdown strings from TF docs and cleans them for inclusion in Pulumi docs
-func cleanupText(g *generator, text string) string {
+func cleanupText(g *generator, info tfbridge.ResourceOrDataSourceInfo, text string) string {
 	// Remove incorrect documentation that should have been cleaned up in our forks.
 	// TODO: fail the build in the face of such text, once we have a processes in place.
 	if strings.Contains(text, "Terraform") || strings.Contains(text, "terraform") {
@@ -626,18 +634,29 @@ func cleanupText(g *generator, text string) string {
 	text = codeLikeSingleWord.ReplaceAllStringFunc(text, func(match string) string {
 		parts := codeLikeSingleWord.FindStringSubmatch(match)
 		name := parts[2]
-		info, hasResourceInfo := g.info.Resources[name]
-		if hasResourceInfo {
+		if resInfo, hasResourceInfo := g.info.Resources[name]; hasResourceInfo {
 			// This is a resource name
-			resname, mod := resourceName(g.info.GetResourcePrefix(), name, info, false)
+			resname, mod := resourceName(g.info.GetResourcePrefix(), name, resInfo, false)
 			modname := extractModuleName(mod)
 			switch g.language {
 			case golang, python:
 				// Use `ec2.Instance` format
 				return parts[1] + modname + "." + resname + parts[4]
 			default:
-				// User `aws.ec2.Instance` format`
-				return parts[1] + g.info.GetResourcePrefix() + "." + modname + "." + resname + parts[4]
+				// Use `aws.ec2.Instance` format
+				return parts[1] + g.pkg + "." + modname + "." + resname + parts[4]
+			}
+		} else if dataInfo, hasDatasourceInfo := g.info.DataSources[name]; hasDatasourceInfo {
+			// This is a data source name
+			getname, mod := dataSourceName(g.info.GetResourcePrefix(), name, dataInfo)
+			modname := extractModuleName(mod)
+			switch g.language {
+			case golang, python:
+				// Use `ec2.getAmi` format
+				return parts[1] + modname + "." + getname + parts[4]
+			default:
+				// Use `aws.ec2.getAmi` format
+				return parts[1] + g.pkg + "." + modname + "." + getname + parts[4]
 			}
 		}
 		// Else just treat as a property name

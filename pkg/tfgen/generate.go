@@ -45,7 +45,7 @@ const (
 )
 
 type generator struct {
-	pkg         string                // the TF package name (e.g. `aws`)
+	pkg         string                // the Pulum package name (e.g. `gcp`)
 	version     string                // the package version.
 	language    language              // the language runtime to generate.
 	info        tfbridge.ProviderInfo // the provider info for customizing code generation
@@ -548,7 +548,7 @@ func (g *generator) gatherResource(rawname string,
 	var parsedDocs parsedDoc
 	if !isProvider {
 		pd, err := getDocsForProvider(g, g.info.GetGitHubOrg(), g.info.Name,
-			g.info.GetResourcePrefix(), ResourceDocs, rawname, info.Docs)
+			g.info.GetResourcePrefix(), ResourceDocs, rawname, info)
 		if err != nil {
 			return "", nil, err
 		}
@@ -701,7 +701,7 @@ func (g *generator) gatherDataSource(rawname string,
 
 	// Collect documentation information for this data source.
 	parsedDocs, err := getDocsForProvider(g, g.info.GetGitHubOrg(), g.info.Name,
-		g.info.GetResourcePrefix(), DataSourceDocs, rawname, info.Docs)
+		g.info.GetResourcePrefix(), DataSourceDocs, rawname, info)
 	if err != nil {
 		return "", nil, err
 	}
