@@ -17,6 +17,7 @@ package tfgen
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -491,7 +492,8 @@ func (g *pythonGenerator) emitResourceType(mod *module, res *resourceType) (stri
 	w.Writefmtln(`            warnings.warn("explicit use of __name__ is deprecated", DeprecationWarning)`)
 	w.Writefmtln("            resource_name = __name__")
 	w.Writefmtln("        if __opts__ is not None:")
-	w.Writefmtln(`            warnings.warn("explicit use of __opts__ is deprecated, use 'opts' instead", DeprecationWarning)`)
+	w.Writefmtln(
+		`            warnings.warn("explicit use of __opts__ is deprecated, use 'opts' instead", DeprecationWarning)`)
 	w.Writefmtln("            opts = __opts__")
 	w.Writefmtln("        if opts is None:")
 	w.Writefmtln("            opts = pulumi.ResourceOptions()")
@@ -578,7 +580,8 @@ func (g *pythonGenerator) emitResourceType(mod *module, res *resourceType) (stri
 	}
 	w.Writefmtln("):")
 	g.emitGetDocstring(w, mod, res)
-	w.Writefmtln("        opts = pulumi.ResourceOptions(id=id) if opts is None else opts.merge(pulumi.ResourceOptions(id=id))")
+	w.Writefmtln(
+		"        opts = pulumi.ResourceOptions(id=id) if opts is None else opts.merge(pulumi.ResourceOptions(id=id))")
 	w.Writefmtln("")
 	w.Writefmtln("        __props__ = dict()")
 
@@ -1012,7 +1015,8 @@ func (g *pythonGenerator) emitGetDocstring(w *tools.GenWriter, mod *module, res 
 	var buf bytes.Buffer
 
 	// If this resource has documentation, write it at the top of the docstring, otherwise use a generic comment.
-	fmt.Fprintf(&buf, "Get an existing %s resource's state with the given name, id, and optional extra\nproperties used to qualify the lookup.", res.name)
+	fmt.Fprintf(&buf, `Get an existing %s resource's state with the given name, id, and optional extra
+properties used to qualify the lookup.`, res.name)
 	fmt.Fprintln(&buf, "")
 
 	fmt.Fprintln(&buf, ":param str resource_name: The unique name of the resulting resource.")
@@ -1026,7 +1030,7 @@ func (g *pythonGenerator) emitGetDocstring(w *tools.GenWriter, mod *module, res 
 	g.emitDocComment(w, buf.String(), res.docURL, "        ")
 }
 
-func (g *pythonGenerator) emitPropDocstring(buf *bytes.Buffer, prop *variable) {
+func (g *pythonGenerator) emitPropDocstring(buf io.Writer, prop *variable) {
 	name := pycodegen.PyName(prop.name)
 	ty := pyType(prop)
 	if prop.doc == "" || prop.doc == elidedDocComment {
