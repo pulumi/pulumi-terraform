@@ -593,8 +593,8 @@ func (g *pythonGenerator) emitResourceType(mod *module, res *resourceType) (stri
 
 	// Override translate_{input|output}_property on each resource to translate between snake case and
 	// camel case when interacting with tfbridge.
-	w.Writefmtln(`
-    def translate_output_property(self, prop):
+	w.Writefmtln(
+		`    def translate_output_property(self, prop):
         return tables._CAMEL_TO_SNAKE_CASE_TABLE.get(prop) or prop
 
     def translate_input_property(self, prop):
