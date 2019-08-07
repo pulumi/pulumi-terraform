@@ -574,7 +574,7 @@ func (g *pythonGenerator) emitResourceType(mod *module, res *resourceType) (stri
 	w.Writefmtln("    @staticmethod")
 	w.Writefmt("    def get(resource_name, id, opts=None")
 	for _, prop := range res.outprops {
-		w.Writefmt(", %[1]s=None", prop.name)
+		w.Writefmt(", %[1]s=None", pycodegen.PyName(prop.name))
 	}
 	w.Writefmtln("):")
 	g.emitGetDocstring(w, mod, res)
@@ -583,7 +583,7 @@ func (g *pythonGenerator) emitResourceType(mod *module, res *resourceType) (stri
 	w.Writefmtln("        __props__ = dict()")
 
 	for _, prop := range res.outprops {
-		w.Writefmtln(`        __props__["%[1]s"] = %[1]s`, prop.name)
+		w.Writefmtln(`        __props__["%[1]s"] = %[1]s`, pycodegen.PyName(prop.name))
 	}
 
 	w.Writefmtln("        return %s(resource_name, opts=opts, __props__=__props__)", pyClassName(res.name))
