@@ -493,6 +493,8 @@ func (g *pythonGenerator) emitResourceType(mod *module, res *resourceType) (stri
 	w.Writefmtln(
 		`            warnings.warn("explicit use of __opts__ is deprecated, use 'opts' instead", DeprecationWarning)`)
 	w.Writefmtln("            opts = __opts__")
+	w.Writefmtln("        if opts and not isinstance(opts, pulumi.ResourceOptions):")
+	w.Writefmtln("            raise TypeError('Expected resource options to be a ResourceOptions instance')")
 	w.Writefmtln("")
 
 	// Now copy all properties to a dictionary, in preparation for passing it to the base function.  Along
