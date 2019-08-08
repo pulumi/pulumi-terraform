@@ -503,7 +503,8 @@ func (g *pythonGenerator) emitResourceType(mod *module, res *resourceType) (stri
 	w.Writefmtln("            opts.version = utilities.get_version()")
 	w.Writefmtln("        if opts.id is None:")
 	w.Writefmtln("            if __props__ is not None:")
-	w.Writefmtln("                raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')")
+	w.Writefmt("                raise TypeError(")
+	w.Writefmtln("'__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')")
 	w.Writefmtln("            __props__ = dict()")
 	w.Writefmtln("")
 
