@@ -14,6 +14,7 @@ PYPI_VERSION     := $(shell scripts/get-py-version)
 VERSION_FLAGS    := -ldflags "-X github.com/pulumi/pulumi-terraform/pkg/version.Version=${VERSION}"
 
 build::
+	GO111MODULE=on go mod vendor
 	go build ${PROJECT}/pkg/tfgen
 	go build ${PROJECT}/pkg/tfbridge
 	go install $(VERSION_FLAGS) ${PROJECT}/cmd/pulumi-resource-terraform
