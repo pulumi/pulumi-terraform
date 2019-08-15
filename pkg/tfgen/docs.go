@@ -575,7 +575,7 @@ func convertHCL(hcl string) (string, string, error) {
 	}
 
 	result := stdout.String()
-	if result.Index("tf2pulumi error") != -1 {
+	if strings.Index(result, "tf2pulumi error") != -1 {
 		return "", "", errors.New("tf2pulumi error in generated code")
 	}
 	return result, "", nil
