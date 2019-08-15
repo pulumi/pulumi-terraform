@@ -38,7 +38,6 @@ This section only matters if you want to build this bridge from scratch, or use 
 Before doing any development, there are a few prerequisites to install:
 
 * Go: https://golang.org/dl
-* [Dep](https://github.com/golang/dep): `$ go get -u github.com/golang/dep/cmd/dep`
 * [GolangCI-Lint](https://github.com/golangci/golangci-lint): `go get -u github.com/golangci/golangci-lint/cmd/golangci-lint`
 
 ### Building and Testing
@@ -49,10 +48,6 @@ To build, ensure `$GOPATH` is set, and clone into a standard Go workspace:
 
     $ git clone git@github.com:pulumi/pulumi-terraform $GOPATH/src/github.com/pulumi/pulumi-terraform
     $ cd $GOPATH/src/github.com/pulumi/pulumi-terraform
-
-Before building, you will need to ensure dependencies have been restored to your enlistment:
-
-    $ dep ensure
 
 At this point you can run make to build and run tests:
 
