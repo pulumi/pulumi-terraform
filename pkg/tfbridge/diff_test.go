@@ -30,7 +30,12 @@ func diffTest(t *testing.T, sch map[string]*schema.Schema, info map[string]*Sche
 	stateMap := resource.NewPropertyMapFromMap(state)
 
 	// Fake up a TF resource and a TF provider.
-	res := &schema.Resource{Schema: sch}
+	res := &schema.Resource{
+		Schema: sch,
+		CustomizeDiff: func(d *schema.ResourceDiff, _ interface{}) error {
+			return d.SetNewComputed("outp")
+		},
+	}
 	provider := &schema.Provider{
 		ResourcesMap: map[string]*schema.Resource{
 			"resource": res,
@@ -41,7 +46,7 @@ func diffTest(t *testing.T, sch map[string]*schema.Schema, info map[string]*Sche
 	attrs, meta, err := MakeTerraformAttributes(res, stateMap, sch, info, resource.PropertyMap{}, false)
 	assert.NoError(t, err)
 
-	config, err := MakeTerraformConfig(nil, inputsMap, sch, info, resource.PropertyMap{}, false)
+	config, err := MakeTerraformConfig(nil, inputsMap, sch, info, nil, resource.PropertyMap{}, false)
 	assert.NoError(t, err)
 
 	tfDiff, err := provider.SimpleDiff(&terraform.InstanceInfo{Type: "resource"},
