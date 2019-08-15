@@ -100,8 +100,8 @@ func (g *nodeJSGenerator) relativeRootDir(mod *module) string {
 }
 
 // openWriter opens a writer for the given module and file name, emitting the standard header automatically.
-func (g *nodeJSGenerator) openWriter(mod *module, name string, needsSDK, needsUtilities bool) (*tools.GenWriter, string,
-	error) {
+func (g *nodeJSGenerator) openWriter(mod *module, name string, needsSDK, needsInput, needsOutput, needsUtilities bool) (
+	*tools.GenWriter, string, error) {
 
 	dir := g.moduleDir(mod)
 	file := filepath.Join(dir, name)
@@ -115,16 +115,20 @@ func (g *nodeJSGenerator) openWriter(mod *module, name string, needsSDK, needsUt
 
 	// If needed, emit the standard Pulumi SDK import statement.
 	if needsSDK {
-		g.emitSDKImport(mod, w, needsUtilities)
+		g.emitSDKImport(mod, w, needsInput, needsOutput, needsUtilities)
 	}
 
 	return w, file, nil
 }
 
-func (g *nodeJSGenerator) emitSDKImport(mod *module, w *tools.GenWriter, needsUtilities bool) {
+func (g *nodeJSGenerator) emitSDKImport(mod *module, w *tools.GenWriter, needsInput, needsOutput, needsUtilities bool) {
 	w.Writefmtln("import * as pulumi from \"@pulumi/pulumi\";")
-	w.Writefmtln("import * as inputApi from \"%s/types/input\";", g.relativeRootDir(mod))
-	w.Writefmtln("import * as outputApi from \"%s/types/output\";", g.relativeRootDir(mod))
+	if needsInput {
+		w.Writefmtln("import * as inputApi from \"%s/types/input\";", g.relativeRootDir(mod))
+	}
+	if needsOutput {
+		w.Writefmtln("import * as outputApi from \"%s/types/output\";", g.relativeRootDir(mod))
+	}
 	if needsUtilities {
 		w.Writefmtln("import * as utilities from \"%s/utilities\";", g.relativeRootDir(mod))
 	}
@@ -188,15 +192,15 @@ func (g *nodeJSGenerator) emitPackage(pack *pkg) error {
 	}
 	if typesIndex != "" {
 		files = append(files, typesIndex)
-
-		// Regenerate the top-level index again, this time including the `types` submodule since we have some types.
 		submodules["types"] = typesIndex
-		indexFiles, _, _, err := g.emitModule(index, submodules)
-		if err != nil {
-			return err
-		}
-		files = append(files, indexFiles...)
 	}
+
+	// Regenerate the top-level index again, this time including the `types` submodule, if present.
+	indexFiles, _, _, err := g.emitModule(index, submodules)
+	if err != nil {
+		return err
+	}
+	files = append(files, indexFiles...)
 
 	// Finally emit the package metadata (NPM, TypeScript, and so on).
 	sort.Strings(files)
@@ -263,7 +267,11 @@ func (g *nodeJSGenerator) emitNestedTypes(nestedMap map[string]*nestedTypes, inp
 	}
 
 	// Open the file for writing.
-	w, file, err := g.openWriter(typesMod, name+".ts", true /**needsSDK*/, false /*needsUtilities*/)
+	needsSDK := true
+	needsInput := input
+	needsOutput := !input
+	needsUtilities := false
+	w, file, err := g.openWriter(typesMod, name+".ts", needsSDK, needsInput, needsOutput, needsUtilities)
 	if err != nil {
 		return "", err
 	}
@@ -474,7 +482,7 @@ func (g *nodeJSGenerator) ensureReadme(dir string) error {
 // emitIndex emits an index module, optionally re-exporting other members or submodules.
 func (g *nodeJSGenerator) emitIndex(mod *module, exports []string, submods map[string]string) (string, error) {
 	// Open the index.ts file for this module, and ready it for writing.
-	w, index, err := g.openWriter(mod, "index.ts", false, false)
+	w, index, err := g.openWriter(mod, "index.ts", false, false, false, false)
 	if err != nil {
 		return "", err
 	}
@@ -531,7 +539,7 @@ func (g *nodeJSGenerator) emitUtilities(mod *module) (string, error) {
 	contract.Require(mod.root(), "mod.root()")
 
 	// Open the utilities.ts file for this module and ready it for writing.
-	w, utilities, err := g.openWriter(mod, "utilities.ts", false, false)
+	w, utilities, err := g.openWriter(mod, "utilities.ts", false, false, false, false)
 	if err != nil {
 		return "", err
 	}
@@ -567,7 +575,7 @@ func (g *nodeJSGenerator) emitModuleMember(mod *module, member moduleMember, nes
 // emitConfigVariables emits all config vaiables in the given module, returning the resulting file.
 func (g *nodeJSGenerator) emitConfigVariables(mod *module) (string, error) {
 	// Create a vars.ts file into which all configuration variables will go.
-	w, config, err := g.openWriter(mod, "vars.ts", true, true)
+	w, config, err := g.openWriter(mod, "vars.ts", true, false, false, true)
 	if err != nil {
 		return "", err
 	}
@@ -720,7 +728,11 @@ func (g *nodeJSGenerator) emitResourceType(mod *module, res *resourceType, neste
 		filename = fmt.Sprintf("%s_", filename)
 	}
 
-	w, file, err := g.openWriter(mod, filename+".ts", true, true)
+	needsSDK := true
+	needsInput := len(nested.inputs) > 0
+	needsOutput := len(nested.outputs) > 0
+	needsUtilities := true
+	w, file, err := g.openWriter(mod, filename+".ts", needsSDK, needsInput, needsOutput, needsUtilities)
 	if err != nil {
 		return "", err
 	}
@@ -943,6 +955,13 @@ func (g *nodeJSGenerator) emitResourceType(mod *module, res *resourceType, neste
 	g.emitPlainOldType(w, res.argst, mod.name, name, res.parsedDocs, nested.inputs, nested.inputOverlays,
 		true /*wrapInput*/, true /*isInputType*/)
 
+	// If we generated any nested types, regenerate the type to add the proper imports at the top.
+	// This approach isn't great. Ideally, we'd precompute the nested types so we wouldn't have to regenerate.
+	if (!needsInput && len(nested.inputs) > 0) || (!needsOutput && len(nested.outputs) > 0) {
+		contract.IgnoreClose(w)
+		return g.emitResourceType(mod, res, nested)
+	}
+
 	return file, nil
 }
 
@@ -971,8 +990,11 @@ func (g *nodeJSGenerator) writeAlias(w *tools.GenWriter, alias tfbridge.AliasInf
 }
 
 func (g *nodeJSGenerator) emitResourceFunc(mod *module, fun *resourceFunc, nested *nestedTypes) (string, error) {
-	// Create a vars.ts file into which all configuration variables will go.
-	w, file, err := g.openWriter(mod, fun.name+".ts", true, true)
+	needsSDK := true
+	needsInput := len(nested.inputs) > 0
+	needsOutput := len(nested.outputs) > 0
+	needsUtilities := true
+	w, file, err := g.openWriter(mod, fun.name+".ts", needsSDK, needsInput, needsOutput, needsUtilities)
 	if err != nil {
 		return "", err
 	}
@@ -1052,6 +1074,13 @@ func (g *nodeJSGenerator) emitResourceFunc(mod *module, fun *resourceFunc, neste
 		w.Writefmtln("")
 		g.emitPlainOldType(w, fun.retst, mod.name, strings.Title(fun.name), fun.parsedDocs, nested.outputs, nil,
 			false /*wrapInput*/, false /*isInputType*/)
+	}
+
+	// If we generated any nested types, regenerate the type to add the proper imports at the top.
+	// This approach isn't great. Ideally, we'd precompute the nested types so we wouldn't have to regenerate.
+	if (!needsInput && len(nested.inputs) > 0) || (!needsOutput && len(nested.outputs) > 0) {
+		contract.IgnoreClose(w)
+		return g.emitResourceFunc(mod, fun, nested)
 	}
 
 	return file, nil
