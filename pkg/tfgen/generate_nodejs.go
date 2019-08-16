@@ -124,10 +124,10 @@ func (g *nodeJSGenerator) openWriter(mod *module, name string, needsSDK, needsIn
 func (g *nodeJSGenerator) emitSDKImport(mod *module, w *tools.GenWriter, needsInput, needsOutput, needsUtilities bool) {
 	w.Writefmtln("import * as pulumi from \"@pulumi/pulumi\";")
 	if needsInput {
-		w.Writefmtln("import * as inputApi from \"%s/types/input\";", g.relativeRootDir(mod))
+		w.Writefmtln("import * as inputs from \"%s/types/input\";", g.relativeRootDir(mod))
 	}
 	if needsOutput {
-		w.Writefmtln("import * as outputApi from \"%s/types/output\";", g.relativeRootDir(mod))
+		w.Writefmtln("import * as outputs from \"%s/types/output\";", g.relativeRootDir(mod))
 	}
 	if needsUtilities {
 		w.Writefmtln("import * as utilities from \"%s/utilities\";", g.relativeRootDir(mod))
@@ -1607,9 +1607,9 @@ func tsElemComplexStructureType(module, typeNamePrefix, name string, e *schema.R
 	t += whitespace + "}"
 
 	if nestedTypeDeclarations != nil {
-		fullTypeName := "outputApi"
+		fullTypeName := "outputs"
 		if isInputType {
-			fullTypeName = "inputApi"
+			fullTypeName = "inputs"
 		}
 		if module != "" {
 			fullTypeName += fmt.Sprintf(".%s", module)
