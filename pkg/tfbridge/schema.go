@@ -46,22 +46,29 @@ const defaultsKey = "__defaults"
 // marshaled back to assets by MakeTerraformOutputs.
 type AssetTable map[*SchemaInfo]resource.PropertyValue
 
-// isAutoNamed returns true if the given set of resource inputs contains a top-level property that was populated
-// using a default value and that default value is an autoname.
-func isAutoNamed(inputs resource.PropertyMap, tfs map[string]*schema.Schema, ps map[string]*SchemaInfo) bool {
+// nameRequiresDeleteBeforeReplace returns true if the given set of resource inputs includes an autonameable
+// property with a value that was not populated by the autonamer.
+func nameRequiresDeleteBeforeReplace(inputs resource.PropertyMap,
+	tfs map[string]*schema.Schema, ps map[string]*SchemaInfo) bool {
+
 	defaults, hasDefaults := inputs[defaultsKey]
 	if !hasDefaults || !defaults.IsArray() {
 		// If there is no list of properties that were populated using defaults, consider the resource autonamed.
 		// This avoids setting delete-before-replace for resources that were created before the defaults list existed.
-		return true
+		return false
 	}
+
+	hasDefault := map[resource.PropertyKey]bool{}
 	for _, key := range defaults.ArrayValue() {
 		if !key.IsString() {
 			continue
 		}
+		hasDefault[resource.PropertyKey(key.StringValue())] = true
+	}
 
-		_, _, psi := getInfoFromPulumiName(resource.PropertyKey(key.StringValue()), tfs, ps, false)
-		if psi.HasDefault() && psi.Default.AutoNamed {
+	for key := range inputs {
+		_, _, psi := getInfoFromPulumiName(key, tfs, ps, false)
+		if psi != nil && psi.HasDefault() && psi.Default.AutoNamed && !hasDefault[key] {
 			return true
 		}
 	}

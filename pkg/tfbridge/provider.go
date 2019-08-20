@@ -608,8 +608,8 @@ func (p *Provider) Diff(ctx context.Context, req *pulumirpc.DiffRequest) (*pulum
 		}
 	}
 
-	hasAutoName := isAutoNamed(news, res.TF.Schema, res.Schema.Fields)
-	deleteBeforeReplace := len(replaces) > 0 && (res.Schema.DeleteBeforeReplace || !hasAutoName)
+	deleteBeforeReplace := len(replaces) > 0 &&
+		(res.Schema.DeleteBeforeReplace || nameRequiresDeleteBeforeReplace(news, res.TF.Schema, res.Schema.Fields))
 
 	return &pulumirpc.DiffResponse{
 		Changes:             changes,

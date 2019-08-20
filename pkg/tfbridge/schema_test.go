@@ -1720,4 +1720,30 @@ func TestDeleteBeforeReplaceAutoname(t *testing.T) {
 	assert.True(t, len(diffResp.GetReplaces()) > 0)
 	assert.False(t, diffResp.GetDeleteBeforeReplace())
 
+	// Step 6: delete the auto-name default from the schema and re-run the diff. The result should not indicate
+	// delete-befer-replace.
+	p.resources["importableResource"].Schema.Fields = nil
+
+	pulumiIns, err = plugin.MarshalProperties(resource.NewPropertyMapFromMap(map[string]interface{}{
+		"inputA": "myResource",
+		"inputB": "bar",
+	}), plugin.MarshalOptions{})
+	assert.NoError(t, err)
+	checkResp, err = p.Check(context.Background(), &pulumirpc.CheckRequest{
+		Urn:  string(urn),
+		Olds: createResp.GetProperties(),
+		News: pulumiIns,
+	})
+	assert.NoError(t, err)
+
+	diffResp, err = p.Diff(context.Background(), &pulumirpc.DiffRequest{
+		Id:   "MyID",
+		Urn:  string(urn),
+		Olds: createResp.GetProperties(),
+		News: checkResp.GetInputs(),
+	})
+	assert.NoError(t, err)
+
+	assert.True(t, len(diffResp.GetReplaces()) > 0)
+	assert.False(t, diffResp.GetDeleteBeforeReplace())
 }
