@@ -278,7 +278,7 @@ func (g *pythonGenerator) emitIndex(mod *module, exports, submods []string) erro
 		}
 		w.Writefmtln("# Export this package's modules as members:")
 		for _, exp := range exports {
-			w.Writefmtln("from .%s import *", pycodegen.PyName(exp))
+			w.Writefmtln("from .%s import (%s)", pycodegen.PyName(exp), exp)
 		}
 	}
 
