@@ -687,23 +687,25 @@ func (g *pythonGenerator) emitResourceFunc(mod *module, fun *resourceFunc) (stri
 	w.Writefmt("opts=None")
 	w.Writefmtln("):")
 
-	// Write the TypeDoc/JSDoc for the data source function.
-	if fun.doc != "" {
-		var buf bytes.Buffer
+	var buf bytes.Buffer
+	// If this func has documentation, write it at the top of the docstring, otherwise use a generic comment.
+	if fun.doc != "" && fun.doc != elidedDocComment {
 		fmt.Fprintln(&buf, fun.doc)
-
-		if len(fun.args) > 0 {
-			fmt.Fprintln(&buf, "")
-		}
-		for _, arg := range fun.args {
-			g.emitPropDocstring(&buf, arg, false /*wrapInput*/)
-		}
-
-		// Nested structures are typed as `dict` so we include some extra documentation for these structures.
-		g.emitNestedStructuresDocstring(&buf, fun.args, fun.parsedDocs, false /*wrapInput*/)
-
-		g.emitDocComment(w, buf.String(), fun.docURL, "    ")
+	} else {
+		fmt.Fprintln(&buf, "Use this data source to access information about an existing resource.")
 	}
+
+	if len(fun.args) > 0 {
+		fmt.Fprintln(&buf, "")
+	}
+	for _, arg := range fun.args {
+		g.emitPropDocstring(&buf, arg, false /*wrapInput*/)
+	}
+
+	// Nested structures are typed as `dict` so we include some extra documentation for these structures.
+	g.emitNestedStructuresDocstring(&buf, fun.args, fun.parsedDocs, false /*wrapInput*/)
+
+	g.emitDocComment(w, buf.String(), fun.docURL, "    ")
 
 	if fun.info.DeprecationMessage != "" {
 		w.Writefmtln("    pulumi.log.warn(\"%s is deprecated: %s\")", name, fun.info.DeprecationMessage)
