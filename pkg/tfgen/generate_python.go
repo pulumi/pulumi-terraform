@@ -1138,15 +1138,19 @@ func (g *pythonGenerator) emitPropDocstring(buf io.Writer, prop *variable, wrapI
 func (g *pythonGenerator) emitNestedStructuresDocstring(buf io.Writer, props []*variable, parsedDocs parsedDoc,
 	wrapInput bool) {
 
+	var names []string
 	nestedMap := make(map[string][]*nestedVariable)
 	for _, prop := range props {
 		nested := nestedStructure(prop, parsedDocs)
 		if len(nested) > 0 {
 			nestedMap[prop.Name()] = nested
+			names = append(names, prop.Name())
 		}
 	}
+	sort.Strings(names)
 
-	for name, nested := range nestedMap {
+	for _, name := range names {
+		nested := nestedMap[name]
 		fmt.Fprintf(buf, "\nThe **%s** object supports the following:\n\n", pycodegen.PyName(name))
 		g.emitNestedStructureBullets(buf, nested, "  ", wrapInput)
 	}
