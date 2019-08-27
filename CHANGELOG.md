@@ -26,6 +26,7 @@ This CHANGELOG details important changes made in each version of the
 - Generate named nested types with doc comments instead of anonymous inline expansions for TypeScript.
 - Set `DeleteBeforeReplace` for resources that are not auto-named.
 - Accept archive values everywhere asset values are accepted.
+- Include nested structure details in Python docstrings.
 - Use `pulumi.InvokeOptions()` when `opts` is `None` for Python data source functions.
 
 ## v0.18.3 (Released June 20, 2019)
