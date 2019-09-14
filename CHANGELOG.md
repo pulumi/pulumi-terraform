@@ -29,6 +29,7 @@ This CHANGELOG details important changes made in each version of the
 - Include nested structure details in Python docstrings.
 - Use `pulumi.InvokeOptions()` when `opts` is `None` for Python data source functions.
 - Provide a mechanism for overriding nested type names.
+- Remove the need for Pandoc in generating Python SDK readme files.
 
 ## v0.18.3 (Released June 20, 2019)
 
