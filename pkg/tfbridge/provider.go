@@ -17,6 +17,7 @@ package tfbridge
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/y0ssar1an/q"
 	"log"
 	"regexp"
 	"strings"
@@ -624,6 +625,8 @@ func (p *Provider) Create(ctx context.Context, req *pulumirpc.CreateRequest) (*p
 		return nil, errors.Errorf("unrecognized resource type (Create): %s", t)
 	}
 
+	q.Q("req", req)
+
 	label := fmt.Sprintf("%s.Create(%s/%s)", p.label(), urn, res.TFName)
 	glog.V(9).Infof("%s executing", label)
 
@@ -648,11 +651,15 @@ func (p *Provider) Create(ctx context.Context, req *pulumirpc.CreateRequest) (*p
 		setTimeout(diff, req.Timeout, schema.TimeoutCreate)
 	}
 
+	q.Q("state", state)
+
 	newstate, err := p.tf.Apply(info, state, diff)
 	if newstate == nil {
 		contract.Assertf(err != nil, "Expected non-nil error with nil state during Create of %s", urn)
 		return nil, err
 	}
+
+	q.Q("newState", newstate)
 
 	contract.Assertf(newstate.ID != "", "Expected non-empty ID for new state during Create of %s", urn)
 	reasons := make([]string, 0)
@@ -674,6 +681,8 @@ func (p *Provider) Create(ctx context.Context, req *pulumirpc.CreateRequest) (*p
 	if len(reasons) != 0 {
 		return nil, initializationError(newstate.ID, mprops, reasons)
 	}
+
+	q.Q("mprops", mprops)
 	return &pulumirpc.CreateResponse{Id: newstate.ID, Properties: mprops}, nil
 }
 
