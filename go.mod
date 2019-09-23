@@ -24,4 +24,7 @@ require (
 	google.golang.org/grpc v1.20.1
 )
 
-replace github.com/Nvveen/Gotty => github.com/ijc25/Gotty v0.0.0-20170406111628-a8b993ba6abd
+replace (
+	git.apache.org/thrift.git => github.com/apache/thrift v0.12.0
+	github.com/Nvveen/Gotty => github.com/ijc25/Gotty v0.0.0-20170406111628-a8b993ba6abd
+)
