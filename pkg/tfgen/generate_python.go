@@ -28,7 +28,7 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/golang/glog"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/pkg/errors"
 
 	pycodegen "github.com/pulumi/pulumi/pkg/codegen/python"
