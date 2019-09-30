@@ -22,7 +22,7 @@ class InstallPluginCommand(install):
 
 
 def readme():
-    with open('README.rst') as f:
+    with open('README.md') as f:
         return f.read()
 
 
@@ -30,6 +30,7 @@ setup(name='pulumi_terraform',
       version='${VERSION}',
       description='A Pulumi package for consuming Terraform Remote State resources.',
       long_description=readme(),
+      long_description_content_type='text/markdown',
       cmdclass={
           'install': InstallPluginCommand,
       },

@@ -1,93 +1,99 @@
-[![Build Status](https://travis-ci.com/pulumi/pulumi-terraform.svg?token=cTUUEgrxaTEGyecqJpDn&branch=master)](https://travis-ci.com/pulumi/pulumi-terraform)
+# Pulumi Terraform Provider
 
-# Pulumi Terraform Bridge
+The Terraform resource provider for Pulumi lets you consume the outputs
+contained in Terraform state files from your Pulumi programs. The package
+provides a `RemoteStateReference` resource which acts like a native Pulumi
+[`StackReference`][stackreference].
 
-This bridge adapts any [Terraform Provider](https://github.com/terraform-providers) for use with Pulumi.  The Terraform
-community provides resource providers that perform create, read, update, and delete (CRUD) operations for a broad array
-of infrastructure providers and types.  In principle, any of them can be programmed using Pulumi with this bridge.
+To use this package, please [install the Pulumi CLI first][pulumicli].
 
-If you want to wrap a _new_ Terraform provider as a Pulumi provider, check out [pulumi/pulumi-tf-provider-boilerplate](https://github.com/pulumi/pulumi-tf-provider-boilerplate).
+## Installing
 
-## Overview
+Currently, the Terraform Provider is available only for Node.js, and is
+distributed as an `npm` package.
 
-Although the Terraform schema is used as a starting point, the concept of "overlays" enables customization, including
-classification into modules, stronger typing, better documentation, and more.  Pulumi can also augment providers with
-non-CRUD operations like queries, metrics, and logs -- while not having to repeat all of the considerable and quality
-work that has already gone into building reliable CRUD operations against the major cloud providers' platforms.
+### Node.js (JavaScript/TypeScript)
 
-Most users of Pulumi don't need to know how this bridge works.  Many will find it interesting, and, if you'd like to
-bring up a new provider that is available in Terraform but not yet Pulumi, we would love to hear from you.
+To use from JavaScript or TypeScript in Node.js, install using either `npm`:
 
-## How It Works
+    $ npm install @pulumi/terraform
 
-There are two major things involved in this bridge: design-time and runtime.
+or `yarn`:
 
-At design-time, we code-generate packages by dynamic inspection of a Terraform Provider's schema.  This only works for
-providers that are built using static schemas.  It is possible to write Terraform Providers without this, which means
-the ability to create packages would not exist, but in practice all interesting providers use it.
+    $ yarn add @pulumi/terraform
 
-Second, the bridge connects the Pulumi engine to a given Terraform Provider using Pulumi's RPC interfaces.  This
-behavior also leverages the Terraform provider schema, for operations like performing validation and diffs.
+## Concepts
 
-## Development
+The `@pulumi/terraform` package provides a resource named `RemoteStateReference`
+which is used to read outputs from a Terraform state file stored in one of the
+supported Terraform remote state backends.
 
-This section only matters if you want to build this bridge from scratch, or use it in your own project.
+## Examples
 
-### Prerequisites
+### S3
 
-Before doing any development, there are a few prerequisites to install:
+The following program will read a Terraform state file stored in S3:
 
-* Go: https://golang.org/dl
-* [Dep](https://github.com/golang/dep): `$ go get -u github.com/golang/dep/cmd/dep`
-* [GolangCI-Lint](https://github.com/golangci/golangci-lint): `go get -u github.com/golangci/golangci-lint/cmd/golangci-lint`
+```typescript
+import * as tf from "@pulumi/terraform";
 
-### Building and Testing
+const remoteState = new tf.state.RemoteStateReference("s3state", {
+    backendType: "s3",
+    bucket: "pulumi-terraform-state-test",
+    key: "test/terraform.tfstate",
+    region: "us-west-2"
+});
 
-There is a `Makefile` in the root that builds and tests everything.
+// Use the getOutput function on the resource to access root outputs
+const vpcId= remoteState.getOutput("vpc_id");
+```
 
-To build, ensure `$GOPATH` is set, and clone into a standard Go workspace:
+### Local file
 
-    $ git clone git@github.com:pulumi/pulumi-terraform $GOPATH/src/github.com/pulumi/pulumi-terraform
-    $ cd $GOPATH/src/github.com/pulumi/pulumi-terraform
+The following program will read a Terraform state file stored locally in the
+filesystem:
 
-Before building, you will need to ensure dependencies have been restored to your enlistment:
+```typescript
+import * as tf from "@pulumi/terraform";
 
-    $ dep ensure
+const remotestate = new tf.state.RemoteStateReference("localstate", {
+   backendType: "local",
+   path: path.join(__dirname, "terraform.tfstate"),
+});
 
-At this point you can run make to build and run tests:
+// Use the getOutput function on the resource to access root outputs
+const vpcId= remoteState.getOutput("vpc_id");
+```
 
-    $ make
+### Terraform Enterprise
 
-This repo on its own isn't particularly interesting, until it is used to create a new Pulumi provider.
+For state stored in Terraform Enterprise, the authentication token must be set
+via the Pulumi configuration system - for example, using:
 
-### Adapting a New Terraform Provider
+    pulumi config set --secret terraformEnterpriseToken <value>
 
-It is relatively easy to adapt a Terraform Provider, X, for use with Pulumi.  The
-[AWS provider](https://github.com/pulumi/pulumi-aws) offers a good blueprint for how to go about this.
+The following program will read a Terraform state file stored in Terraform
+Enterprise, using the value of `terraformEnterpriseToken` from above:
 
-You will create two Go binaries -- one purely for design-time usage to act as X's code-generator and the other for
-runtime usage to serve as its dynamic resource plugin -- and link with the Terraform Provider repo and this one.
-There is then typically a `resources.go` file that maps all of the Terraform Provider metadata available at runtime
-to types and concepts that the bridge will use to generate well-typed programmatic abstractions.
+```typescript
+import * as pulumi from "@pulumi/pulumi";
+import * as tf from "@pulumi/terraform";
 
-The AWS provider provides a standard blueprint to follow for this.  There are three major elements:
+const config = new pulumi.Config();
 
-* [`cmd/pulumi-tfgen-aws/`](https://github.com/pulumi/pulumi-aws/tree/master/cmd/pulumi-tfgen-aws)
-* [`cmd/pulumi-resource-aws/`](https://github.com/pulumi/pulumi-aws/tree/master/cmd/pulumi-resource-aws)
-* [`resources.go`](https://github.com/pulumi/pulumi-aws/blob/master/resources.go)
+const ref = new tf.state.RemoteStateReference("remote", {
+    backendType: "remote",
+    organization: "pulumi",
+    token: config.requireSecret("terraformEnterpriseToken"),
+    workspaces: {
+        name: "test-state-file"
+    }
+});
 
-The [`Makefile`](https://github.com/pulumi/pulumi-aws/blob/master/Makefile) compiles these programs, and notably, uses
-the resulting `pulumi-tfgen-aws` binary to generate code for many different languages.  The resulting generated code is
-stored in the [`sdk` directory](https://github.com/pulumi/pulumi-aws/tree/master/sdk).
+// Use the getOutput function on the resource to access root outputs
+const vpcId= remoteState.getOutput("vpc_id");
+```
 
-### Augmenting Auto-Generated Code w/ Overlays
+[stackreference]: https://www.pulumi.com/docs/reference/organizing-stacks-projects/#inter-stack-dependencies
+[pulumicli]: https://pulumi.com/
 
-An overlay is a set of additional directives that the code generator obeys when creating the final packages.
-
-These may specify additional types, functions, or entire modules in this directory may be merged into the resulting
-package.  This can be useful for helper modules and functions, in addition to gradual typing, such as using strongly
-typed enums in places where the underlying provider may only have weakly typed strings.
-
-To do this, first add the files in the appropriate package sub-directory, and then add the requisite directives to the
-provider file.  See the [AWS overlays directory](https://github.com/pulumi/pulumi-aws/tree/master/overlays/nodejs) for
-an example of this in action.

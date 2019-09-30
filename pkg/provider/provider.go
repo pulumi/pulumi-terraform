@@ -27,8 +27,6 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-
-	"github.com/pulumi/pulumi-terraform/pkg/tfbridge"
 )
 
 type Provider struct {
@@ -36,7 +34,7 @@ type Provider struct {
 }
 
 func NewProvider(ctx context.Context, host *provider.HostClient, version string) *Provider {
-	log.SetOutput(tfbridge.NewTerraformLogRedirector(ctx, host))
+	log.SetOutput(NewTerraformLogRedirector(ctx, host))
 	backendInit.Init(disco.New())
 
 	p := &Provider{
