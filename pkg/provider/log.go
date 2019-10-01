@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package tfbridge
+package provider
 
 import (
 	"bufio"
@@ -32,7 +32,7 @@ type LogRedirector struct {
 	buffer  []byte                        // a buffer that holds up to a line of output.
 }
 
-// NewLogRedirector returns a new LogRedirector with the (unexported) writers field
+// NewTerraformLogRedirector returns a new LogRedirector with the (unexported) writers field
 // set to the given map.
 func NewTerraformLogRedirector(ctx context.Context, hostClient *provider.HostClient) *LogRedirector {
 	return &LogRedirector{

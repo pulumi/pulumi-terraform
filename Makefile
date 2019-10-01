@@ -1,4 +1,4 @@
-PROJECT_NAME := Pulumi Terraform Bridge
+PROJECT_NAME := Pulumi Terraform Resource Provider
 include build/common.mk
 
 PACK             := terraform
@@ -14,31 +14,25 @@ PYPI_VERSION     := $(shell scripts/get-py-version)
 VERSION_FLAGS    := -ldflags "-X github.com/pulumi/pulumi-terraform/pkg/version.Version=${VERSION}"
 
 build::
-	go build ${PROJECT}/pkg/tfgen
-	go build ${PROJECT}/pkg/tfbridge
 	go install $(VERSION_FLAGS) ${PROJECT}/cmd/pulumi-resource-terraform
 	cd ${PACKDIR}/nodejs/ && \
 		yarn install && \
 		yarn run tsc
 	cp LICENSE ${PACKDIR}/nodejs/package.json ${PACKDIR}/nodejs/yarn.lock \
 		${PACKDIR}/nodejs/bin
-	cp README.package.md ${PACKDIR}/nodejs/bin/README.md
+	cp README.md ${PACKDIR}/nodejs/bin/README.md
+	cp README.md ${PACKDIR}/python/README.md
 	sed -i.bak 's/$${VERSION}/$(VERSION)/g' ${PACKDIR}/nodejs/bin/package.json
 	cd ${PACKDIR}/python/ && \
-			if [ $$(command -v pandoc) ]; then \
-				pandoc --from=markdown --to=rst --output=README.rst ../../README.md; \
-			else \
-				echo "warning: pandoc not found, not generating README.rst"; \
-				echo "" > README.rst; \
-			fi && \
-			$(PYTHON) setup.py clean --all 2>/dev/null && \
-			rm -rf ./bin/ ../python.bin/ && cp -R . ../python.bin && mv ../python.bin ./bin && \
-			sed -i.bak -e "s/\$${VERSION}/$(PYPI_VERSION)/g" -e "s/\$${PLUGIN_VERSION}/$(VERSION)/g" ./bin/setup.py && \
-			cd ./bin && $(PYTHON) setup.py build sdist
+		$(PYTHON) setup.py clean --all 2>/dev/null && \
+		rm -rf ./bin/ ../python.bin/ && cp -R . ../python.bin && mv ../python.bin ./bin && \
+		sed -i.bak -e "s/\$${VERSION}/$(PYPI_VERSION)/g" -e "s/\$${PLUGIN_VERSION}/$(VERSION)/g" ./bin/setup.py && \
+		cd ./bin && $(PYTHON) setup.py build sdist
 
 
 lint::
-	golangci-lint run
+	cd pkg && golangci-lint run
+	cd cmd && golangci-lint run
 
 install::
 	go install $(VERSION_FLAGS) $(PROJECT)/cmd/pulumi-resource-terraform
