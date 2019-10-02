@@ -1,22 +1,16 @@
-# `@pulumi/terraform` CHANGELOG
+CHANGELOG
+=========
 
-This CHANGELOG details important changes made in each version of the
-`terraform` provider, the `@pulumi/terraform` Node.js package and the
-`pulumi_terraform` Python package.
+## HEAD (Unreleased)
+_(none)_
 
-## v0.18.4 (Unreleased)
+---
 
-- Initial release of `pulumi_terraform` for Python.
-- `RemoteStateReference` resources can now read states created with Terraform
-  0.12.6 and below.
-- Use of the `RemoteStateReference` resource no longer results in a panic if
-  the configured remote state cannot be accessed.
+## v1.0.0 (2019-10-02)
+* Use of the `RemoteStateReference` resource no longer results in a panic if the configured remote state cannot be accessed
+* `RemoteStateReference` resources can now read states created with Terraform v0.12.9 and below
+* Added support for Python with the `pulumi_terraform` package
 
-## v0.18.2 (Released May 28th, 2019)
+## v0.18.1 (2019-05-16)
+* Initial release of `@pulumi/terraform` with support for Node.js.
 
-- Improved the package `README` file to reflect usage of the
-  `@pulumi/terraform` package rather than the Terraform bridge.
-
-## v0.18.1 (Released May 16th, 2019)
-
-- Initial release of `@pulumi/terraform` with support for Node.js.
