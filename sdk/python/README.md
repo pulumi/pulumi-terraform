@@ -9,9 +9,6 @@ To use this package, please [install the Pulumi CLI first][pulumicli].
 
 ## Installing
 
-Currently, the Terraform Provider is available only for Node.js, and is
-distributed as an `npm` package.
-
 ### Node.js (JavaScript/TypeScript)
 
 To use from JavaScript or TypeScript in Node.js, install using either `npm`:
@@ -21,6 +18,12 @@ To use from JavaScript or TypeScript in Node.js, install using either `npm`:
 or `yarn`:
 
     $ yarn add @pulumi/terraform
+    
+### Python
+
+To use from Python, install using `pip`:
+
+    $ pip install pulumi-terraform
 
 ## Concepts
 
