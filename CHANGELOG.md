@@ -2,9 +2,12 @@ CHANGELOG
 =========
 
 ## HEAD (Unreleased)
-* Upgrade the Pulumi dependency requirements for NodeJS and Python SDKs
+_(none)_
 
 ---
+
+## v1.1.0 (2019-10-04)
+* Upgrade the Pulumi dependency requirements for NodeJS and Python SDKs
 
 ## v1.0.0 (2019-10-02)
 * Use of the `RemoteStateReference` resource no longer results in a panic if the configured remote state cannot be accessed
@@ -13,4 +16,3 @@ CHANGELOG
 
 ## v0.18.1 (2019-05-16)
 * Initial release of `@pulumi/terraform` with support for Node.js.
-
