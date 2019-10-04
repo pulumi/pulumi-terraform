@@ -2,7 +2,7 @@ CHANGELOG
 =========
 
 ## HEAD (Unreleased)
-_(none)_
+* Upgrade the Pulumi dependency requirements for NodeJS and Python SDKs
 
 ---
 

@@ -43,7 +43,7 @@ setup(name='pulumi_terraform',
       packages=find_packages(),
       install_requires=[
           'parver>=0.2.1',
-          'pulumi>=0.17.24,<0.18.0',
+          'pulumi>=1.0.0,<2.0.0',
           'semver>=2.8.1'
       ],
       zip_safe=False)
