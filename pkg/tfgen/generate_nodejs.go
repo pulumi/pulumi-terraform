@@ -836,16 +836,9 @@ func (g *nodeJSGenerator) emitResourceType(mod *module, res *resourceType, neste
 	// Write out callable constructor: We only emit a single public constructor, even though we use a private signature
 	// as well as part of the implementation of `.get`. This is complicated slightly by the fact that, if there is no
 	// args type, we will emit a constructor lacking that parameter.
-	var argsFlags string
-	if len(res.reqprops) == 0 {
-		// If the number of required input properties was zero, we can make the args object optional.
-		argsFlags = "?"
-	}
+
 	argsType := res.argst.name
-	trailingBrace := ""
-	if res.IsProvider() {
-		trailingBrace = " {"
-	}
+
 	optionsType := "CustomResourceOptions"
 	if res.IsProvider() {
 		optionsType = "ResourceOptions"
@@ -854,70 +847,77 @@ func (g *nodeJSGenerator) emitResourceType(mod *module, res *resourceType, neste
 	if res.info.DeprecationMessage != "" {
 		w.Writefmtln("    /** @deprecated %s */", res.info.DeprecationMessage)
 	}
-	w.Writefmtln("    constructor(name: string, args%s: %s, opts?: pulumi.%s)%s", argsFlags, argsType,
-		optionsType, trailingBrace)
 
 	if !res.IsProvider() {
+		var argsFlags string
+		if len(res.reqprops) == 0 {
+			// If the number of required input properties was zero, we can make the args object optional.
+			argsFlags = "?"
+		}
+		w.Writefmtln("    constructor(name: string, args%s: %s, opts?: pulumi.%s);", argsFlags, argsType,
+			optionsType)
+
 		if res.info.DeprecationMessage != "" {
 			w.Writefmtln("    /** @deprecated %s */", res.info.DeprecationMessage)
 		}
 		// Now write out a general purpose constructor implementation that can handle the public signautre as well as the
 		// signature to support construction via `.get`.  And then emit the body preamble which will pluck out the
 		// conditional state into sensible variables using dynamic type tests.
-		w.Writefmtln("    constructor(name: string, argsOrState?: %s | %s, opts?: pulumi.CustomResourceOptions) {",
+		w.Writefmtln("    constructor(name: string, argsOrState: %s | %s = {}, opts: pulumi.CustomResourceOptions = {}) {",
 			argsType, stateType)
 		if res.info.DeprecationMessage != "" {
 			w.Writefmtln("        pulumi.log.warn(\"%s is deprecated: %s\")", name, res.info.DeprecationMessage)
 		}
-		w.Writefmtln("        let inputs: pulumi.Inputs = {};")
+		w.Writefmtln("        const inputs: pulumi.Inputs = {};")
 		// The lookup case:
-		w.Writefmtln("        if (opts && opts.id) {")
-		w.Writefmtln("            const state = argsOrState as %[1]s | undefined;", stateType)
+		w.Writefmtln("        if (opts.id) {")
+		w.Writefmtln("            const state = argsOrState as %[1]s;", stateType)
 		for _, prop := range res.outprops {
-			w.Writefmtln(`            inputs["%[1]s"] = state ? state.%[1]s : undefined;`, prop.name)
+			w.Writefmtln(`            inputs.%[1]s = state.%[1]s;`, prop.name)
 		}
 		// The creation case (with args):
 		w.Writefmtln("        } else {")
-		w.Writefmtln("            const args = argsOrState as %s | undefined;", argsType)
+		w.Writefmtln("            const args = argsOrState as %s;", argsType)
 	} else {
-		w.Writefmtln("        let inputs: pulumi.Inputs = {};")
+		var argsSuffix string
+		if len(res.reqprops) == 0 {
+			// If the number of required input properties was zero, we can make the args object optional.
+			argsSuffix = " = {}"
+		}
+		w.Writefmtln("    constructor(name: string, args: %s%s, opts: pulumi.%s = {}) {",
+			argsType, argsSuffix, optionsType)
+
+		w.Writefmtln("        const inputs: pulumi.Inputs = {};")
 		w.Writefmtln("        {")
 	}
+
 	for _, prop := range res.inprops {
 		if !prop.optional() {
-			w.Writefmtln("            if (!args || args.%s === undefined) {", prop.name)
+			w.Writefmtln("            if (args.%s === undefined) {", prop.name)
 			w.Writefmtln("                throw new Error(\"Missing required property '%s'\");", prop.name)
 			w.Writefmtln("            }")
 		}
 	}
+
 	for _, prop := range res.inprops {
-		arg := fmt.Sprintf("args ? args.%[1]s : undefined", prop.name)
+		arg := fmt.Sprintf("args.%[1]s", prop.name)
 		if defaultValue := tsDefaultValue(prop); defaultValue != "undefined" {
-			arg = fmt.Sprintf("(%s) || %s", arg, defaultValue)
+			arg = fmt.Sprintf("%s || %s", arg, defaultValue)
 		}
 
-		// provider properties must be marshaled as JSON strings.
-		if res.IsProvider() && prop.schema != nil && prop.schema.Type != schema.TypeString {
-			arg = fmt.Sprintf("pulumi.output(%s).apply(JSON.stringify)", arg)
-		}
-
-		w.Writefmtln(`            inputs["%s"] = %s;`, prop.name, arg)
+		w.Writefmtln(`            inputs.%[1]s = %s;`, prop.name, arg)
 	}
+
 	for _, prop := range res.outprops {
 		if !ins[prop.name] {
-			w.Writefmtln(`            inputs["%s"] = undefined /*out*/;`, prop.name)
+			w.Writefmtln(`            inputs.%[1]s = undefined /*out*/;`, prop.name)
 		}
 	}
 	w.Writefmtln("        }")
 
 	// If the caller didn't request a specific version, supply one using the version of this library.
-	w.Writefmtln("        if (!opts) {")
-	w.Writefmtln("            opts = {}")
-	w.Writefmtln("        }")
-	w.Writefmtln("")
-	w.Writefmtln("        if (!opts.version) {")
-	w.Writefmtln("            opts.version = utilities.getVersion();")
-	w.Writefmtln("        }")
+
+	w.Writefmtln("        opts.version = opts.version || utilities.getVersion();")
 
 	// Now invoke the super constructor with the type, name, and a property map.
 
