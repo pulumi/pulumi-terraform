@@ -1021,11 +1021,11 @@ func (g *nodeJSGenerator) emitResourceFunc(mod *module, fun *resourceFunc, neste
 	// Now, emit the function signature.
 	var argsig string
 	if fun.argst != nil {
-		var optflag string
+		var suffix string
 		if len(fun.reqargs) == 0 {
-			optflag = "?"
+			suffix = " = {}"
 		}
-		argsig = fmt.Sprintf("args%s: %s, ", optflag, fun.argst.name)
+		argsig = fmt.Sprintf("args: %s%s, ", fun.argst.name, suffix)
 	}
 	var retty string
 	if fun.retst == nil {
@@ -1033,35 +1033,25 @@ func (g *nodeJSGenerator) emitResourceFunc(mod *module, fun *resourceFunc, neste
 	} else {
 		retty = fun.retst.name
 	}
-	w.Writefmtln("export function %s(%sopts?: pulumi.InvokeOptions): Promise<%s> & %s {",
+	w.Writefmtln("export function %s(%sopts?: pulumi.InvokeOptions = {}): Promise<%s> & %s {",
 		fun.name, argsig, retty, retty)
 	if fun.info.DeprecationMessage != "" {
 		w.Writefmtln("    pulumi.log.warn(\"%s is deprecated: %s\")", fun.name, fun.info.DeprecationMessage)
 	}
 
-	// Zero initialize the args if empty and necessary.
-	if len(fun.args) > 0 && len(fun.reqargs) == 0 {
-		w.Writefmtln("    args = args || {};")
-	}
-
 	// If the caller didn't request a specific version, supply one using the version of this library.
-	w.Writefmtln("    if (!opts) {")
-	w.Writefmtln("        opts = {}")
-	w.Writefmtln("    }")
-	w.Writefmtln("")
 	w.Writefmtln("    if (!opts.version) {")
-	w.Writefmtln("        opts.version = utilities.getVersion();")
+	w.Writefmtln("        opts = { ...opts, version: utilities.getVersion() };")
 	w.Writefmtln("    }")
 
-	// Now simply invoke the runtime function with the arguments, returning the results.
-	w.Writefmtln("    const promise: Promise<%s> = pulumi.runtime.invoke(\"%s\", {", retty, fun.info.Tok)
+	w.Writefmtln("")
+
+	w.Writefmtln("    return <any>pulumi.runtime.invoke(\"%s\", {", retty, fun.info.Tok)
 	for _, arg := range fun.args {
 		// Pass the argument to the invocation.
 		w.Writefmtln("        \"%[1]s\": args.%[1]s,", arg.name)
 	}
 	w.Writefmtln("    }, opts);")
-	w.Writefmtln("")
-	w.Writefmtln("    return pulumi.utils.liftProperties(promise, opts);")
 	w.Writefmtln("}")
 
 	// If there are argument and/or return types, emit them.
