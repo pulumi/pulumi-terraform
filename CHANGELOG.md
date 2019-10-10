@@ -4,6 +4,10 @@ This CHANGELOG details important changes made in each version of the
 `terraform` provider, the `@pulumi/terraform` Node.js package and the
 `pulumi_terraform` Python package.
 
+## HEAD (Unreleased)
+
+- Do not call liftProperties after invoking a data source.
+
 ## v0.18.4 (Unreleased)
 
 - Initial release of `pulumi_terraform` for Python.

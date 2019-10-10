@@ -1033,7 +1033,7 @@ func (g *nodeJSGenerator) emitResourceFunc(mod *module, fun *resourceFunc, neste
 	} else {
 		retty = fun.retst.name
 	}
-	w.Writefmtln("export function %s(%sopts?: pulumi.InvokeOptions = {}): Promise<%s> & %s {",
+	w.Writefmtln("export function %s(%sopts: pulumi.InvokeOptions = {}): Promise<%s> & %s {",
 		fun.name, argsig, retty, retty)
 	if fun.info.DeprecationMessage != "" {
 		w.Writefmtln("    pulumi.log.warn(\"%s is deprecated: %s\")", fun.name, fun.info.DeprecationMessage)
@@ -1046,7 +1046,7 @@ func (g *nodeJSGenerator) emitResourceFunc(mod *module, fun *resourceFunc, neste
 
 	w.Writefmtln("")
 
-	w.Writefmtln("    return <any>pulumi.runtime.invoke(\"%s\", {", retty, fun.info.Tok)
+	w.Writefmtln("    return <any>pulumi.runtime.invoke(\"%s\", {", fun.info.Tok)
 	for _, arg := range fun.args {
 		// Pass the argument to the invocation.
 		w.Writefmtln("        \"%[1]s\": args.%[1]s,", arg.name)
