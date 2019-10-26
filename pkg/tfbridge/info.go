@@ -21,28 +21,41 @@ import (
 	"github.com/pulumi/pulumi/pkg/tokens"
 )
 
+const (
+	MPL20LicenseType    TFProviderLicense = "MPL 2.0"
+	MITLicenseType      TFProviderLicense = "MIT"
+	Apache20LicenseType TFProviderLicense = "Apache 2.0"
+)
+
 // ProviderInfo contains information about a Terraform provider plugin that we will use to generate the Pulumi
 // metadata.  It primarily contains a pointer to the Terraform schema, but can also contain specific name translations.
 type ProviderInfo struct {
-	P              *schema.Provider           // the TF provider/schema.
-	Name           string                     // the TF provider name (e.g. terraform-provider-XXXX).
-	ResourcePrefix string                     // the prefix on resources the provider exposes, if different to `Name`.
-	GitHubOrg      string                     // the GitHub org of the provider. Defaults to `terraform-providers`.
-	Description    string                     // an optional descriptive overview of the package (a default will be given).
-	Keywords       []string                   // an optional list of keywords to help discovery of this package.
-	License        string                     // the license, if any, the resulting package has (default is none).
-	Homepage       string                     // the URL to the project homepage.
-	Repository     string                     // the URL to the project source code repository.
-	Config         map[string]*SchemaInfo     // a map of TF name to config schema overrides.
-	ExtraConfig    map[string]*ConfigInfo     // a list of Pulumi-only configuration variables.
-	Resources      map[string]*ResourceInfo   // a map of TF name to Pulumi name; standard mangling occurs if no entry.
-	DataSources    map[string]*DataSourceInfo // a map of TF name to Pulumi resource info.
-	JavaScript     *JavaScriptInfo            // optional overlay information for augmented JavaScript code-generation.
-	Python         *PythonInfo                // optional overlay information for augmented Python code-generation.
-	Golang         *GolangInfo                // optional overlay information for augmented Golang code-generation.
+	P                 *schema.Provider           // the TF provider/schema.
+	Name              string                     // the TF provider name (e.g. terraform-provider-XXXX).
+	ResourcePrefix    string                     // the prefix on resources the provider exposes, if different to `Name`.
+	GitHubOrg         string                     // the GitHub org of the provider. Defaults to `terraform-providers`.
+	Description       string                     // an optional descriptive overview of the package (a default supplied).
+	Keywords          []string                   // an optional list of keywords to help discovery of this package.
+	License           string                     // the license, if any, the resulting package has (default is none).
+	Homepage          string                     // the URL to the project homepage.
+	Repository        string                     // the URL to the project source code repository.
+	Version           string                     // the version of the provider package.
+	Config            map[string]*SchemaInfo     // a map of TF name to config schema overrides.
+	ExtraConfig       map[string]*ConfigInfo     // a list of Pulumi-only configuration variables.
+	Resources         map[string]*ResourceInfo   // a map of TF name to Pulumi name; standard mangling occurs if no entry.
+	DataSources       map[string]*DataSourceInfo // a map of TF name to Pulumi resource info.
+	JavaScript        *JavaScriptInfo            // optional overlay information for augmented JavaScript code-generation.
+	Python            *PythonInfo                // optional overlay information for augmented Python code-generation.
+	Golang            *GolangInfo                // optional overlay information for augmented Golang code-generation.
+	CSharp            *CSharpInfo                // optional overlay information for augmented C# code-generation.
+	TFProviderVersion string                     // the version of the TF provider on which this was based
+	TFProviderLicense *TFProviderLicense         // license that the TF provider is distributed under. Default `MPL 2.0`.
 
 	PreConfigureCallback PreConfigureCallback // a provider-specific callback to invoke prior to TF Configure
 }
+
+// TFProviderLicense is a way to be able to pass a license type for the upstream Terraform provider.
+type TFProviderLicense string
 
 // GetResourcePrefix returns the resource prefix for the provider: info.ResourcePrefix
 // if that is set, or info.Name if not. This is to avoid unexpected behaviour with providers
@@ -61,6 +74,14 @@ func (info ProviderInfo) GetGitHubOrg() string {
 	}
 
 	return info.GitHubOrg
+}
+
+func (info ProviderInfo) GetTFProviderLicense() TFProviderLicense {
+	if info.TFProviderLicense == nil {
+		return MPL20LicenseType
+	}
+
+	return *info.TFProviderLicense
 }
 
 // AliasInfo is a partial description of prior named used for a resource. It can be processed in the
@@ -116,6 +137,9 @@ type SchemaInfo struct {
 	// a name to override the default; "" uses the default.
 	Name string
 
+	// a name to override the default when targeting C#; "" uses the default.
+	CSharpName string
+
 	// a type to override the default; "" uses the default.
 	Type tokens.Type
 
@@ -148,6 +172,9 @@ type SchemaInfo struct {
 
 	// to remove empty object array elements
 	SuppressEmptyMapElements *bool
+
+	// this will make the parameter as computed and not allow the user to set it
+	MarkAsComputedOnly *bool
 }
 
 // ConfigInfo represents a synthetic configuration variable that is Pulumi-only, and not passed to Terraform.
@@ -211,6 +238,7 @@ type OverlayInfo struct {
 
 // JavaScriptInfo contains optional overlay information for Python code-generation.
 type JavaScriptInfo struct {
+	PackageName       string            // Custom name for the NPM package.
 	Dependencies      map[string]string // NPM dependencies to add to package.json.
 	DevDependencies   map[string]string // NPM dev-dependencies to add to package.json.
 	PeerDependencies  map[string]string // NPM peer-dependencies to add to package.json.
@@ -227,6 +255,12 @@ type PythonInfo struct {
 // GolangInfo contains optional overlay information for Golang code-generation.
 type GolangInfo struct {
 	Overlay *OverlayInfo // optional overlay information for augmented code-generation.
+}
+
+// CSharpInfo contains optional overlay information for C# code-generation.
+type CSharpInfo struct {
+	PackageReferences map[string]string // NuGet package reference information.
+	Overlay           *OverlayInfo      // optional overlay information for augmented code-generation.
 }
 
 // PreConfigureCallback is a function to invoke prior to calling the TF provider Configure
@@ -384,6 +418,7 @@ func (m *MarshallableProvider) Unmarshal() *schema.Provider {
 // MarshallableSchemaInfo is the JSON-marshallable form of a Pulumi SchemaInfo value.
 type MarshallableSchemaInfo struct {
 	Name        string                             `json:"name,omitempty"`
+	CSharpName  string                             `json:"csharpName,omitempty"`
 	Type        tokens.Type                        `json:"typeomitempty"`
 	AltTypes    []tokens.Type                      `json:"altTypes,omitempty"`
 	Elem        *MarshallableSchemaInfo            `json:"element,omitempty"`
@@ -405,6 +440,7 @@ func MarshalSchemaInfo(s *SchemaInfo) *MarshallableSchemaInfo {
 	}
 	return &MarshallableSchemaInfo{
 		Name:        s.Name,
+		CSharpName:  s.CSharpName,
 		Type:        s.Type,
 		AltTypes:    s.AltTypes,
 		Elem:        MarshalSchemaInfo(s.Elem),
@@ -427,6 +463,7 @@ func (m *MarshallableSchemaInfo) Unmarshal() *SchemaInfo {
 	}
 	return &SchemaInfo{
 		Name:        m.Name,
+		CSharpName:  m.CSharpName,
 		Type:        m.Type,
 		AltTypes:    m.AltTypes,
 		Elem:        m.Elem.Unmarshal(),
@@ -545,10 +582,11 @@ func (m *MarshallableDataSourceInfo) Unmarshal() *DataSourceInfo {
 
 // MarshallableProviderInfo is the JSON-marshallable form of a Pulumi ProviderInfo value.
 type MarshallableProviderInfo struct {
-	Provider    *MarshallableProvider                  `json:"provider"`
-	Config      map[string]*MarshallableSchemaInfo     `json:"config,omitempty"`
-	Resources   map[string]*MarshallableResourceInfo   `json:"resources,omitempty"`
-	DataSources map[string]*MarshallableDataSourceInfo `json:"dataSources,omitempty"`
+	Provider          *MarshallableProvider                  `json:"provider"`
+	Config            map[string]*MarshallableSchemaInfo     `json:"config,omitempty"`
+	Resources         map[string]*MarshallableResourceInfo   `json:"resources,omitempty"`
+	DataSources       map[string]*MarshallableDataSourceInfo `json:"dataSources,omitempty"`
+	TFProviderVersion string                                 `json:"tfProviderVersion,omitempty"`
 }
 
 // MarshalProviderInfo converts a Pulumi ProviderInfo value into a MarshallableProviderInfo value.
@@ -566,12 +604,15 @@ func MarshalProviderInfo(p *ProviderInfo) *MarshallableProviderInfo {
 		dataSources[k] = MarshalDataSourceInfo(v)
 	}
 
-	return &MarshallableProviderInfo{
-		Provider:    MarshalProvider(p.P),
-		Config:      config,
-		Resources:   resources,
-		DataSources: dataSources,
+	info := MarshallableProviderInfo{
+		Provider:          MarshalProvider(p.P),
+		Config:            config,
+		Resources:         resources,
+		DataSources:       dataSources,
+		TFProviderVersion: p.TFProviderVersion,
 	}
+
+	return &info
 }
 
 // Unmarshal creates a mostly-=initialized Pulumi ProviderInfo value from the given MarshallableProviderInfo.
@@ -589,10 +630,13 @@ func (m *MarshallableProviderInfo) Unmarshal() *ProviderInfo {
 		dataSources[k] = v.Unmarshal()
 	}
 
-	return &ProviderInfo{
-		P:           m.Provider.Unmarshal(),
-		Config:      config,
-		Resources:   resources,
-		DataSources: dataSources,
+	info := ProviderInfo{
+		P:                 m.Provider.Unmarshal(),
+		Config:            config,
+		Resources:         resources,
+		DataSources:       dataSources,
+		TFProviderVersion: m.TFProviderVersion,
 	}
+
+	return &info
 }
