@@ -1040,7 +1040,7 @@ func (rg *csharpResourceGenerator) generateInputTypes(nts []*csharpNestedType) {
 	// Write each input type.
 	for _, nt := range nts {
 		contract.Assert(nt.isInput)
-		rg.generateInputType(nt.typ, "", true /*nested*/, false /*plainType*/)
+		rg.generateInputType(nt.typ, "Pulumi.ResourceArgs", true /*nested*/, false /*plainType*/)
 	}
 
 	// Close the namespace
