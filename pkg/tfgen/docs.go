@@ -169,13 +169,13 @@ var (
 
 	attributeBulletRegexp = regexp.MustCompile("\\*\\s+`([a-zA-z0-9_]*)`\\s+[–-]?\\s+(.*)")
 
-	docsBaseURL    = "https://github.com/terraform-providers/terraform-provider-%s/blob/master/website/docs"
+	docsBaseURL    = "https://github.com/%s/terraform-provider-%s/blob/master/website/docs"
 	docsDetailsURL = docsBaseURL + "/%s/%s.html.markdown"
 
-	standardDocReadme = `> This provider is a derived work of the [Terraform Provider](https://github.com/terraform-providers/terraform-provider-%[2]s)
-> distributed under [MPL 2.0](https://www.mozilla.org/en-US/MPL/2.0/). If you encounter a bug or missing feature,
+	standardDocReadme = `> This provider is a derived work of the [Terraform Provider](https://github.com/%[3]s/terraform-provider-%[2]s)
+> distributed under [%[4]s](%[5]s). If you encounter a bug or missing feature,
 > first check the [` + "`pulumi/pulumi-%[1]s`" + ` repo](https://github.com/pulumi/pulumi-%[1]s/issues); however, if that doesn't turn up anything,
-> please consult the source [` + "`terraform-providers/terraform-provider-%[2]s`" + ` repo](https://github.com/terraform-providers/terraform-provider-%[2]s/issues).`
+> please consult the source [` + "`%[3]s/terraform-provider-%[2]s`" + ` repo](https://github.com/%[3]s/terraform-provider-%[2]s/issues).`
 )
 
 // groupLines groups a collection of strings, a, by a given separator, sep.
@@ -201,18 +201,18 @@ func splitGroupLines(s, sep string) [][]string {
 }
 
 // getDocsBaseURL gets the base URL for a given provider's documentation source.
-func getDocsBaseURL(p string) string {
-	return fmt.Sprintf(docsBaseURL, p)
+func getDocsBaseURL(org, p string) string {
+	return fmt.Sprintf(docsBaseURL, org, p)
 }
 
 // getDocsDetailsURL gets the detailed resource or data source documentation source.
-func getDocsDetailsURL(p, kind, name string) string {
-	return fmt.Sprintf(docsDetailsURL, p, kind, name)
+func getDocsDetailsURL(org, p, kind, name string) string {
+	return fmt.Sprintf(docsDetailsURL, org, p, kind, name)
 }
 
 // getDocsIndexURL gets the given provider's documentation index page's source URL.
-func getDocsIndexURL(p string) string {
-	return getDocsBaseURL(p) + "/index.html.markdown"
+func getDocsIndexURL(org, p string) string {
+	return getDocsBaseURL(org, p) + "/index.html.markdown"
 }
 
 // parseTFMarkdown takes a TF website markdown doc and extracts a structured representation for use in
@@ -223,7 +223,8 @@ func parseTFMarkdown(g *generator, info tfbridge.ResourceOrDataSourceInfo, kind 
 	ret := parsedDoc{
 		Arguments:  make(map[string]string),
 		Attributes: make(map[string]string),
-		URL:        getDocsDetailsURL(resourcePrefix, string(kind), withoutPackageName(resourcePrefix, rawname)),
+		URL: getDocsDetailsURL(g.info.GetGitHubOrg(), resourcePrefix, string(kind),
+			withoutPackageName(resourcePrefix, rawname)),
 	}
 
 	// Replace any Windows-style newlines.
