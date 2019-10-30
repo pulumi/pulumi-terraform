@@ -6,9 +6,10 @@ import (
 	"github.com/pulumi/pulumi-terraform/pkg/tfbridge"
 )
 
-const csharpUtilitiesTemplateText = `#nullable enable
-
-using System;
+// nolint:lll
+const csharpUtilitiesTemplateText = `using System;
+using System.IO;
+using System.Reflection;
 using Pulumi;
 
 namespace {{.Namespace}}
@@ -47,40 +48,9 @@ namespace {{.Namespace}}
             return null;
         }
 
-        public static int? GetEnvInt32(params string[] names)
-        {
-            var s = GetEnv(names);
-            if (s != null)
-            {
-                try
-                {
-                    return int.Parse(s);
-                }
-                catch (Exception)
-                {
-                }
-            }
-            return null;
-        }
+        public static int? GetEnvInt32(params string[] names) => int.TryParse(GetEnv(names), out int v) ? (int?)v : null;
 
-        public static double? GetEnvDouble(params string[] names)
-        {
-            var s = GetEnv(names);
-            if (s != null)
-            {
-                try
-                {
-                    return double.Parse(s);
-                }
-                catch (Exception)
-                {
-                }
-            }
-            return null;
-
-        }
-
-        public static string Version => "{{.Version}}";
+        public static double? GetEnvDouble(params string[] names) => double.TryParse(GetEnv(names), out double v) ? (double?)v : null;
 
         public static InvokeOptions WithVersion(this InvokeOptions? options)
         {
@@ -94,6 +64,19 @@ namespace {{.Namespace}}
                 Provider = options?.Provider,
                 Version = Version,
             };
+        }
+
+        private readonly static string version;
+        public static string Version => version;
+
+        static Utilities()
+        {
+            var assembly = typeof(Utilities).GetTypeInfo().Assembly;
+            using (var stream = assembly.GetManifestResourceStream("{{.Namespace}}.version.txt"))
+            using (var reader = new StreamReader(stream))
+            {
+                version = reader.ReadToEnd().Trim();
+            }
         }
     }
 }
@@ -118,7 +101,6 @@ const csharpProjectFileTemplateText = `<Project Sdk="Microsoft.NET.Sdk">
     <PackageLicenseExpression>{{.Info.License}}</PackageLicenseExpression>
     <PackageProjectUrl>{{.Info.Homepage}}</PackageProjectUrl>
     <RepositoryUrl>{{.Info.Repository}}</RepositoryUrl>
-    <Version>{{.Version}}</Version>
 
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <Nullable>enable</Nullable>
@@ -128,7 +110,11 @@ const csharpProjectFileTemplateText = `<Project Sdk="Microsoft.NET.Sdk">
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>1701;1702;1591;8604;8625</NoWarn>
   </PropertyGroup>
-    
+
+  <ItemGroup>
+    <EmbeddedResource Include="version.txt" />
+  </ItemGroup>
+
   <ItemGroup>
     {{- range $package, $version := .Info.CSharp.PackageReferences}}
     <PackageReference Include="{{$package}}" Version="{{$version}}" />

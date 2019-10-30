@@ -28,7 +28,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/blang/semver"
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	"github.com/pulumi/pulumi/pkg/diag"
@@ -231,19 +230,10 @@ func (g *csharpGenerator) emitProjectFile() error {
 	}
 	defer contract.IgnoreClose(w)
 
-	version, err := semver.ParseTolerant(g.info.Version)
-	if err != nil {
-		return errors.Wrap(err, "could not parse version when emitting project file")
-	}
-
-	// Omit build metadata for .NET.
-	version.Build = nil
-
 	var buf bytes.Buffer
 	err = csharpProjectFileTemplate.Execute(&buf, csharpProjectFileTemplateContext{
-		XMLDoc:  fmt.Sprintf(`.\%s.xml`, assemblyName),
-		Info:    g.info,
-		Version: version.String(),
+		XMLDoc: fmt.Sprintf(`.\%s.xml`, assemblyName),
+		Info:   g.info,
 	})
 	if err != nil {
 		return err
@@ -717,7 +707,9 @@ func (rg *csharpResourceGenerator) generateResourceClass() {
 		rg.w.Writefmtln("        public Output<%s> %s { get; private set; } = null!;", propertyType, propertyName)
 		rg.w.Writefmtln("")
 	}
-	rg.w.Writefmtln("")
+	if len(rg.res.outprops) > 0 {
+		rg.w.Writefmtln("")
+	}
 
 	// Emit the class constructor.
 	argsType := rg.res.argst.name
@@ -765,7 +757,6 @@ func (rg *csharpResourceGenerator) generateResourceClass() {
 	rg.w.Writefmtln("        {")
 	rg.w.Writefmtln("            var defaultOptions = new %s", optionsType)
 	rg.w.Writefmtln("            {")
-	rg.w.Writefmtln("                Id = id,")
 	rg.w.Writefmt("                Version = Utilities.Version,")
 
 	switch len(rg.res.info.Aliases) {
@@ -787,7 +778,10 @@ func (rg *csharpResourceGenerator) generateResourceClass() {
 	}
 
 	rg.w.Writefmtln("            };")
-	rg.w.Writefmtln("            return (%s)ResourceOptions.Merge(defaultOptions, options);", optionsType)
+	rg.w.Writefmtln("            var merged = %s.Merge(defaultOptions, options);", optionsType)
+	rg.w.Writefmtln("            // Override the ID if one was specified for consistency with other language SDKs.")
+	rg.w.Writefmtln("            merged.Id = id ?? merged.Id;")
+	rg.w.Writefmtln("            return merged;")
 	rg.w.Writefmtln("        }")
 
 	// Write the `Get` method for reading instances of this resource unless this is a provider resource.
@@ -874,9 +868,9 @@ func (rg *csharpResourceGenerator) generateDatasourceFunc() {
 	}
 
 	// Emit the datasource method.
-	rg.w.Writefmt("        public static Task%s %s(%sInvokeOptions? options = null)",
+	rg.w.Writefmtln("        public static Task%s %s(%sInvokeOptions? options = null)",
 		typeParameter, methodName, argsParamDef)
-	rg.w.Writefmtln(" => Pulumi.Deployment.Instance.InvokeAsync%s(\"%s\", %s, options.WithVersion());",
+	rg.w.Writefmtln("            => Pulumi.Deployment.Instance.InvokeAsync%s(\"%s\", %s, options.WithVersion());",
 		typeParameter, rg.fun.info.Tok, argsParamRef)
 
 	// Close the class.
@@ -1042,6 +1036,10 @@ func (rg *csharpResourceGenerator) generateOutputType(typ *propertyType, nested 
 }
 
 func (rg *csharpResourceGenerator) generateInputTypes(nts []*csharpNestedType) {
+	if len(nts) == 0 {
+		return
+	}
+
 	// Open the Inputs namespace.
 	rg.w.Writefmtln("")
 	rg.w.Writefmtln("    namespace Inputs")
@@ -1058,6 +1056,10 @@ func (rg *csharpResourceGenerator) generateInputTypes(nts []*csharpNestedType) {
 }
 
 func (rg *csharpResourceGenerator) generateOutputTypes(nts []*csharpNestedType) {
+	if len(nts) == 0 {
+		return
+	}
+
 	// Open the Outputs namespace.
 	rg.w.Writefmtln("")
 	rg.w.Writefmtln("    namespace Outputs")
@@ -1291,7 +1293,7 @@ func csharpDefaultValue(prop *variable) string {
 
 		getEnv := fmt.Sprintf("Utilities.GetEnv%s(%s)", getType, envVars)
 		if defaultValue != "null" {
-			defaultValue = fmt.Sprintf("(%s ?? %s)", getEnv, defaultValue)
+			defaultValue = fmt.Sprintf("%s ?? %s", getEnv, defaultValue)
 		} else {
 			defaultValue = getEnv
 		}
