@@ -453,7 +453,7 @@ func (p *Provider) Check(ctx context.Context, req *pulumirpc.CheckRequest) (*pul
 	var err error
 	if req.GetOlds() != nil {
 		olds, err = plugin.UnmarshalProperties(req.GetOlds(), plugin.MarshalOptions{
-			Label: fmt.Sprintf("%s.olds", label), KeepUnknowns: true, SkipNulls: true})
+			Label: fmt.Sprintf("%s.olds", label), KeepUnknowns: true})
 		if err != nil {
 			return nil, err
 		}
@@ -522,7 +522,7 @@ func (p *Provider) Diff(ctx context.Context, req *pulumirpc.DiffRequest) (*pulum
 
 	// To figure out if we have a replacement, perform the diff and then look for RequiresNew flags.
 	olds, err := plugin.UnmarshalProperties(req.GetOlds(),
-		plugin.MarshalOptions{Label: fmt.Sprintf("%s.olds", label), KeepUnknowns: false, SkipNulls: true})
+		plugin.MarshalOptions{Label: fmt.Sprintf("%s.olds", label), KeepUnknowns: false})
 	if err != nil {
 		return nil, err
 	}
@@ -534,7 +534,7 @@ func (p *Provider) Diff(ctx context.Context, req *pulumirpc.DiffRequest) (*pulum
 	state := &terraform.InstanceState{ID: req.GetId(), Attributes: attrs, Meta: meta}
 
 	news, err := plugin.UnmarshalProperties(req.GetNews(),
-		plugin.MarshalOptions{Label: fmt.Sprintf("%s.news", label), KeepUnknowns: true, SkipNulls: true})
+		plugin.MarshalOptions{Label: fmt.Sprintf("%s.news", label), KeepUnknowns: true})
 	if err != nil {
 		return nil, err
 	}
@@ -688,7 +688,7 @@ func (p *Provider) Read(ctx context.Context, req *pulumirpc.ReadRequest) (*pulum
 
 	// Manufacture Terraform attributes and state with the provided properties, in preparation for reading.
 	oldInputs, err := plugin.UnmarshalProperties(req.GetInputs(), plugin.MarshalOptions{
-		Label: fmt.Sprintf("%s.inputs", label), KeepUnknowns: true, SkipNulls: true})
+		Label: fmt.Sprintf("%s.inputs", label), KeepUnknowns: true})
 	if err != nil {
 		return nil, err
 	}
@@ -768,7 +768,7 @@ func (p *Provider) Update(ctx context.Context, req *pulumirpc.UpdateRequest) (*p
 
 	// In order to perform the update, we first need to calculate the Terraform view of the diff.
 	olds, err := plugin.UnmarshalProperties(req.GetOlds(),
-		plugin.MarshalOptions{Label: fmt.Sprintf("%s.olds", label), KeepUnknowns: false, SkipNulls: true})
+		plugin.MarshalOptions{Label: fmt.Sprintf("%s.olds", label), KeepUnknowns: false})
 	if err != nil {
 		return nil, err
 	}
@@ -782,7 +782,7 @@ func (p *Provider) Update(ctx context.Context, req *pulumirpc.UpdateRequest) (*p
 	assets := make(AssetTable)
 
 	news, err := plugin.UnmarshalProperties(req.GetNews(),
-		plugin.MarshalOptions{Label: fmt.Sprintf("%s.news", label), KeepUnknowns: true, SkipNulls: true})
+		plugin.MarshalOptions{Label: fmt.Sprintf("%s.news", label), KeepUnknowns: true})
 	if err != nil {
 		return nil, err
 	}
@@ -965,6 +965,15 @@ func (p *Provider) Invoke(ctx context.Context, req *pulumirpc.InvokeRequest) (*p
 	}, nil
 }
 
+// StreamInvoke dynamically executes a built-in function in the provider. The result is streamed
+// back as a series of messages.
+func (p *Provider) StreamInvoke(
+	req *pulumirpc.InvokeRequest, server pulumirpc.ResourceProvider_StreamInvokeServer) error {
+
+	tok := tokens.ModuleMember(req.GetTok())
+	return errors.Errorf("unrecognized data function (StreamInvoke): %s", tok)
+}
+
 // GetPluginInfo implements an RPC call that returns the version of this plugin.
 func (p *Provider) GetPluginInfo(ctx context.Context, req *pbempty.Empty) (*pulumirpc.PluginInfo, error) {
 	return &pulumirpc.PluginInfo{
@@ -999,4 +1008,68 @@ func setTimeout(diff *terraform.InstanceDiff, timeout float64, timeoutKey string
 	}
 
 	return diff
+}
+
+func (p *ProviderInfo) RenameResourceWithAlias(resourceName string, legacyTok tokens.Type, newTok tokens.Type,
+	legacyModule string, newModule string, info *ResourceInfo) {
+
+	resourcePrefix := p.Name + "_"
+	legacyResourceName := resourceName + "_legacy"
+	if info == nil {
+		info = &ResourceInfo{}
+	}
+	legacyInfo := *info
+	currentInfo := *info
+
+	legacyInfo.Tok = legacyTok
+	legacyType := legacyInfo.Tok.String()
+
+	if newTok != "" {
+		legacyTok = newTok
+	}
+
+	currentInfo.Tok = legacyTok
+	currentInfo.Aliases = []AliasInfo{
+		{Type: &legacyType},
+	}
+
+	if legacyInfo.Docs == nil {
+		legacyInfo.Docs = &DocInfo{
+			Source: resourceName[len(resourcePrefix):] + ".html.markdown",
+		}
+	}
+
+	p.Resources[resourceName] = &currentInfo
+	p.Resources[legacyResourceName] = &legacyInfo
+	p.P.ResourcesMap[legacyResourceName] = p.P.ResourcesMap[resourceName]
+}
+
+func (p *ProviderInfo) RenameDataSource(resourceName string, legacyTok tokens.ModuleMember, newTok tokens.ModuleMember,
+	legacyModule string, newModule string, info *DataSourceInfo) {
+
+	resourcePrefix := p.Name + "_"
+	legacyResourceName := resourceName + "_legacy"
+	if info == nil {
+		info = &DataSourceInfo{}
+	}
+	legacyInfo := *info
+	currentInfo := *info
+
+	legacyInfo.Tok = legacyTok
+
+	if newTok != "" {
+		legacyTok = newTok
+	}
+
+	currentInfo.Tok = legacyTok
+
+	if legacyInfo.Docs == nil {
+		legacyInfo.Docs = &DocInfo{
+			Source: resourceName[len(resourcePrefix):] + ".html.markdown",
+		}
+	}
+
+	p.DataSources[resourceName] = &currentInfo
+	p.DataSources[legacyResourceName] = &legacyInfo
+	p.P.DataSourcesMap[legacyResourceName] = p.P.DataSourcesMap[resourceName]
 }

@@ -23,17 +23,22 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
-
 	pbstruct "github.com/golang/protobuf/ptypes/struct"
-	"github.com/hashicorp/terraform/configs/hcl2shim"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/mitchellh/copystructure"
 	"github.com/pkg/errors"
+
 	"github.com/pulumi/pulumi/pkg/resource"
 	"github.com/pulumi/pulumi/pkg/resource/plugin"
 	"github.com/pulumi/pulumi/pkg/util/contract"
 )
+
+// TerraformUnknownVariableValue is the sentinal defined in github.com/hashicorp/terraform/configs/hcl2shim,
+// representing a variable whose value is not known at some particular time. The value is duplicated here in
+// order to prevent an additional dependency - it is unlikely to ever change upstream since that would break
+// rather a lot of things.
+const TerraformUnknownVariableValue = "74D93920-ED26-11E3-AC10-0800200C9A66"
 
 // defaultsKey is the name of the input property that is used to track which property keys were populated using
 // default values from the resource's schema. This information is used to inform which input properties should be
@@ -290,7 +295,7 @@ func MakeTerraformInputs(res *PulumiResource, olds, news resource.PropertyMap,
 func makeTerraformUnknownElement(elem interface{}) interface{} {
 	// If we have no element schema, just return a simple unknown.
 	if elem == nil {
-		return hcl2shim.UnknownVariableValue
+		return TerraformUnknownVariableValue
 	}
 
 	switch e := elem.(type) {
@@ -307,7 +312,7 @@ func makeTerraformUnknownElement(elem interface{}) interface{} {
 		}
 		return res
 	default:
-		return hcl2shim.UnknownVariableValue
+		return TerraformUnknownVariableValue
 	}
 }
 
@@ -317,7 +322,7 @@ func makeTerraformUnknownElement(elem interface{}) interface{} {
 // e.g. TF does not play nicely with unknown lists, instead expecting a list of unknowns.
 func makeTerraformUnknown(tfs *schema.Schema) interface{} {
 	if tfs == nil {
-		return hcl2shim.UnknownVariableValue
+		return TerraformUnknownVariableValue
 	}
 
 	switch tfs.Type {
@@ -333,7 +338,7 @@ func makeTerraformUnknown(tfs *schema.Schema) interface{} {
 		}
 		return arr
 	default:
-		return hcl2shim.UnknownVariableValue
+		return TerraformUnknownVariableValue
 	}
 }
 
@@ -347,8 +352,16 @@ func MakeTerraformInput(res *PulumiResource, name string,
 	// For TypeList or TypeSet with MaxItems==1, we will have projected as a scalar nested value, and need to wrap it
 	// into a single-element array before passing to Terraform.
 	if IsMaxItemsOne(tfs, ps) {
-		old = resource.NewArrayProperty([]resource.PropertyValue{old})
-		v = resource.NewArrayProperty([]resource.PropertyValue{v})
+		if old.IsNull() {
+			old = resource.NewArrayProperty([]resource.PropertyValue{})
+		} else {
+			old = resource.NewArrayProperty([]resource.PropertyValue{old})
+		}
+		if v.IsNull() {
+			v = resource.NewArrayProperty([]resource.PropertyValue{})
+		} else {
+			v = resource.NewArrayProperty([]resource.PropertyValue{v})
+		}
 	}
 
 	// If there is a custom transform for this value, run it before processing the value.
@@ -362,10 +375,7 @@ func MakeTerraformInput(res *PulumiResource, name string,
 
 	switch {
 	case v.IsNull():
-		if name != "" {
-			return nil, errors.Errorf("unexpected null property %v", name)
-		}
-		return nil, errors.New("unexpected null property")
+		return nil, nil
 	case v.IsBool():
 		return v.BoolValue(), nil
 	case v.IsNumber():
@@ -532,6 +542,7 @@ func MakeTerraformResult(state *terraform.InstanceState,
 			outs["id"] = attrs["id"]
 		}
 	}
+
 	outMap := MakeTerraformOutputs(outs, tfs, ps, assets, false, supportsSecrets)
 
 	// If there is any Terraform metadata associated with this state, record it.
@@ -613,7 +624,7 @@ func MakeTerraformOutput(v interface{},
 			// If the string is the special unknown property sentinel, reflect back an unknown computed property.  Note that
 			// Terraform doesn't carry the types along with it, so the best we can do is give back a computed string.
 			t := val.String()
-			if t == hcl2shim.UnknownVariableValue {
+			if t == TerraformUnknownVariableValue {
 				return resource.NewComputedProperty(
 					resource.Computed{Element: resource.NewStringProperty("")})
 			}

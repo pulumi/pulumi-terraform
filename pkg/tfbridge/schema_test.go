@@ -22,10 +22,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform/config"
-
 	structpb "github.com/golang/protobuf/ptypes/struct"
-	"github.com/hashicorp/terraform/configs/hcl2shim"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/stretchr/testify/assert"
@@ -187,10 +184,10 @@ func TestTerraformInputs(t *testing.T) {
 		"float_property_value":  99.6767932,
 		"string_property_value": "ognirts",
 		"array_property_value":  []interface{}{"an array"},
-		"unknown_array_value":   []interface{}{hcl2shim.UnknownVariableValue},
+		"unknown_array_value":   []interface{}{TerraformUnknownVariableValue},
 		"unknown_array_value2": []interface{}{
 			map[string]interface{}{
-				"required_property": hcl2shim.UnknownVariableValue,
+				"required_property": TerraformUnknownVariableValue,
 			},
 		},
 		"object_property_value": map[string]interface{}{
@@ -398,13 +395,13 @@ func TestTerraformOutputsWithSecretsSupported(t *testing.T) {
 			"someValue":      true,
 			"someOtherValue": "a value",
 		},
-		"secretValue": resource.Secret{
+		"secretValue": &resource.Secret{
 			Element: resource.PropertyValue{
 				V: "MyPassword",
 			},
 		},
 		"nestedSecretValue": map[string]interface{}{
-			"secretValue": resource.Secret{
+			"secretValue": &resource.Secret{
 				Element: resource.PropertyValue{
 					V: "MyPassword",
 				},
@@ -642,9 +639,8 @@ func TestMetaProperties(t *testing.T) {
 
 	// Ensure that timeouts are populated and preserved.
 	state.ID = ""
-	cfg, err := config.NewRawConfig(map[string]interface{}{})
-	assert.NoError(t, err)
-	diff, err := testTFProvider.Diff(info, state, terraform.NewResourceConfig(cfg))
+	cfg := terraform.NewResourceConfigRaw(map[string]interface{}{})
+	diff, err := testTFProvider.Diff(info, state, cfg)
 
 	assert.NoError(t, err)
 	create, err := testTFProvider.Apply(info, state, diff)
@@ -708,9 +704,8 @@ func TestInjectingCustomTimeouts(t *testing.T) {
 
 	// Ensure that timeouts are populated and preserved.
 	state.ID = ""
-	cfg, err := config.NewRawConfig(map[string]interface{}{})
-	assert.NoError(t, err)
-	diff, err := testTFProvider.Diff(info, state, terraform.NewResourceConfig(cfg))
+	cfg := terraform.NewResourceConfigRaw(map[string]interface{}{})
+	diff, err := testTFProvider.Diff(info, state, cfg)
 	assert.NoError(t, err)
 
 	setTimeout(diff, float64(300), schema.TimeoutCreate)
@@ -955,7 +950,7 @@ func TestComputedAsset(t *testing.T) {
 	}
 	olds := resource.PropertyMap{}
 	props := resource.PropertyMap{
-		"zzz": resource.NewStringProperty(hcl2shim.UnknownVariableValue),
+		"zzz": resource.NewStringProperty(TerraformUnknownVariableValue),
 	}
 	inputs, err := MakeTerraformInputs(nil, olds, props, tfs, ps, assets, nil, false, false)
 	assert.NoError(t, err)
@@ -1046,13 +1041,13 @@ func TestCustomTransforms(t *testing.T) {
 		nil, "v", resource.PropertyValue{}, resource.NewObjectProperty(resource.NewPropertyMapFromMap(doc)),
 		tfs, psi, nil, nil, false, false)
 	assert.NoError(t, err)
-	assert.Equal(t, hcl2shim.UnknownVariableValue, v3)
+	assert.Equal(t, TerraformUnknownVariableValue, v3)
 
 	v4, err := MakeTerraformInput(
 		nil, "v", resource.PropertyValue{}, resource.MakeComputed(resource.NewStringProperty("")),
 		tfs, psi, nil, nil, false, false)
 	assert.NoError(t, err)
-	assert.Equal(t, hcl2shim.UnknownVariableValue, v4)
+	assert.Equal(t, TerraformUnknownVariableValue, v4)
 }
 
 func TestImporterOnRead(t *testing.T) {
@@ -1473,12 +1468,13 @@ func TestExtractInputsFromOutputs(t *testing.T) {
 
 	ins, err := plugin.UnmarshalProperties(resp.GetInputs(), plugin.MarshalOptions{})
 	assert.NoError(t, err)
-	assert.Equal(t, resource.NewPropertyMapFromMap(map[string]interface{}{
+	expected := resource.NewPropertyMapFromMap(map[string]interface{}{
 		defaultsKey: []interface{}{},
 		"inputA":    "input_a_read",
 		"inoutC":    "inout_c_read",
 		"inoutD":    "inout_d_read",
-	}), ins)
+	})
+	assert.True(t, expected.DeepEquals(ins))
 
 	// Case 2: read a resource that has old state (this is the refresh case)
 	//

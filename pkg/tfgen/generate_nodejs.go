@@ -886,6 +886,22 @@ func (g *nodeJSGenerator) emitResourceType(mod *module, res *resourceType, neste
 		w.Writefmtln("        {")
 	}
 	for _, prop := range res.inprops {
+
+		// Here we are checking to see if there is a defaultFunc specified in the
+		// Terraform configuration but that isn't in the Pulumi configuration
+		if res.IsProvider() && prop.schema != nil && prop.schema.DefaultFunc != nil {
+			if prop.info == nil {
+				cmdutil.Diag().Warningf(
+					diag.Message("", "property %s has a DefaultFunc that isn't projected"), prop.name)
+			}
+
+			// There is a chance that we do have a SchemaInfo but we may not have EnvVars or a Default Value set
+			if prop.info != nil && len(prop.info.Default.EnvVars) == 0 && prop.info.Default.Value == nil {
+				cmdutil.Diag().Warningf(
+					diag.Message("", "property %s has a DefaultFunc that isn't projected"), prop.name)
+			}
+		}
+
 		if !prop.optional() {
 			w.Writefmtln("            if (!args || args.%s === undefined) {", prop.name)
 			w.Writefmtln("                throw new Error(\"Missing required property '%s'\");", prop.name)
@@ -1149,9 +1165,14 @@ func (g *nodeJSGenerator) emitNPMPackageMetadata(pack *pkg) error {
 		packageName = fmt.Sprintf("@pulumi/%s", pack.name)
 	}
 
-	typeScriptVersion := "^3.4.1"
-	if g.info.JavaScript != nil && g.info.JavaScript.TypeScriptVersion != "" {
+	typeScriptVersion := ""
+	if g.info.JavaScript != nil {
 		typeScriptVersion = g.info.JavaScript.TypeScriptVersion
+	}
+
+	devDependencies := map[string]string{}
+	if typeScriptVersion != "" {
+		devDependencies["typescript"] = typeScriptVersion
 	}
 
 	// Create info that will get serialized into an NPM package.json.
@@ -1170,9 +1191,7 @@ func (g *nodeJSGenerator) emitNPMPackageMetadata(pack *pkg) error {
 		Scripts: map[string]string{
 			"build": "tsc",
 		},
-		DevDependencies: map[string]string{
-			"typescript": typeScriptVersion,
-		},
+		DevDependencies: devDependencies,
 		Pulumi: npmPulumiManifest{
 			Resource: true,
 		},
