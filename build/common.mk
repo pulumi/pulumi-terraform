@@ -95,6 +95,10 @@ SHELL       := /bin/bash
 
 STEP_MESSAGE = @echo -e "\033[0;32m$(shell echo '$@' | tr a-z A-Z | tr '_' ' '):\033[0m"
 
+ifeq ($(GO),)
+	GO=go
+endif
+
 # Our install targets place items item into $PULUMI_ROOT, if it's
 # unset, default to /opt/pulumi.
 ifeq ($(PULUMI_ROOT),)
@@ -104,8 +108,8 @@ endif
 PULUMI_BIN          := $(PULUMI_ROOT)/bin
 PULUMI_NODE_MODULES := $(PULUMI_ROOT)/node_modules
 
-GO_TEST_FAST = go test -short -v -count=1 -cover -timeout 2h -parallel ${TESTPARALLELISM}
-GO_TEST = go test -v -count=1 -cover -timeout 2h -parallel ${TESTPARALLELISM}
+GO_TEST_FAST = $(GO) test -short -v -count=1 -cover -timeout 2h -parallel ${TESTPARALLELISM}
+GO_TEST = $(GO) test -v -count=1 -cover -timeout 2h -parallel ${TESTPARALLELISM}
 
 .PHONY: default all ensure only_build only_test build lint install test_all core
 
@@ -148,7 +152,7 @@ all:: build install lint test_all
 ensure::
 	$(call STEP_MESSAGE)
 	@if [ -e 'Gopkg.toml' ]; then echo "dep ensure -v"; dep ensure -v; \
-		elif [ -e 'go.mod' ]; then echo "GO111MODULE=on go mod vendor"; GO111MODULE=on go mod vendor; fi
+		elif [ -e 'go.mod' ]; then echo "GO111MODULE=on $(GO) mod vendor"; GO111MODULE=on $(GO) mod vendor; fi
 	@if [ -e 'package.json' ]; then echo "yarn install"; yarn install; fi
 
 build::
