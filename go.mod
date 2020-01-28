@@ -1,6 +1,6 @@
 module github.com/pulumi/pulumi-terraform
 
-go 1.12
+go 1.13
 
 require (
 	cloud.google.com/go/logging v1.0.0 // indirect
@@ -12,6 +12,7 @@ require (
 	github.com/stretchr/testify v1.4.0
 	github.com/zclconf/go-cty v1.1.0
 	golang.org/x/net v0.0.0-20190926025831-c00fd9afed17
+	golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7 // indirect
 	google.golang.org/grpc v1.24.0
 )
 
