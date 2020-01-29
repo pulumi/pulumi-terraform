@@ -1,8 +1,13 @@
 # `@pulumi/terraform` CHANGELOG
 
 This CHANGELOG details important changes made in each version of the
-`terraform` provider, the `@pulumi/terraform` Node.js package and the
-`pulumi_terraform` Python package.
+`terraform` provider, the `@pulumi/terraform` Node.js package, the
+`pulumi_terraform` Python package, and the `Pulumi.Terraform` NuGet
+package.
+
+## HEAD (Unreleased)
+
+* Added support for .NET with the `Pulumi.Terraform` NuGet package
 
 ## v0.18.4 (Unreleased)
 
