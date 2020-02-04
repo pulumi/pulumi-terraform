@@ -23,20 +23,21 @@ require (
 	github.com/reconquest/loreley v0.0.0-20160708080500-2ab6b7470a54 // indirect
 	github.com/sabhiram/go-gitignore v0.0.0-20180611051255-d3107576ba94 // indirect
 	github.com/spf13/cobra v0.0.3
-	github.com/stretchr/testify v1.3.1-0.20190311161405-34c6fa2dc709
+	github.com/stretchr/testify v1.4.0
 	github.com/tidwall/pretty v0.0.0-20190325153808-1166b9ac2b65 // indirect
 	github.com/uber-go/atomic v1.3.2 // indirect
 	github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c // indirect
 	github.com/xdg/stringprep v1.0.0 // indirect
 	github.com/zclconf/go-cty v1.0.1-0.20190708163926-19588f92a98f
 	go.mongodb.org/mongo-driver v1.0.1 // indirect
-	golang.org/x/net v0.0.0-20190620200207-3b0461eec859
-	google.golang.org/grpc v1.22.0
+	golang.org/x/net v0.0.0-20190923162816-aa69164e4478
+	google.golang.org/grpc v1.23.0
 )
 
 replace (
-	git.apache.org/thrift.git => github.com/apache/thrift v0.12.0
+	git.apache.org/thrift.git => github.com/apache/thrift v0.13.0
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v12.4.3+incompatible
 	github.com/Nvveen/Gotty => github.com/ijc25/Gotty v0.0.0-20170406111628-a8b993ba6abd
+	github.com/hashicorp/consul => github.com/hashicorp/consul v1.6.3
 	github.com/hashicorp/vault => github.com/hashicorp/vault v1.2.0
 )
