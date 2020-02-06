@@ -30,6 +30,9 @@ This CHANGELOG details important changes made in each version of the
 - Use `pulumi.InvokeOptions()` when `opts` is `None` for Python data source functions.
 - Provide a mechanism for overriding nested type names.
 
+- Add option to control if only asynchronous data sources should be generated in JS/TS.  Backport of
+  https://github.com/pulumi/pulumi-terraform-bridge/pull/105
+
 ## v0.18.3 (Released June 20, 2019)
 
 - Fixed a bug that caused unnecessary changes if the first operation after upgrading a bridged provider was a `pulumi refresh`.
