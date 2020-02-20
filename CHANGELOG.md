@@ -6,6 +6,10 @@ _(none)_
 
 ---
 
+## Unreleased
+* Fix a bug with `RemoteStateReference`'s remote state backend on Python, where the workspace name was not
+  getting configured correctly (issue [#524](https://github.com/pulumi/pulumi-terraform/issues/524)).
+
 ## v1.1.0 (2019-10-04)
 * Upgrade the Pulumi dependency requirements for NodeJS and Python SDKs
 

@@ -428,8 +428,8 @@ class RemoteBackendArgs:
         self.props["token"] = token
         self.props["hostname"] = hostname
         self.props["workspaces"] = dict()
-        self.props["workspaces"]["workspace_name"] = workspace_name
-        self.props["workspaces"]["workspace_prefix"] = workspace_prefix
+        self.props["workspaces"]["name"] = workspace_name
+        self.props["workspaces"]["prefix"] = workspace_prefix
 
 
 class S3BackendArgs:
