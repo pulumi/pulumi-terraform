@@ -4,6 +4,7 @@ include build/common.mk
 PACK             := terraform
 PACKDIR          := sdk
 NODE_MODULE_NAME := @pulumi/terraform
+NUGET_PKG_NAME   := Pulumi.Terraform
 PROJECT          := github.com/pulumi/pulumi-terraform
 GOPKGS           := $(shell go list ./pkg/... | grep -v /vendor/)
 TESTPARALLELISM  := 10
@@ -12,6 +13,15 @@ VERSION          ?= $(shell scripts/get-version)
 PYPI_VERSION     := $(shell scripts/get-py-version)
 
 VERSION_FLAGS    := -ldflags "-X github.com/pulumi/pulumi-terraform/pkg/version.Version=${VERSION}"
+
+DOTNET_PREFIX  := $(firstword $(subst -, ,${VERSION:v%=%})) # e.g. 1.5.0
+DOTNET_SUFFIX  := $(word 2,$(subst -, ,${VERSION:v%=%}))    # e.g. alpha.1
+
+ifeq ($(strip ${DOTNET_SUFFIX}),)
+	DOTNET_VERSION := $(strip ${DOTNET_PREFIX})-preview
+else
+	DOTNET_VERSION := $(strip ${DOTNET_PREFIX})-preview-$(strip ${DOTNET_SUFFIX})
+endif
 
 build::
 	go install $(VERSION_FLAGS) ${PROJECT}/cmd/pulumi-resource-terraform
@@ -28,7 +38,9 @@ build::
 		rm -rf ./bin/ ../python.bin/ && cp -R . ../python.bin && mv ../python.bin ./bin && \
 		sed -i.bak -e "s/\$${VERSION}/$(PYPI_VERSION)/g" -e "s/\$${PLUGIN_VERSION}/$(VERSION)/g" ./bin/setup.py && \
 		cd ./bin && $(PYTHON) setup.py build sdist
-
+	cd ${PACKDIR}/dotnet/ && \
+		echo "${VERSION:v%=%}" >version.txt && \
+		dotnet build /p:Version=${DOTNET_VERSION}
 
 lint::
 	cd pkg && golangci-lint run
@@ -45,6 +57,8 @@ install::
 		yarn install --offline --production && \
 		(yarn unlink > /dev/null 2>&1 || true) && \
 		yarn link
+	[ ! -e "$(PULUMI_NUGET)" ] || rm -rf "$(PULUMI_NUGET)/*"
+	find . -name '$(NUGET_PKG_NAME).*.nupkg' -exec cp -p {} ${PULUMI_NUGET} \;
 
 test_fast:: install
 	$(GO_TEST_FAST) ${GOPKGS} ./examples
