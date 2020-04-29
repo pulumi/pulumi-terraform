@@ -27,7 +27,7 @@ namespace Pulumi.Terraform.State
             : base("terraform:state:RemoteStateReference", 
                 name, 
                 args, 
-                CustomResourceOptions.Merge(options, new ResourceOptions { Id = name }))
+                CustomResourceOptions.Merge(options, new CustomResourceOptions { Id = name }))
         {
         }
 
