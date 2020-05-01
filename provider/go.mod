@@ -16,6 +16,6 @@ require (
 )
 
 replace (
-    github.com/Azure/go-autorest => github.com/Azure/go-autorest v12.4.3+incompatible
-    github.com/ugorji/go =>	github.com/ugorji/go v0.0.0-20180813092308-00b869d2f4a5
+	github.com/Azure/go-autorest => github.com/Azure/go-autorest v12.4.3+incompatible
+	github.com/ugorji/go => github.com/ugorji/go v0.0.0-20180813092308-00b869d2f4a5
 )

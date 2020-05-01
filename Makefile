@@ -44,7 +44,7 @@ build::
 lint::
 	#cd provider/cmd/pulumi-resource-terraform && golangci-lint run
 
-install::
+install:: build
 	cd provider && go install $(VERSION_FLAGS) $(PROJECT)/provider/cmd/pulumi-resource-terraform
 	[ ! -e "$(PULUMI_NODE_MODULES)/$(NODE_MODULE_NAME)" ] || rm -rf "$(PULUMI_NODE_MODULES)/$(NODE_MODULE_NAME)"
 	mkdir -p "$(PULUMI_NODE_MODULES)/$(NODE_MODULE_NAME)"

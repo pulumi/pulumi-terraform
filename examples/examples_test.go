@@ -39,9 +39,42 @@ func TestExamples(t *testing.T) {
 	})
 
 	shortTests := []integration.ProgramTestOptions{
-		baseJS.With(integration.ProgramTestOptions{Dir: path.Join(cwd, "localstate-nodejs")}),
-		basePython.With(integration.ProgramTestOptions{Dir: path.Join(cwd, "localstate-python")}),
-		baseDotNet.With(integration.ProgramTestOptions{Dir: path.Join(cwd, "localstate-dotnet")}),
+		baseJS.With(integration.ProgramTestOptions{
+			Dir: path.Join(cwd, "localstate-nodejs"),
+			Config: map[string]string{
+				"statefile": "terraform.0-11-3.tfstate",
+			},
+		}),
+		baseJS.With(integration.ProgramTestOptions{
+			Dir: path.Join(cwd, "localstate-nodejs"),
+			Config: map[string]string{
+				"statefile": "terraform.0-12-24.tfstate",
+			},
+		}),
+		basePython.With(integration.ProgramTestOptions{
+			Dir: path.Join(cwd, "localstate-python"),
+			Config: map[string]string{
+				"statefile": "terraform.0-11-3.tfstate",
+			},
+		}),
+		basePython.With(integration.ProgramTestOptions{
+			Dir: path.Join(cwd, "localstate-python"),
+			Config: map[string]string{
+				"statefile": "terraform.0-12-24.tfstate",
+			},
+		}),
+		baseDotNet.With(integration.ProgramTestOptions{
+			Dir: path.Join(cwd, "localstate-dotnet"),
+			Config: map[string]string{
+				"statefile": "terraform.0-11-3.tfstate",
+			},
+		}),
+		baseDotNet.With(integration.ProgramTestOptions{
+			Dir: path.Join(cwd, "localstate-dotnet"),
+			Config: map[string]string{
+				"statefile": "terraform.0-12-24.tfstate",
+			},
+		}),
 	}
 
 	longTests := []integration.ProgramTestOptions{}
