@@ -12,18 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package provider
+package main
 
 import (
 	"fmt"
 	"log"
 
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/hashicorp/terraform-svchost/disco"
 	backendInit "github.com/hashicorp/terraform/backend/init"
-	"github.com/hashicorp/terraform/svchost/disco"
-	"github.com/pulumi/pulumi/pkg/resource"
-	"github.com/pulumi/pulumi/pkg/resource/provider"
-	"github.com/pulumi/pulumi/sdk/proto/go"
+	"github.com/pulumi/pulumi/pkg/v2/resource/provider"
+	"github.com/pulumi/pulumi/sdk/v2/go/common/resource"
+	"github.com/pulumi/pulumi/sdk/v2/proto/go"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -57,8 +57,16 @@ func validateAndExtractResourceType(urnValue string) (string, error) {
 	}
 }
 
+func (*Provider) GetSchema(context.Context, *pulumirpc.GetSchemaRequest) (*pulumirpc.GetSchemaResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "GetSchema is not yet implemented")
+}
+
 func (*Provider) CheckConfig(context.Context, *pulumirpc.CheckRequest) (*pulumirpc.CheckResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "CheckConfig is not yet implemented")
+}
+
+func (*Provider) StreamInvoke(*pulumirpc.InvokeRequest, pulumirpc.ResourceProvider_StreamInvokeServer) error {
+	return nil
 }
 
 func (*Provider) DiffConfig(context.Context, *pulumirpc.DiffRequest) (*pulumirpc.DiffResponse, error) {
@@ -74,7 +82,7 @@ func (*Provider) Invoke(context.Context, *pulumirpc.InvokeRequest) (*pulumirpc.I
 }
 
 func (*Provider) Check(ctx context.Context, req *pulumirpc.CheckRequest) (*pulumirpc.CheckResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "Check is not yet implementd")
+	return nil, status.Errorf(codes.Unimplemented, "Check is not yet implemented")
 }
 
 func (*Provider) Diff(context.Context, *pulumirpc.DiffRequest) (*pulumirpc.DiffResponse, error) {

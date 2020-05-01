@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package provider
+package main
 
 import (
 	"context"
@@ -22,7 +22,7 @@ import (
 	structpb "github.com/golang/protobuf/ptypes/struct"
 	be "github.com/hashicorp/terraform/backend"
 	backendInit "github.com/hashicorp/terraform/backend/init"
-	"github.com/pulumi/pulumi/sdk/proto/go"
+	"github.com/pulumi/pulumi/sdk/v2/proto/go"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
