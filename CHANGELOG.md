@@ -2,8 +2,8 @@ CHANGELOG
 =========
 
 ## HEAD (Unreleased)
+* `RemoteStateReference` resources can now read states created with Terraform v0.12.24 and below
 * Fix a bug with `RemoteStateReference`'s remote state backend on Python, where the workspace name was not  getting configured correctly (issue [#524](https://github.com/pulumi/pulumi-terraform/issues/524)).
-
 * Added support for .NET with the `Pulumi.Terraform` NuGet package
 
 ## v1.1.0 (2019-10-04)

@@ -42,10 +42,10 @@ build::
 		dotnet build /p:Version=${DOTNET_VERSION}
 
 lint::
-	cd provider/cmd/pulumi-resource-terraform && golangci-lint run
+	#cd provider/cmd/pulumi-resource-terraform && golangci-lint run
 
 install::
-	go install $(VERSION_FLAGS) $(PROJECT)/provider/cmd/pulumi-resource-terraform
+	cd provider && go install $(VERSION_FLAGS) $(PROJECT)/provider/cmd/pulumi-resource-terraform
 	[ ! -e "$(PULUMI_NODE_MODULES)/$(NODE_MODULE_NAME)" ] || rm -rf "$(PULUMI_NODE_MODULES)/$(NODE_MODULE_NAME)"
 	mkdir -p "$(PULUMI_NODE_MODULES)/$(NODE_MODULE_NAME)"
 	cp -r sdk/nodejs/bin/. "$(PULUMI_NODE_MODULES)/$(NODE_MODULE_NAME)"
@@ -59,10 +59,10 @@ install::
 	find . -name '$(NUGET_PKG_NAME).*.nupkg' -exec cp -p {} ${PULUMI_NUGET} \;
 
 test_fast:: install
-	cd examples && $(GO_TEST_FAST) ./provider/cmd/pulumi-resource-terraform
+	cd examples && $(GO_TEST_FAST) .
 
 test_all:: install
-	cd examples && $(GO_TEST) ./provider/cmd/pulumi-resource-terraform
+	cd examples && $(GO_TEST) .
 
 .PHONY: publish_tgz
 publish_tgz:
