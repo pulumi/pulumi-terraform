@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/pulumi/pulumi/pkg/testing/integration"
+	"github.com/pulumi/pulumi/pkg/v2/testing/integration"
 )
 
 func TestExamples(t *testing.T) {
@@ -32,9 +32,16 @@ func TestExamples(t *testing.T) {
 		},
 	})
 
+	baseDotNet := base.With(integration.ProgramTestOptions{
+		Dependencies: []string{
+			"Pulumi.Terraform",
+		},
+	})
+
 	shortTests := []integration.ProgramTestOptions{
 		baseJS.With(integration.ProgramTestOptions{Dir: path.Join(cwd, "localstate-nodejs")}),
 		basePython.With(integration.ProgramTestOptions{Dir: path.Join(cwd, "localstate-python")}),
+		baseDotNet.With(integration.ProgramTestOptions{Dir: path.Join(cwd, "localstate-dotnet")}),
 	}
 
 	longTests := []integration.ProgramTestOptions{}

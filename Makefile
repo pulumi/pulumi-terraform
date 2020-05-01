@@ -6,25 +6,24 @@ PACKDIR          := sdk
 NODE_MODULE_NAME := @pulumi/terraform
 NUGET_PKG_NAME   := Pulumi.Terraform
 PROJECT          := github.com/pulumi/pulumi-terraform
-GOPKGS           := $(shell go list ./pkg/... | grep -v /vendor/)
 TESTPARALLELISM  := 10
 
 VERSION          ?= $(shell scripts/get-version)
 PYPI_VERSION     := $(shell scripts/get-py-version)
 
-VERSION_FLAGS    := -ldflags "-X github.com/pulumi/pulumi-terraform/pkg/version.Version=${VERSION}"
+VERSION_FLAGS    := -ldflags "-X github.com/pulumi/pulumi-terraform/provider/cmd/pulumi-resource-terraform/main.Version=${VERSION}"
 
 DOTNET_PREFIX  := $(firstword $(subst -, ,${VERSION:v%=%})) # e.g. 1.5.0
 DOTNET_SUFFIX  := $(word 2,$(subst -, ,${VERSION:v%=%}))    # e.g. alpha.1
 
 ifeq ($(strip ${DOTNET_SUFFIX}),)
-	DOTNET_VERSION := $(strip ${DOTNET_PREFIX})-preview
+	DOTNET_VERSION := $(strip ${DOTNET_PREFIX})
 else
-	DOTNET_VERSION := $(strip ${DOTNET_PREFIX})-preview-$(strip ${DOTNET_SUFFIX})
+	DOTNET_VERSION := $(strip ${DOTNET_PREFIX})-$(strip ${DOTNET_SUFFIX})
 endif
 
 build::
-	go install $(VERSION_FLAGS) ${PROJECT}/cmd/pulumi-resource-terraform
+	cd provider && go install $(VERSION_FLAGS) ${PROJECT}/provider/cmd/pulumi-resource-${PACK}
 	cd ${PACKDIR}/nodejs/ && \
 		yarn install && \
 		yarn run tsc
@@ -43,11 +42,10 @@ build::
 		dotnet build /p:Version=${DOTNET_VERSION}
 
 lint::
-	cd pkg && golangci-lint run
-	cd cmd && golangci-lint run
+	#cd provider/cmd/pulumi-resource-terraform && golangci-lint run
 
 install::
-	go install $(VERSION_FLAGS) $(PROJECT)/cmd/pulumi-resource-terraform
+	cd provider && go install $(VERSION_FLAGS) $(PROJECT)/provider/cmd/pulumi-resource-terraform
 	[ ! -e "$(PULUMI_NODE_MODULES)/$(NODE_MODULE_NAME)" ] || rm -rf "$(PULUMI_NODE_MODULES)/$(NODE_MODULE_NAME)"
 	mkdir -p "$(PULUMI_NODE_MODULES)/$(NODE_MODULE_NAME)"
 	cp -r sdk/nodejs/bin/. "$(PULUMI_NODE_MODULES)/$(NODE_MODULE_NAME)"
@@ -61,10 +59,10 @@ install::
 	find . -name '$(NUGET_PKG_NAME).*.nupkg' -exec cp -p {} ${PULUMI_NUGET} \;
 
 test_fast:: install
-	$(GO_TEST_FAST) ${GOPKGS} ./examples
+	cd examples && $(GO_TEST_FAST) .
 
 test_all:: install
-	$(GO_TEST) ${GOPKGS} ./examples
+	cd examples && $(GO_TEST) .
 
 .PHONY: publish_tgz
 publish_tgz:
