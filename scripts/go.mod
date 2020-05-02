@@ -1,4 +1,4 @@
-module github.com/pulumi/pulumi-terraform/scripts
+module github.com/pulumi/pulumi-terraform/scripts/v2
 
 go 1.14
 
