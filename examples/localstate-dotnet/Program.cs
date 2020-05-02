@@ -11,9 +11,11 @@ class Program
     {
         return Deployment.RunAsync(() => {
 
+            var config = new Config();
+            var statefile = config.Require("statefile");
             var remoteState = new RemoteStateReference("localstate", new LocalBackendRemoteStateReferenceArgs
             {
-                Path = Path.GetFullPath("terraform.tfstate"),
+                Path = Path.GetFullPath(statefile),
             });
 
             return new Dictionary<string, object?>
