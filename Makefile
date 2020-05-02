@@ -11,7 +11,7 @@ TESTPARALLELISM  := 10
 VERSION          ?= $(shell scripts/get-version)
 PYPI_VERSION     := $(shell scripts/get-py-version)
 
-VERSION_FLAGS    := -ldflags "-X github.com/pulumi/pulumi-terraform/provider/cmd/pulumi-resource-terraform/main.Version=${VERSION}"
+VERSION_FLAGS    := -ldflags "-X github.com/pulumi/pulumi-terraform/provider/pkg/version.Version=${VERSION}"
 
 DOTNET_PREFIX  := $(firstword $(subst -, ,${VERSION:v%=%})) # e.g. 1.5.0
 DOTNET_SUFFIX  := $(word 2,$(subst -, ,${VERSION:v%=%}))    # e.g. alpha.1
@@ -45,7 +45,6 @@ lint::
 	#cd provider/cmd/pulumi-resource-terraform && golangci-lint run
 
 install:: build
-	cd provider && go install $(VERSION_FLAGS) $(PROJECT)/provider/cmd/pulumi-resource-terraform
 	[ ! -e "$(PULUMI_NODE_MODULES)/$(NODE_MODULE_NAME)" ] || rm -rf "$(PULUMI_NODE_MODULES)/$(NODE_MODULE_NAME)"
 	mkdir -p "$(PULUMI_NODE_MODULES)/$(NODE_MODULE_NAME)"
 	cp -r sdk/nodejs/bin/. "$(PULUMI_NODE_MODULES)/$(NODE_MODULE_NAME)"
@@ -58,10 +57,10 @@ install:: build
 	[ ! -e "$(PULUMI_NUGET)" ] || rm -rf "$(PULUMI_NUGET)/*"
 	find . -name '$(NUGET_PKG_NAME).*.nupkg' -exec cp -p {} ${PULUMI_NUGET} \;
 
-test_fast:: install
+test_fast::
 	cd examples && $(GO_TEST_FAST) .
 
-test_all:: install
+test_all::
 	cd examples && $(GO_TEST) .
 
 .PHONY: publish_tgz

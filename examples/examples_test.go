@@ -18,7 +18,10 @@ func TestExamples(t *testing.T) {
 	}
 
 	// base options shared amongst all tests.
-	base := integration.ProgramTestOptions{}
+	base := integration.ProgramTestOptions{
+		RunUpdateTest:    false,
+		SkipExportImport: true,
+	}
 
 	baseJS := base.With(integration.ProgramTestOptions{
 		Dependencies: []string{
@@ -38,11 +41,11 @@ func TestExamples(t *testing.T) {
 		},
 	})
 
-	shortTests := []integration.ProgramTestOptions{
+	tests := []integration.ProgramTestOptions{
 
 		baseJS.With(integration.ProgramTestOptions{
 			StackName: "js-tf0-11-3",
-			Dir: path.Join(cwd, "localstate-nodejs"),
+			Dir:       path.Join(cwd, "localstate-nodejs"),
 			Config: map[string]string{
 				"statefile": "terraform.0-11-3.tfstate",
 			},
@@ -50,7 +53,7 @@ func TestExamples(t *testing.T) {
 		}),
 		baseJS.With(integration.ProgramTestOptions{
 			StackName: "js-tf0-12-24",
-			Dir: path.Join(cwd, "localstate-nodejs"),
+			Dir:       path.Join(cwd, "localstate-nodejs"),
 			Config: map[string]string{
 				"statefile": "terraform.0-12-24.tfstate",
 			},
@@ -58,7 +61,7 @@ func TestExamples(t *testing.T) {
 		}),
 		basePython.With(integration.ProgramTestOptions{
 			StackName: "py-tf0-11-3",
-			Dir: path.Join(cwd, "localstate-python"),
+			Dir:       path.Join(cwd, "localstate-python"),
 			Config: map[string]string{
 				"statefile": "terraform.0-11-3.tfstate",
 			},
@@ -66,7 +69,7 @@ func TestExamples(t *testing.T) {
 		}),
 		basePython.With(integration.ProgramTestOptions{
 			StackName: "py-tf0-12-24",
-			Dir: path.Join(cwd, "localstate-python"),
+			Dir:       path.Join(cwd, "localstate-python"),
 			Config: map[string]string{
 				"statefile": "terraform.0-12-24.tfstate",
 			},
@@ -75,7 +78,7 @@ func TestExamples(t *testing.T) {
 
 		baseDotNet.With(integration.ProgramTestOptions{
 			StackName: "dotnet-tf0-11-3",
-			Dir: path.Join(cwd, "localstate-dotnet"),
+			Dir:       path.Join(cwd, "localstate-dotnet"),
 			Config: map[string]string{
 				"statefile": "terraform.0-11-3.tfstate",
 			},
@@ -84,19 +87,12 @@ func TestExamples(t *testing.T) {
 
 		baseDotNet.With(integration.ProgramTestOptions{
 			StackName: "dotnet-tf0-12-24",
-			Dir: path.Join(cwd, "localstate-dotnet"),
+			Dir:       path.Join(cwd, "localstate-dotnet"),
 			Config: map[string]string{
 				"statefile": "terraform.0-12-24.tfstate",
 			},
 			NoParallel: true,
 		}),
-	}
-
-	longTests := []integration.ProgramTestOptions{}
-
-	tests := shortTests
-	if !testing.Short() {
-		tests = append(tests, longTests...)
 	}
 
 	for _, ex := range tests {

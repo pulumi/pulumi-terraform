@@ -14,6 +14,8 @@
 
 package main
 
+import "github.com/pulumi/pulumi-terraform/provider/pkg/version"
+
 func main() {
-	Serve("terraform", Version)
+	Serve("terraform", version.Version)
 }
