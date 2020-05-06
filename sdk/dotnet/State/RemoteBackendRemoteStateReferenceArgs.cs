@@ -36,7 +36,7 @@ namespace Pulumi.Terraform.State
          public Input<string>? Token { get; set; }
 
          /// <summary>
-         /// A block specifying which remote cdworkspace(s) to use.
+         /// A block specifying which remote workspace(s) to use.
          /// </summary>
          [Input("workspaces")]
          public Input<RemoteBackendWorkspaceConfig>? Workspaces { get; set; }

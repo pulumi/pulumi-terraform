@@ -6,100 +6,262 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/pulumi/pulumi/pkg/v2/testing/integration"
 )
 
-func TestExamples(t *testing.T) {
+func TestJSLocal011(t *testing.T) {
+	test := getJSBaseOptions().
+		With(integration.ProgramTestOptions{
+			Dir: path.Join(getCwd(t), "localstate-nodejs"),
+			Config: map[string]string{
+				"statefile": "terraform.0-11-3.tfstate",
+			},
+		})
+
+	integration.ProgramTest(t, &test)
+}
+
+func TestJSLocal012(t *testing.T) {
+	test := getJSBaseOptions().
+		With(integration.ProgramTestOptions{
+			Dir: path.Join(getCwd(t), "localstate-nodejs"),
+			Config: map[string]string{
+				"statefile": "terraform.0-12-24.tfstate",
+			},
+		})
+
+	integration.ProgramTest(t, &test)
+}
+
+func TestJSS3011(t *testing.T) {
+	test := getJSBaseOptions().
+		With(integration.ProgramTestOptions{
+			Dir: path.Join(getCwd(t), "s3state-nodejs"),
+			Config: map[string]string{
+				"bucketName": "pulumi-terraform-remote-state-testing",
+				"key":        "0-11-state",
+				"region":     "us-west-2",
+			},
+		})
+
+	integration.ProgramTest(t, &test)
+}
+
+func TestJSS3012(t *testing.T) {
+	test := getJSBaseOptions().
+		With(integration.ProgramTestOptions{
+			Dir: path.Join(getCwd(t), "s3state-nodejs"),
+			Config: map[string]string{
+				"bucketName": "pulumi-terraform-remote-state-testing",
+				"key":        "0-12-state",
+				"region":     "us-west-2",
+			},
+		})
+
+	integration.ProgramTest(t, &test)
+}
+
+func TestPyLocal011(t *testing.T) {
+	test := getPyBaseOptions().
+		With(integration.ProgramTestOptions{
+			Dir: path.Join(getCwd(t), "localstate-python"),
+			Config: map[string]string{
+				"statefile": "terraform.0-11-3.tfstate",
+			},
+		})
+
+	integration.ProgramTest(t, &test)
+}
+
+func TestPyLocal012(t *testing.T) {
+	test := getPyBaseOptions().
+		With(integration.ProgramTestOptions{
+			Dir: path.Join(getCwd(t), "localstate-python"),
+			Config: map[string]string{
+				"statefile": "terraform.0-12-24.tfstate",
+			},
+		})
+
+	integration.ProgramTest(t, &test)
+}
+
+func TestPyS3011(t *testing.T) {
+	test := getPyBaseOptions().
+		With(integration.ProgramTestOptions{
+			Dir: path.Join(getCwd(t), "s3state-python"),
+			Config: map[string]string{
+				"bucketName": "pulumi-terraform-remote-state-testing",
+				"key":        "0-11-state",
+				"region":     "us-west-2",
+			},
+		})
+
+	integration.ProgramTest(t, &test)
+}
+
+func TestPyS3012(t *testing.T) {
+	test := getPyBaseOptions().
+		With(integration.ProgramTestOptions{
+			Dir: path.Join(getCwd(t), "s3state-python"),
+			Config: map[string]string{
+				"bucketName": "pulumi-terraform-remote-state-testing",
+				"key":        "0-12-state",
+				"region":     "us-west-2",
+			},
+		})
+
+	integration.ProgramTest(t, &test)
+}
+
+func TestDotNetLocal011(t *testing.T) {
+	test := getDotNetBaseOptions().
+		With(integration.ProgramTestOptions{
+			Dir: path.Join(getCwd(t), "localstate-dotnet"),
+			Config: map[string]string{
+				"statefile": "terraform.0-11-3.tfstate",
+			},
+		})
+
+	integration.ProgramTest(t, &test)
+}
+
+func TestDotNetLocal012(t *testing.T) {
+	test := getDotNetBaseOptions().
+		With(integration.ProgramTestOptions{
+			Dir: path.Join(getCwd(t), "localstate-dotnet"),
+			Config: map[string]string{
+				"statefile": "terraform.0-12-24.tfstate",
+			},
+		})
+
+	integration.ProgramTest(t, &test)
+}
+
+func TestDotNetS3011(t *testing.T) {
+	test := getDotNetBaseOptions().
+		With(integration.ProgramTestOptions{
+			Dir: path.Join(getCwd(t), "s3state-dotnet"),
+			Config: map[string]string{
+				"bucketName": "pulumi-terraform-remote-state-testing",
+				"key":        "0-11-state",
+				"region":     "us-west-2",
+			},
+		})
+
+	integration.ProgramTest(t, &test)
+}
+
+func TestDotNetS3012(t *testing.T) {
+	test := getDotNetBaseOptions().
+		With(integration.ProgramTestOptions{
+			Dir: path.Join(getCwd(t), "s3state-dotnet"),
+			Config: map[string]string{
+				"bucketName": "pulumi-terraform-remote-state-testing",
+				"key":        "0-12-state",
+				"region":     "us-west-2",
+			},
+		})
+
+	integration.ProgramTest(t, &test)
+}
+
+func TestGoLocal011(t *testing.T) {
+	test := getGoBaseOptions().
+		With(integration.ProgramTestOptions{
+			Dir: path.Join(getCwd(t), "localstate-go"),
+			Config: map[string]string{
+				"statefile": "terraform.0-11-3.tfstate",
+			},
+		})
+
+	integration.ProgramTest(t, &test)
+}
+
+func TestGoLocal012(t *testing.T) {
+	test := getGoBaseOptions().
+		With(integration.ProgramTestOptions{
+			Dir: path.Join(getCwd(t), "localstate-go"),
+			Config: map[string]string{
+				"statefile": "terraform.0-12-24.tfstate",
+			},
+		})
+
+	integration.ProgramTest(t, &test)
+}
+
+func TestGoS3011(t *testing.T) {
+	test := getGoBaseOptions().
+		With(integration.ProgramTestOptions{
+			Dir: path.Join(getCwd(t), "s3state-go"),
+			Config: map[string]string{
+				"bucketName": "pulumi-terraform-remote-state-testing",
+				"key":        "0-11-state",
+				"region":     "us-west-2",
+			},
+		})
+
+	integration.ProgramTest(t, &test)
+}
+
+func TestGoS3012(t *testing.T) {
+	test := getGoBaseOptions().
+		With(integration.ProgramTestOptions{
+			Dir: path.Join(getCwd(t), "s3state-go"),
+			Config: map[string]string{
+				"bucketName": "pulumi-terraform-remote-state-testing",
+				"key":        "0-12-state",
+				"region":     "us-west-2",
+			},
+		})
+
+	integration.ProgramTest(t, &test)
+}
+
+func getCwd(t *testing.T) string {
 	cwd, err := os.Getwd()
-	if !assert.NoError(t, err, "expected a valid working directory: %v", err) {
-		return
+	if err != nil {
+		t.FailNow()
 	}
 
-	// base options shared amongst all tests.
-	base := integration.ProgramTestOptions{
-		RunUpdateTest:    false,
-		SkipExportImport: true,
-	}
+	return cwd
+}
 
-	baseJS := base.With(integration.ProgramTestOptions{
+func getJSBaseOptions() integration.ProgramTestOptions {
+	return integration.ProgramTestOptions{
+		RunUpdateTest: false,
+		Quick:         true,
 		Dependencies: []string{
 			"@pulumi/terraform",
 		},
-	})
+	}
+}
 
-	basePython := base.With(integration.ProgramTestOptions{
+func getPyBaseOptions() integration.ProgramTestOptions {
+	return integration.ProgramTestOptions{
+		RunUpdateTest: false,
+		Quick:         true,
 		Dependencies: []string{
 			filepath.Join("..", "sdk", "python", "bin"),
 		},
-	})
+	}
+}
 
-	baseDotNet := base.With(integration.ProgramTestOptions{
+func getDotNetBaseOptions() integration.ProgramTestOptions {
+	return integration.ProgramTestOptions{
+		RunUpdateTest: false,
+		Quick:         true,
 		Dependencies: []string{
 			"Pulumi.Terraform",
 		},
-	})
-
-	tests := []integration.ProgramTestOptions{
-
-		baseJS.With(integration.ProgramTestOptions{
-			StackName: "js-tf0-11-3",
-			Dir:       path.Join(cwd, "localstate-nodejs"),
-			Config: map[string]string{
-				"statefile": "terraform.0-11-3.tfstate",
-			},
-			NoParallel: true,
-		}),
-		baseJS.With(integration.ProgramTestOptions{
-			StackName: "js-tf0-12-24",
-			Dir:       path.Join(cwd, "localstate-nodejs"),
-			Config: map[string]string{
-				"statefile": "terraform.0-12-24.tfstate",
-			},
-			NoParallel: true,
-		}),
-		basePython.With(integration.ProgramTestOptions{
-			StackName: "py-tf0-11-3",
-			Dir:       path.Join(cwd, "localstate-python"),
-			Config: map[string]string{
-				"statefile": "terraform.0-11-3.tfstate",
-			},
-			NoParallel: true,
-		}),
-		basePython.With(integration.ProgramTestOptions{
-			StackName: "py-tf0-12-24",
-			Dir:       path.Join(cwd, "localstate-python"),
-			Config: map[string]string{
-				"statefile": "terraform.0-12-24.tfstate",
-			},
-			NoParallel: true,
-		}),
-
-		baseDotNet.With(integration.ProgramTestOptions{
-			StackName: "dotnet-tf0-11-3",
-			Dir:       path.Join(cwd, "localstate-dotnet"),
-			Config: map[string]string{
-				"statefile": "terraform.0-11-3.tfstate",
-			},
-			NoParallel: true,
-		}),
-
-		baseDotNet.With(integration.ProgramTestOptions{
-			StackName: "dotnet-tf0-12-24",
-			Dir:       path.Join(cwd, "localstate-dotnet"),
-			Config: map[string]string{
-				"statefile": "terraform.0-12-24.tfstate",
-			},
-			NoParallel: true,
-		}),
 	}
+}
 
-	for _, ex := range tests {
-		example := ex
-		t.Run(example.Dir, func(t *testing.T) {
-			t.Log(example.StackName)
-			integration.ProgramTest(t, &example)
-		})
+func getGoBaseOptions() integration.ProgramTestOptions {
+	return integration.ProgramTestOptions{
+		RunUpdateTest: false,
+		Quick:         true,
+		Dependencies: []string{
+			"github.com/pulumi/pulumi-terraform/sdk/v2",
+		},
 	}
 }

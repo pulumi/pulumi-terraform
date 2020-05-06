@@ -1,3 +1,3 @@
-name: localstate-py
-runtime: python
+name: s3state-ts
+runtime: nodejs
 description: An example demonstrating the Terraform Remote State resource
