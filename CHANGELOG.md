@@ -2,9 +2,12 @@ CHANGELOG
 =========
 
 ## HEAD (Unreleased)
-* Add support for Go with the `pulumi-terraform` Go SDK
+_(none)_
 
 ---
+
+## 2.1.0 (2020-05-15)
+* Add support for Go with the `pulumi-terraform` Go SDK
 
 ## v2.0.0 (2020-05-02)
 * `RemoteStateReference` resources can now read states created with Terraform v0.12.24 and below
