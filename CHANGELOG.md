@@ -2,7 +2,7 @@ CHANGELOG
 =========
 
 ## HEAD (Unreleased)
-_(none)_
+* Add support for Go with the `pulumi-terraform` Go SDK
 
 ---
 
