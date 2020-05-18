@@ -61,6 +61,22 @@ func TestJSS3012(t *testing.T) {
 	integration.ProgramTest(t, &test)
 }
 
+func TestJSRemoteBackend(t *testing.T) {
+	test := getJSBaseOptions().
+		With(integration.ProgramTestOptions{
+			Dir: path.Join(getCwd(t), "remote-backend-nodejs"),
+			Config: map[string]string{
+				"organization":  getRemoteBackendOrganization(t),
+				"workspaceName": "dev",
+			},
+			Secrets: map[string]string{
+				"tfeToken": getRemoteBackendToken(t),
+			},
+		})
+
+	integration.ProgramTest(t, &test)
+}
+
 func TestPyLocal011(t *testing.T) {
 	test := getPyBaseOptions().
 		With(integration.ProgramTestOptions{
@@ -107,6 +123,22 @@ func TestPyS3012(t *testing.T) {
 				"bucketName": "pulumi-terraform-remote-state-testing",
 				"key":        "0-12-state",
 				"region":     "us-west-2",
+			},
+		})
+
+	integration.ProgramTest(t, &test)
+}
+
+func TestPyRemoteBackend(t *testing.T) {
+	test := getPyBaseOptions().
+		With(integration.ProgramTestOptions{
+			Dir: path.Join(getCwd(t), "remote-backend-python"),
+			Config: map[string]string{
+				"organization":  getRemoteBackendOrganization(t),
+				"workspaceName": "dev",
+			},
+			Secrets: map[string]string{
+				"tfeToken": getRemoteBackendToken(t),
 			},
 		})
 
@@ -165,6 +197,22 @@ func TestDotNetS3012(t *testing.T) {
 	integration.ProgramTest(t, &test)
 }
 
+func TestDotNetRemoteBackend(t *testing.T) {
+	test := getDotNetBaseOptions().
+		With(integration.ProgramTestOptions{
+			Dir: path.Join(getCwd(t), "remote-backend-dotnet"),
+			Config: map[string]string{
+				"organization":  getRemoteBackendOrganization(t),
+				"workspaceName": "dev",
+			},
+			Secrets: map[string]string{
+				"tfeToken": getRemoteBackendToken(t),
+			},
+		})
+
+	integration.ProgramTest(t, &test)
+}
+
 func TestGoLocal011(t *testing.T) {
 	test := getGoBaseOptions().
 		With(integration.ProgramTestOptions{
@@ -211,6 +259,22 @@ func TestGoS3012(t *testing.T) {
 				"bucketName": "pulumi-terraform-remote-state-testing",
 				"key":        "0-12-state",
 				"region":     "us-west-2",
+			},
+		})
+
+	integration.ProgramTest(t, &test)
+}
+
+func TestGoRemoteBackend(t *testing.T) {
+	test := getGoBaseOptions().
+		With(integration.ProgramTestOptions{
+			Dir: path.Join(getCwd(t), "remote-backend-go"),
+			Config: map[string]string{
+				"organization":  getRemoteBackendOrganization(t),
+				"workspaceName": "dev",
+			},
+			Secrets: map[string]string{
+				"tfeToken": getRemoteBackendToken(t),
 			},
 		})
 
@@ -264,4 +328,22 @@ func getGoBaseOptions() integration.ProgramTestOptions {
 			"github.com/pulumi/pulumi-terraform/sdk/v2",
 		},
 	}
+}
+
+func getRemoteBackendOrganization(t *testing.T) string {
+	org, found := os.LookupEnv("TFE_ORGANIZATION")
+	if !found {
+		t.Skipf("Skipping... cannot find TFE_ORGANIZATION")
+	}
+
+	return org
+}
+
+func getRemoteBackendToken(t *testing.T) string {
+	token, found := os.LookupEnv("TFE_TOKEN")
+	if !found {
+		t.Skipf("Skipping... cannot find TFE_TOKEN")
+	}
+
+	return token
 }

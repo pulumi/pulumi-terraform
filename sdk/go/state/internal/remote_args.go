@@ -37,3 +37,7 @@ type workspaceArgs struct {
 func (RemoteBackendStateReferenceArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*remoteBackendStateReferenceArgs)(nil)).Elem()
 }
+
+func (WorkspaceArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*workspaceArgs)(nil)).Elem()
+}
