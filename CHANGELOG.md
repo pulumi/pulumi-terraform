@@ -2,9 +2,12 @@ CHANGELOG
 =========
 
 ## HEAD (Unreleased)
-* Upgrade to Terraform v0.12.25
+_(none)_
 
 ---
+
+## 2.2.0 (2020-05-19)
+* Upgrade to Terraform v0.12.25
 
 ## 2.1.0 (2020-05-15)
 * Add support for Go with the `pulumi-terraform` Go SDK
