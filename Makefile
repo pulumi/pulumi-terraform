@@ -6,7 +6,7 @@ PACKDIR          := sdk
 NODE_MODULE_NAME := @pulumi/terraform
 NUGET_PKG_NAME   := Pulumi.Terraform
 PROJECT          := github.com/pulumi/pulumi-terraform
-TESTPARALLELISM  := 10
+TESTPARALLELISM  := 4
 
 VERSION          ?= $(shell scripts/get-version)
 PYPI_VERSION     := $(shell scripts/get-py-version)
