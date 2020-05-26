@@ -9,7 +9,7 @@ PROJECT          := github.com/pulumi/pulumi-terraform
 TESTPARALLELISM  := 4
 
 VERSION          ?= $(shell scripts/get-version)
-PYPI_VERSION     := $(shell scripts/get-py-version)
+PYPI_VERSION     := $(shell cd scripts && ./get-py-version)
 
 VERSION_FLAGS    := -ldflags "-X github.com/pulumi/pulumi-terraform/provider/v2/pkg/version.Version=${VERSION}"
 
