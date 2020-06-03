@@ -42,6 +42,11 @@ func TestJSS3011(t *testing.T) {
 				"key":        "0-11-state",
 				"region":     "us-west-2",
 			},
+			ExtraRuntimeValidation: func(t *testing.T, stack integration.RuntimeValidationStackInfo) {
+				// Since we are relying on the AWS credentials file locally, we need to
+				// force this to be used.
+				os.Setenv("AWS_SDK_LOAD_CONFIG", "1")
+			},
 		})
 
 	integration.ProgramTest(t, &test)
@@ -55,6 +60,11 @@ func TestJSS3012(t *testing.T) {
 				"bucketName": "pulumi-terraform-remote-state-testing",
 				"key":        "0-12-state",
 				"region":     "us-west-2",
+			},
+			ExtraRuntimeValidation: func(t *testing.T, stack integration.RuntimeValidationStackInfo) {
+				// Since we are relying on the AWS credentials file locally, we need to
+				// force this to be used.
+				os.Setenv("AWS_SDK_LOAD_CONFIG", "1")
 			},
 		})
 
@@ -110,6 +120,11 @@ func TestPyS3011(t *testing.T) {
 				"key":        "0-11-state",
 				"region":     "us-west-2",
 			},
+			ExtraRuntimeValidation: func(t *testing.T, stack integration.RuntimeValidationStackInfo) {
+				// Since we are relying on the AWS credentials file locally, we need to
+				// force this to be used.
+				os.Setenv("AWS_SDK_LOAD_CONFIG", "1")
+			},
 		})
 
 	integration.ProgramTest(t, &test)
@@ -123,6 +138,11 @@ func TestPyS3012(t *testing.T) {
 				"bucketName": "pulumi-terraform-remote-state-testing",
 				"key":        "0-12-state",
 				"region":     "us-west-2",
+			},
+			ExtraRuntimeValidation: func(t *testing.T, stack integration.RuntimeValidationStackInfo) {
+				// Since we are relying on the AWS credentials file locally, we need to
+				// force this to be used.
+				os.Setenv("AWS_SDK_LOAD_CONFIG", "1")
 			},
 		})
 
@@ -178,6 +198,11 @@ func TestDotNetS3011(t *testing.T) {
 				"key":        "0-11-state",
 				"region":     "us-west-2",
 			},
+			ExtraRuntimeValidation: func(t *testing.T, stack integration.RuntimeValidationStackInfo) {
+				// Since we are relying on the AWS credentials file locally, we need to
+				// force this to be used.
+				os.Setenv("AWS_SDK_LOAD_CONFIG", "1")
+			},
 		})
 
 	integration.ProgramTest(t, &test)
@@ -191,6 +216,11 @@ func TestDotNetS3012(t *testing.T) {
 				"bucketName": "pulumi-terraform-remote-state-testing",
 				"key":        "0-12-state",
 				"region":     "us-west-2",
+			},
+			ExtraRuntimeValidation: func(t *testing.T, stack integration.RuntimeValidationStackInfo) {
+				// Since we are relying on the AWS credentials file locally, we need to
+				// force this to be used.
+				os.Setenv("AWS_SDK_LOAD_CONFIG", "1")
 			},
 		})
 
@@ -246,6 +276,11 @@ func TestGoS3011(t *testing.T) {
 				"key":        "0-11-state",
 				"region":     "us-west-2",
 			},
+			ExtraRuntimeValidation: func(t *testing.T, stack integration.RuntimeValidationStackInfo) {
+				// Since we are relying on the AWS credentials file locally, we need to
+				// force this to be used.
+				os.Setenv("AWS_SDK_LOAD_CONFIG", "1")
+			},
 		})
 
 	integration.ProgramTest(t, &test)
@@ -259,6 +294,11 @@ func TestGoS3012(t *testing.T) {
 				"bucketName": "pulumi-terraform-remote-state-testing",
 				"key":        "0-12-state",
 				"region":     "us-west-2",
+			},
+			ExtraRuntimeValidation: func(t *testing.T, stack integration.RuntimeValidationStackInfo) {
+				// Since we are relying on the AWS credentials file locally, we need to
+				// force this to be used.
+				os.Setenv("AWS_SDK_LOAD_CONFIG", "1")
 			},
 		})
 
