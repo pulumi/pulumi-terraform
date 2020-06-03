@@ -12,8 +12,10 @@ before_install:
 install:
     - source ${PULUMI_SCRIPTS}/ci/install-common-toolchain.sh
     - source ${PULUMI_SCRIPTS}/ci/configure-aws.sh
+    - export AWS_SECURITY_TOKEN=${AWS_SESSION_TOKEN}
     # Use the pulumi-ci AWS profile configured by the above script.
-    # This repo runs tests that require access to create resources in AWS.
+    # This repo runs tests that require access to resources in AWS besides just the
+    # get.pulumi.com and rel.pulumi.com S3 buckets.
     - export AWS_PROFILE=pulumi-ci
     # Install Pulumi
     - curl -L https://get.pulumi.com/ | bash
