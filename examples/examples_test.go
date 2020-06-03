@@ -9,6 +9,15 @@ import (
 	"github.com/pulumi/pulumi/pkg/v2/testing/integration"
 )
 
+func TestDebugEnvironmentVariables(t *testing.T) {
+	t.Log("Wondering what the environment variables are curently set?")
+	t.Logf("AWS_ACCESS_KEY_ID=%q", os.Getenv("AWS_ACCESS_KEY_ID"))
+	t.Logf("AWS_PROFILE=%q", os.Getenv("AWS_PROFILE"))
+	t.Logf("AWS_SDK_LOAD_CONFIG=%q", os.Getenv("AWS_SDK_LOAD_CONFIG"))
+
+	t.Error("Aborting test so this is in the log files and hopefully easy to read!")
+}
+
 func TestJSLocal011(t *testing.T) {
 	test := getJSBaseOptions().
 		With(integration.ProgramTestOptions{
