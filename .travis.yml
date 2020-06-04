@@ -12,6 +12,10 @@ before_install:
 install:
     - source ${PULUMI_SCRIPTS}/ci/install-common-toolchain.sh
     - source ${PULUMI_SCRIPTS}/ci/configure-aws.sh
+    # Use the pulumi-ci AWS profile configured by the above script.
+    # This repo runs tests that require access to create resources in AWS.
+    - export AWS_PROFILE=pulumi-ci
+    - export AWS_SDK_LOAD_CONFIG=1
     # Install Pulumi
     - curl -L https://get.pulumi.com/ | bash
     - export PATH=$HOME/.pulumi/bin:$PATH
