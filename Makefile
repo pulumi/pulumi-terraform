@@ -11,7 +11,7 @@ TESTPARALLELISM  := 4
 VERSION          ?= $(shell scripts/get-version)
 PYPI_VERSION     := $(shell cd scripts && ./get-py-version)
 
-VERSION_FLAGS    := -ldflags "-X github.com/pulumi/pulumi-terraform/provider/v2/pkg/version.Version=${VERSION}"
+VERSION_FLAGS    := -ldflags "-X github.com/pulumi/pulumi-terraform/provider/v3/pkg/version.Version=${VERSION}"
 
 DOTNET_PREFIX  := $(firstword $(subst -, ,${VERSION:v%=%})) # e.g. 1.5.0
 DOTNET_SUFFIX  := $(word 2,$(subst -, ,${VERSION:v%=%}))    # e.g. alpha.1
@@ -23,7 +23,7 @@ else
 endif
 
 build::
-	cd provider && go install $(VERSION_FLAGS) ${PROJECT}/provider/v2/cmd/pulumi-resource-${PACK}
+	cd provider && go install $(VERSION_FLAGS) ${PROJECT}/provider/v3/cmd/pulumi-resource-${PACK}
 	cd ${PACKDIR}/nodejs/ && \
 		yarn install && \
 		yarn run tsc

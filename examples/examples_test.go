@@ -9,12 +9,12 @@ import (
 	"github.com/pulumi/pulumi/pkg/v2/testing/integration"
 )
 
-func TestJSLocal011(t *testing.T) {
+func TestJSLocal013(t *testing.T) {
 	test := getJSBaseOptions().
 		With(integration.ProgramTestOptions{
 			Dir: path.Join(getCwd(t), "localstate-nodejs"),
 			Config: map[string]string{
-				"statefile": "terraform.0-11-3.tfstate",
+				"statefile": "terraform.0-13-0.tfstate",
 			},
 		})
 
@@ -33,13 +33,13 @@ func TestJSLocal012(t *testing.T) {
 	integration.ProgramTest(t, &test)
 }
 
-func TestJSS3011(t *testing.T) {
+func TestJSS3013(t *testing.T) {
 	test := getJSBaseOptions().
 		With(integration.ProgramTestOptions{
 			Dir: path.Join(getCwd(t), "s3state-nodejs"),
 			Config: map[string]string{
 				"bucketName": "pulumi-terraform-remote-state-testing",
-				"key":        "0-11-state",
+				"key":        "0-13-state",
 				"region":     "us-west-2",
 			},
 		})
@@ -77,12 +77,12 @@ func TestJSRemoteBackend(t *testing.T) {
 	integration.ProgramTest(t, &test)
 }
 
-func TestPyLocal011(t *testing.T) {
+func TestPyLocal013(t *testing.T) {
 	test := getPyBaseOptions().
 		With(integration.ProgramTestOptions{
 			Dir: path.Join(getCwd(t), "localstate-python"),
 			Config: map[string]string{
-				"statefile": "terraform.0-11-3.tfstate",
+				"statefile": "terraform.0-13-0.tfstate",
 			},
 		})
 
@@ -101,13 +101,13 @@ func TestPyLocal012(t *testing.T) {
 	integration.ProgramTest(t, &test)
 }
 
-func TestPyS3011(t *testing.T) {
+func TestPyS3013(t *testing.T) {
 	test := getPyBaseOptions().
 		With(integration.ProgramTestOptions{
 			Dir: path.Join(getCwd(t), "s3state-python"),
 			Config: map[string]string{
 				"bucketName": "pulumi-terraform-remote-state-testing",
-				"key":        "0-11-state",
+				"key":        "0-13-state",
 				"region":     "us-west-2",
 			},
 		})
@@ -145,12 +145,12 @@ func TestPyRemoteBackend(t *testing.T) {
 	integration.ProgramTest(t, &test)
 }
 
-func TestDotNetLocal011(t *testing.T) {
+func TestDotNetLocal013(t *testing.T) {
 	test := getDotNetBaseOptions().
 		With(integration.ProgramTestOptions{
 			Dir: path.Join(getCwd(t), "localstate-dotnet"),
 			Config: map[string]string{
-				"statefile": "terraform.0-11-3.tfstate",
+				"statefile": "terraform.0-13-0.tfstate",
 			},
 		})
 
@@ -169,13 +169,13 @@ func TestDotNetLocal012(t *testing.T) {
 	integration.ProgramTest(t, &test)
 }
 
-func TestDotNetS3011(t *testing.T) {
+func TestDotNetS3013(t *testing.T) {
 	test := getDotNetBaseOptions().
 		With(integration.ProgramTestOptions{
 			Dir: path.Join(getCwd(t), "s3state-dotnet"),
 			Config: map[string]string{
 				"bucketName": "pulumi-terraform-remote-state-testing",
-				"key":        "0-11-state",
+				"key":        "0-13-state",
 				"region":     "us-west-2",
 			},
 		})
@@ -213,12 +213,12 @@ func TestDotNetRemoteBackend(t *testing.T) {
 	integration.ProgramTest(t, &test)
 }
 
-func TestGoLocal011(t *testing.T) {
+func TestGoLocal013(t *testing.T) {
 	test := getGoBaseOptions().
 		With(integration.ProgramTestOptions{
 			Dir: path.Join(getCwd(t), "localstate-go"),
 			Config: map[string]string{
-				"statefile": "terraform.0-11-3.tfstate",
+				"statefile": "terraform.0-13-0.tfstate",
 			},
 		})
 
@@ -237,7 +237,7 @@ func TestGoLocal012(t *testing.T) {
 	integration.ProgramTest(t, &test)
 }
 
-func TestGoS3011(t *testing.T) {
+func TestGoS3013(t *testing.T) {
 	test := getGoBaseOptions().
 		With(integration.ProgramTestOptions{
 			Dir: path.Join(getCwd(t), "s3state-go"),
