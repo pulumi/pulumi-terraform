@@ -6,7 +6,7 @@ import (
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 )
 
-type ArtifatoryStateReferenceArgs struct {
+type ArtifactoryStateReferenceArgs struct {
 	BackendType pulumi.StringPtrInput
 
 	Username  pulumi.StringPtrInput
@@ -17,7 +17,7 @@ type ArtifatoryStateReferenceArgs struct {
 	Workspace pulumi.StringPtrInput
 }
 
-type artifatoryStateReferenceArgs struct {
+type artifactoryStateReferenceArgs struct {
 	BackendType *string `pulumi:"backendType"`
 
 	Username  *string `pulumi:"username"`
@@ -28,6 +28,6 @@ type artifatoryStateReferenceArgs struct {
 	Workspace *string `pulumi:"workspace"`
 }
 
-func (ArtifatoryStateReferenceArgs) ElementType() reflect.Type {
-	return reflect.TypeOf((*artifatoryStateReferenceArgs)(nil)).Elem()
+func (ArtifactoryStateReferenceArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*artifactoryStateReferenceArgs)(nil)).Elem()
 }

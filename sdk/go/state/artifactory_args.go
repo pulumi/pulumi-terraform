@@ -4,7 +4,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 
-	"github.com/pulumi/pulumi-terraform/sdk/v2/go/state/internal"
+	"github.com/pulumi/pulumi-terraform/sdk/v3/go/state/internal"
 )
 
 // ArtifactoryArgs specifies the configuration options for a Terraform Remote State
@@ -35,7 +35,7 @@ type ArtifactoryArgs struct {
 }
 
 func (a *ArtifactoryArgs) toInternalArgs() pulumi.Input {
-	return internal.ArtifatoryStateReferenceArgs{
+	return internal.ArtifactoryStateReferenceArgs{
 		BackendType: pulumi.String("artifactory"),
 		Username:    a.Username,
 		Password:    a.Password,

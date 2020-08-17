@@ -11,7 +11,4 @@ require (
 	gopkg.in/gemnasium/logrus-airbrake-hook.v2 v2.1.2 // indirect
 )
 
-replace (
-	github.com/Azure/go-autorest => github.com/Azure/go-autorest v12.4.3+incompatible
-	github.com/pulumi/pulumi-terraform/sdk/v2 => ../sdk
-)
+replace github.com/Azure/go-autorest => github.com/Azure/go-autorest v12.4.3+incompatible
