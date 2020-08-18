@@ -4,7 +4,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 
-	"github.com/pulumi/pulumi-terraform/sdk/v2/go/state/internal"
+	"github.com/pulumi/pulumi-terraform/sdk/v3/go/state/internal"
 )
 
 // LocalStateArgs specifies the configuration options for a Terraform Remote State

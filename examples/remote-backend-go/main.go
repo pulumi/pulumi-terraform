@@ -4,7 +4,7 @@ import (
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi/config"
 
-	"github.com/pulumi/pulumi-terraform/sdk/v2/go/state"
+	"github.com/pulumi/pulumi-terraform/sdk/v3/go/state"
 )
 
 func main() {
