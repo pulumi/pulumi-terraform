@@ -2,9 +2,12 @@ CHANGELOG
 =========
 
 ## HEAD (Unreleased)
-* Upgrade to Terraform v0.13.2
+_(none)_
 
 ---
+
+## 3.1.0 (2020-09-02)
+* Upgrade to Terraform v0.13.2
 
 ## 3.0.0 (2020-08-28)
 * Upgrade to Terraform v0.13.1
