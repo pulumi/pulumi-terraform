@@ -93,6 +93,10 @@ func (*Provider) Create(context.Context, *pulumirpc.CreateRequest) (*pulumirpc.C
 	return nil, status.Error(codes.Unimplemented, "Create is not yet implemented")
 }
 
+func (p *Provider) Construct(context.Context, *pulumirpc.ConstructRequest) (*pulumirpc.ConstructResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "Construct is not yet implemented")
+}
+
 func (*Provider) Read(ctx context.Context, req *pulumirpc.ReadRequest) (*pulumirpc.ReadResponse, error) {
 	if _, err := validateAndExtractResourceType(req.Urn); err != nil {
 		return nil, err
