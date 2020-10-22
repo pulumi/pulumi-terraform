@@ -7,8 +7,8 @@ require (
 	github.com/hashicorp/terraform v0.13.4
 	github.com/hashicorp/terraform-svchost v0.0.0-20191011084731-65d371908596
 	github.com/pkg/errors v0.9.1
-	github.com/pulumi/pulumi/pkg/v2 v2.10.1
-	github.com/pulumi/pulumi/sdk/v2 v2.10.1
+	github.com/pulumi/pulumi/pkg/v2 v2.12.0
+	github.com/pulumi/pulumi/sdk/v2 v2.12.0
 	github.com/stretchr/testify v1.6.1
 	github.com/zclconf/go-cty v1.5.1
 	golang.org/x/net v0.0.0-20200602114024-627f9648deb9
