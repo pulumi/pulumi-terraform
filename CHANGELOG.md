@@ -2,7 +2,8 @@ CHANGELOG
 =========
 
 ## HEAD (Unreleased)
-_(none)_
+* Upgrade to Pulumi v2.12.0
+* Upgrade to Terraform v0.13.5
 
 ---
 
