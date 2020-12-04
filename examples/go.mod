@@ -1,4 +1,4 @@
-module github.com/pulumi/pulumi-terraform/examples/v3
+module github.com/pulumi/pulumi-terraform/examples/v4
 
 go 1.13
 
