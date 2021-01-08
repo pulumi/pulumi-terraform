@@ -4,11 +4,11 @@ go 1.14
 
 require (
 	github.com/golang/protobuf v1.4.2
-	github.com/hashicorp/terraform v0.14.3
+	github.com/hashicorp/terraform v0.14.4
 	github.com/hashicorp/terraform-svchost v0.0.0-20200729002733-f050f53b9734
 	github.com/pkg/errors v0.9.1
-	github.com/pulumi/pulumi/pkg/v2 v2.12.0
-	github.com/pulumi/pulumi/sdk/v2 v2.12.0
+	github.com/pulumi/pulumi/pkg/v2 v2.16.1
+	github.com/pulumi/pulumi/sdk/v2 v2.16.1
 	github.com/stretchr/testify v1.6.1
 	github.com/zclconf/go-cty v1.7.1
 	golang.org/x/net v0.0.0-20201021035429-f5854403a974
