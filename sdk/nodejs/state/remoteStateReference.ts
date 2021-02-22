@@ -26,6 +26,7 @@ import {PostgresRemoteStateReferenceArgs} from "./pgBackendConfig";
 import {RemoteBackendRemoteStateReferenceArgs} from "./remoteBackendConfig";
 import {S3RemoteStateReferenceArgs} from "./s3BackendConfig";
 import {SwiftRemoteStateReferenceArgs} from "./swiftBackendConfig";
+import {OssRemoteStateReferenceArgs} from "./ossBackendConfig";
 
 /**
  * The set of arguments for constructing a RemoteStateReference resource.
@@ -39,6 +40,7 @@ export type RemoteStateReferenceArgs = ArtifactoryRemoteStateReferenceArgs
     | HttpRemoteStateReferenceArgs
     | LocalBackendRemoteStateReferenceArgs
     | MantaRemoteStateReferenceArgs
+    | OssRemoteStateReferenceArgs
     | PostgresRemoteStateReferenceArgs
     | RemoteBackendRemoteStateReferenceArgs
     | S3RemoteStateReferenceArgs

@@ -1,5 +1,7 @@
 env:
   AWS_REGION: us-west-2
+  ALICLOUD_ACCESS_KEY: ${{ secrets.ALICLOUD_ACCESS_KEY }}
+  ALICLOUD_SECRET_KEY: ${{ secrets.ALICLOUD_SECRET_KEY }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   GO111MODULE: "on"
   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

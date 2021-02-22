@@ -62,6 +62,34 @@ func TestJSS3012(t *testing.T) {
 	integration.ProgramTest(t, &test)
 }
 
+func TestJSOss013(t *testing.T) {
+	test := getJSBaseOptions(t).
+		With(integration.ProgramTestOptions{
+			Dir: path.Join(getCwd(t), "ossstate-nodejs"),
+			Config: map[string]string{
+				"bucketName": "pulumi-terraform-remote-state-testing",
+				"prefix":     "0-13-state",
+				"region":     "us-west-1",
+			},
+		})
+
+	integration.ProgramTest(t, &test)
+}
+
+func TestJSOss012(t *testing.T) {
+	test := getJSBaseOptions(t).
+		With(integration.ProgramTestOptions{
+			Dir: path.Join(getCwd(t), "ossstate-nodejs"),
+			Config: map[string]string{
+				"bucketName": "pulumi-terraform-remote-state-testing",
+				"prefix":     "0-12-state",
+				"region":     "us-west-1",
+			},
+		})
+
+	integration.ProgramTest(t, &test)
+}
+
 func TestJSRemoteBackend(t *testing.T) {
 	test := getJSBaseOptions(t).
 		With(integration.ProgramTestOptions{

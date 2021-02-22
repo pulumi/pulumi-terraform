@@ -62,6 +62,34 @@ func TestDotNetS3012(t *testing.T) {
 	integration.ProgramTest(t, &test)
 }
 
+func TestDotNetOss013(t *testing.T) {
+	test := getDotNetBaseOptions(t).
+		With(integration.ProgramTestOptions{
+			Dir: path.Join(getCwd(t), "ossstate-dotnet"),
+			Config: map[string]string{
+				"bucketName": "pulumi-terraform-remote-state-testing",
+				"prefix":     "0-13-state",
+				"region":     "us-west-1",
+			},
+		})
+
+	integration.ProgramTest(t, &test)
+}
+
+func TestDotNetOss012(t *testing.T) {
+	test := getDotNetBaseOptions(t).
+		With(integration.ProgramTestOptions{
+			Dir: path.Join(getCwd(t), "ossstate-dotnet"),
+			Config: map[string]string{
+				"bucketName": "pulumi-terraform-remote-state-testing",
+				"prefix":     "0-12-state",
+				"region":     "us-west-1",
+			},
+		})
+
+	integration.ProgramTest(t, &test)
+}
+
 func TestDotNetRemoteBackend(t *testing.T) {
 	test := getDotNetBaseOptions(t).
 		With(integration.ProgramTestOptions{
