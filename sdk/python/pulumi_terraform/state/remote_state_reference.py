@@ -497,6 +497,77 @@ class S3BackendArgs:
         self.props["workspace"] = workspace
 
 
+class OssBackendArgs:
+    """
+    The configuration options for a Terraform Remote State stored in the OSS backend.
+    """
+
+    def __init__(self,
+                 bucket: pulumi.Input[str],
+                 access_key: pulumi.Input[str] = None,
+                 secret_key: pulumi.Input[str] = None,
+                 security_token: pulumi.Input[str] = None,
+                 ecs_role_name: pulumi.Input[str] = None,
+                 region: pulumi.Input[str] = None,
+                 endpoint: pulumi.Input[str] = None,
+                 prefix: pulumi.Input[str] = None,
+                 key: pulumi.Input[str] = None,
+                 profile: pulumi.Input[str] = None,
+                 shared_credentials_file: pulumi.Input[str] = None,
+                 role_arn: pulumi.Input[str] = None,
+                 policy: pulumi.Input[str] = None,
+                 session_name: pulumi.Input[str] = None,
+                 session_expiration: pulumi.Input[str] = None):
+        """
+        Constructs an OssBackendArgs.
+
+        :param bucket: The name of the OSS bucket.
+        :param access_key: Alibaba Cloud access key. It supports environment variables `ALICLOUD_ACCESS_KEY` and
+        `ALICLOUD_ACCESS_KEY_ID`
+        :param secret_key: Alibaba Cloud secret access key. It supports environment variables `ALICLOUD_SECRET_KEY`
+        and `ALICLOUD_ACCESS_KEY_SECRET`.
+        :param security_token: STS access token. It supports environment variable `ALICLOUD_SECURITY_TOKEN`.
+        :param ecs_role_name: The RAM Role Name attached on a ECS instance for API operations. You can retrieve this
+        from the 'Access Control' section of the Alibaba Cloud console.
+        :param region: The region of the OSS bucket. It supports environment variables `ALICLOUD_REGION` and
+        `ALICLOUD_DEFAULT_REGION`.
+        :param endpoint: A custom endpoint for the OSS API. It supports environment variables `ALICLOUD_OSS_ENDPOINT`
+        and `OSS_ENDPOINT`.
+        :param prefix: The path directory of the state file will be stored. Default to `env:`.
+        :param key: The name of the state file. Defaults to `terraform.tfstate`.
+        :param profile: This is the Alibaba Cloud profile name as set in the shared credentials file. It can also be
+        sourced from the `ALICLOUD_PROFILE` environment variable.
+        :param shared_credentials_file: This is the path to the shared credentials file. It can also be sourced from the
+        `ALICLOUD_SHARED_CREDENTIALS_FILE` environment variable. If this is not set and a profile is specified,
+        `~/.aliyun/config.json` will be used.
+        :param role_arn: The ARN of the role to assume. If ARN is set to an empty string, it does not perform role switching.
+        It supports environment variable `ALICLOUD_ASSUME_ROLE_ARN`.
+        :param policy: A more restrictive policy to apply to the temporary credentials. This gives you a way to further
+        restrict the permissions for the resulting temporary security credentials. You cannot use this policy to grant
+        permissions which exceed those of the role that is being assumed.
+        :param session_name: The session name to use when assuming the role. It supports environment variable
+        `ALICLOUD_ASSUME_ROLE_SESSION_NAME`.
+        :param session_expiration: The time after which the established session for assuming role expires. Valid value
+        range: [900-3600] seconds. Default to `3600`. It supports environment variable `ALICLOUD_ASSUME_ROLE_SESSION_EXPIRATION`.
+        """
+        self.props = dict()
+        self.props["access_key"] = access_key
+        self.props["secret_key"] = secret_key
+        self.props["security_token"] = security_token
+        self.props["ecs_role_name"] = ecs_role_name
+        self.props["region"] = region
+        self.props["endpoint"] = endpoint
+        self.props["bucket"] = bucket
+        self.props["prefix"] = prefix
+        self.props["key"] = key
+        self.props["profile"] = profile
+        self.props["shared_credentials_file"] = shared_credentials_file
+        self.props["policy"] = policy
+        self.props["role_arn"] = role_arn
+        self.props["session_name"] = session_name
+        self.props["session_expiration"] = session_expiration
+
+
 class SwiftBackendArgs:
     """
     The configuration options for a Terraform Remote State stored in the Swift backend.
@@ -566,7 +637,7 @@ class SwiftBackendArgs:
 
 BackendArgs = Union[ArtifactoryBackendArgs, AzureRMBackendArgs, ConsulBackendArgs, EtcdV2BackendArgs,
                     EtcdV3BackendArgs, GcsBackendArgs, HttpBackendArgs, LocalBackendArgs, MantaBackendArgs,
-                    PostgresBackendArgs, RemoteBackendArgs, S3BackendArgs, SwiftBackendArgs]
+                    OssBackendArgs, PostgresBackendArgs, RemoteBackendArgs, S3BackendArgs, SwiftBackendArgs]
 """
 BackendArgs is a union type representing all possible types of backend configuration.
 """
@@ -656,6 +727,7 @@ class RemoteStateReference(pulumi.CustomResource):
         "http": (lambda args: isinstance(args, HttpBackendArgs), "HttpBackendArgs"),
         "local": (lambda args: isinstance(args, LocalBackendArgs), "LocalBackendArgs"),
         "manta": (lambda args: isinstance(args, MantaBackendArgs), "MantaBackendArgs"),
+        "oss": (lambda args: isinstance(args, OssBackendArgs), "OssBackendArgs"),
         "postgres": (lambda args: isinstance(args, PostgresBackendArgs), "PostgresBackendArgs"),
         "remote": (lambda args: isinstance(args, RemoteBackendArgs), "RemoteBackendArgs"),
         "s3": (lambda args: isinstance(args, S3BackendArgs), "S3BackendArgs"),
@@ -691,6 +763,7 @@ class RemoteStateReference(pulumi.CustomResource):
         "datacenter": "datacenter",
         "domain_id": "domainId",
         "domain_name": "domainName",
+        "ecs_role_name": "ecsRoleName",
         "encryption_key": "encryptionKey",
         "endpoint": "endpoint",
         "endpoints": "endpoints",
@@ -725,7 +798,9 @@ class RemoteStateReference(pulumi.CustomResource):
         "schema_name": "schemaName",
         "scheme": "scheme",
         "secret_key": "secretKey",
+        "security_token": "securityToken",
         "session_name": "sessionName",
+        "session_expiration": "sessionExpiration",
         "shared_credentials_file": "sharedCredentialsFile",
         "skip_cert_validation": "skipCertValidation",
         "storage_account_name": "storageAccountName",
@@ -772,6 +847,7 @@ class RemoteStateReference(pulumi.CustomResource):
         "datacenter": "datacenter",
         "domainId": "domain_id",
         "domainName": "domain_name",
+        "ecsRoleName": "ecs_role_name",
         "encryptionKey": "encryption_key",
         "endpoint": "endpoint",
         "endpoints": "endpoints",
@@ -806,7 +882,9 @@ class RemoteStateReference(pulumi.CustomResource):
         "schemaName": "schema_name",
         "scheme": "scheme",
         "secretKey": "secret_key",
+        "securityToken": "security_token",
         "sessionName": "session_name",
+        "sessionExpiration": "session_expiration",
         "sharedCredentialsFile": "shared_credentials_file",
         "skipCertValidation": "skip_cert_validation",
         "storageAccountName": "storage_account_name",
