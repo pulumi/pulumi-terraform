@@ -2,10 +2,13 @@ CHANGELOG
 =========
 
 ## HEAD (Unreleased)
-* Upgrade to Terraform v0.14.7
-* Add support for AliCloud OSS Backend type
+_(none)_
 
 ---
+
+## 4.5.0 (2021-02-25)
+* Upgrade to Terraform v0.14.7
+* Add support for AliCloud OSS Backend type
 
 ## 4.4.0 (2021-02-08)
 * Upgrade to Terraform v0.14.6
