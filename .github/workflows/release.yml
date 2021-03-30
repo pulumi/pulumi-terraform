@@ -90,7 +90,7 @@ jobs:
         dotnetversion:
         - 3.1.301
         goversion:
-        - 1.15.x
+        - 1.16.x
         language:
         - nodejs
         - python
@@ -305,6 +305,7 @@ jobs:
     - name: Restore binary perms
       run: find ${{ github.workspace }} -name "pulumi-*-${{ env.PROVIDER }}" -print
         -exec chmod +x {} \;
+    - run: dotnet nuget add source ${{ github.workspace }}/nuget
     - name: Download SDK
       uses: actions/download-artifact@v2
       with:
@@ -346,7 +347,7 @@ jobs:
         dotnetversion:
         - 3.1.301
         goversion:
-        - 1.15.x
+        - 1.16.x
         language:
         - nodejs
         - python
