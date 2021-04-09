@@ -3,9 +3,8 @@ module github.com/pulumi/pulumi-terraform/provider/v4
 go 1.16
 
 require (
-	github.com/apparentlymart/go-textseg/v12 v12.0.0 // indirect
 	github.com/golang/protobuf v1.4.2
-	github.com/hashicorp/terraform v0.14.9
+	github.com/hashicorp/terraform v0.14.10
 	github.com/hashicorp/terraform-svchost v0.0.0-20200729002733-f050f53b9734
 	github.com/pkg/errors v0.9.1
 	github.com/pulumi/pulumi/pkg/v2 v2.20.0
