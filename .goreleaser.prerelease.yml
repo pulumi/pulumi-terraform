@@ -16,12 +16,13 @@ builds:
   - GO111MODULE=on
   goarch:
   - amd64
+  - arm64
   goos:
   - darwin
   - windows
   - linux
   ldflags:
-  - -X github.com/pulumi/pulumi-terraform/provider/v4/pkg/version.Version={{.Tag}}
+  - -X github.com/pulumi/pulumi-terraform/provider/v5/pkg/version.Version={{.Tag}}
   main: ./cmd/pulumi-resource-terraform/
 changelog:
   skip: true

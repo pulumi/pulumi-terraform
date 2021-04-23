@@ -2,9 +2,9 @@ package state
 
 import (
 	"github.com/pkg/errors"
-	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 
-	"github.com/pulumi/pulumi-terraform/sdk/v4/go/state/internal"
+	"github.com/pulumi/pulumi-terraform/sdk/v5/go/state/internal"
 )
 
 // GcsStateArgs specifies the configuration options for a Terraform Remote State

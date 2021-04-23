@@ -1,8 +1,8 @@
-module github.com/pulumi/pulumi-terraform/sdk/v4
+module github.com/pulumi/pulumi-terraform/sdk/v5
 
 go 1.16
 
 require (
 	github.com/pkg/errors v0.9.1
-	github.com/pulumi/pulumi/sdk/v2 v2.20.0
+	github.com/pulumi/pulumi/sdk/v3 v3.0.0
 )
