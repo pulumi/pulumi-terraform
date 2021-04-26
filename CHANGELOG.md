@@ -2,11 +2,14 @@ CHANGELOG
 =========
 
 ## HEAD (Unreleased)
+_(none)_
+
+---
+
+## 5.0.0 (2021-04-26)
 * Upgrade to Terraform v0.15.0
 * Upgrade to Pulumi v3.0  
   **Please Note:** This upgrade to Pulumi v3 means that we have introduced a major version bump in the provider
-
----
 
 ## 4.7.0 (2021-04-12)
 * Upgrade to Terraform v0.14.10
