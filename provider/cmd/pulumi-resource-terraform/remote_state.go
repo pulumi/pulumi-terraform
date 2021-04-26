@@ -22,7 +22,7 @@ import (
 	structpb "github.com/golang/protobuf/ptypes/struct"
 	be "github.com/hashicorp/terraform/backend"
 	backendInit "github.com/hashicorp/terraform/backend/init"
-	"github.com/pulumi/pulumi/sdk/v2/proto/go"
+	"github.com/pulumi/pulumi/sdk/v3/proto/go"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

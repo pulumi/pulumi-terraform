@@ -3,7 +3,7 @@ package state
 import (
 	"errors"
 
-	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
 // RemoteStateReference is a resource which allows reading the output from local or remote Terraform state files

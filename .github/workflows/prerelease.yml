@@ -251,6 +251,10 @@ jobs:
         repository: pulumi/scripts
     - name: Unshallow clone for tags
       run: git fetch --prune --unshallow --tags
+    - name: Install Terraform
+      uses: little-core-labs/install-terraform@v2.0.0
+      with:
+        version: 0.14.10
     - name: Install Go
       uses: actions/setup-go@v2
       with:

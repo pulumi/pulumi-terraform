@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/pulumi/pulumi/pkg/v2/testing/integration"
+	"github.com/pulumi/pulumi/pkg/v3/testing/integration"
 )
 
 func getCwd(t *testing.T) string {

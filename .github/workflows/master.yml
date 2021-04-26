@@ -16,6 +16,7 @@ env:
   TFE_ORGANIZATION: ${{ secrets.TFE_ORGANIZATION }}
   TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
   TRAVIS_OS_NAME: linux
+  VERSION_PREFIX: 5.0.0
 jobs:
   build_sdk:
     name: build_sdk
@@ -124,7 +125,7 @@ jobs:
     - name: Install Pulumi CLI
       uses: pulumi/action-install-pulumi-cli@v1.0.1
     - name: Build tfgen & provider binaries
-      run: make provider
+      run: cd provider && go mod download && cd ../ && make provider
     - name: Tar provider binaries
       run: tar -zcf ${{ github.workspace }}/bin/provider.tar.gz -C ${{ github.workspace
         }}/bin/ pulumi-resource-${{ env.PROVIDER }}
@@ -140,6 +141,17 @@ jobs:
         author_name: Failure in building provider prerequisites
         fields: repo,commit,author,action
         status: ${{ job.status }}
+    strategy:
+      fail-fast: true
+      matrix:
+        dotnetversion:
+          - 3.1.301
+        goversion:
+          - 1.16.x
+        nodeversion:
+          - 13.x
+        pythonversion:
+          - "3.7"
   publish:
     name: publish
     needs: test
@@ -263,6 +275,10 @@ jobs:
         repository: pulumi/scripts
     - name: Unshallow clone for tags
       run: git fetch --prune --unshallow --tags
+    - name: Install Terraform
+      uses: little-core-labs/install-terraform@v2.0.0
+      with:
+        version: 0.14.10
     - name: Install Go
       uses: actions/setup-go@v2
       with:
