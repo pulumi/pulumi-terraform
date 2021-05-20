@@ -121,7 +121,7 @@ jobs:
     - name: Install Pulumi CLI
       uses: pulumi/action-install-pulumi-cli@v1
     - name: Build tfgen & provider binaries
-      run: make provider
+      run: cd provider && go mod download && cd ../ && make provider
     - name: Tar provider binaries
       run: tar -zcf ${{ github.workspace }}/bin/provider.tar.gz -C ${{ github.workspace
         }}/bin/ pulumi-resource-${{ env.PROVIDER }}
