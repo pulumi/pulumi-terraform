@@ -1,8 +1,8 @@
 module s3state-go
 
 require (
-	github.com/pulumi/pulumi-terraform/sdk/v3 v3.0.0-20200817232100-bfe03eda7e8b
-	github.com/pulumi/pulumi/sdk/v2 v2.2.1
+	github.com/pulumi/pulumi-terraform/sdk/v5 v5.2.0
+	github.com/pulumi/pulumi/sdk/v3 v3.2.1
 )
 
 go 1.13

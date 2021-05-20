@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
-	"github.com/pulumi/pulumi/sdk/v2/go/pulumi/config"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumi/config"
 
-	"github.com/pulumi/pulumi-terraform/sdk/v3/go/state"
+	"github.com/pulumi/pulumi-terraform/sdk/v5/go/state"
 )
 
 func main() {
