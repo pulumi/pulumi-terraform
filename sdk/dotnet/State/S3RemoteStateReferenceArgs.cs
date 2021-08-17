@@ -110,9 +110,33 @@ namespace Pulumi.Terraform.State
          public Input<string>? StsEndpoint { get; set; }
 
          /// <summary>
-         /// The Terraform workspace from which to read state.
+         /// Skip the credentials validation via STS API.
          /// </summary>
-         [Input("workspace")]
-         public Input<string>? Workspace { get; set; }
+         [Input("skipCredentialsValidation")]
+         public Input<bool>? SkipCredentialsValidation { get; set; }
+
+          /// <summary>
+          /// Skip static validation of region name.
+          /// </summary>
+          [Input("skipRegionValidation")]
+          public Input<bool>? SkipRegionValidation { get; set; }
+
+          /// <summary>
+          /// Skip the AWS Metadata API check.
+          /// </summary>
+          [Input("skipMetadataApiCheck")]
+          public Input<bool>? SkipMetadataApiCheck { get; set; }
+
+          /// <summary>
+          /// Force s3 to use path style api.
+          /// </summary>
+          [Input("forcePathStyle")]
+          public Input<bool>? ForcePathStyle { get; set; }
+
+          /// <summary>
+          /// The Terraform workspace from which to read state.
+          /// </summary>
+          [Input("workspace")]
+          public Input<string>? Workspace { get; set; }
     }
 }

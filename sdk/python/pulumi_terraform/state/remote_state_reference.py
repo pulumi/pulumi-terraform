@@ -453,6 +453,10 @@ class S3BackendArgs:
                  workspace_key_prefix: pulumi.Input[str] = None,
                  iam_endpoint: pulumi.Input[str] = None,
                  sts_endpoint: pulumi.Input[str] = None,
+                 skip_credentials_validation: pulumi.Input[bool] = None,
+                 skip_region_validation:  pulumi.Input[bool] = None,
+                 skip_metadata_api_check:  pulumi.Input[bool] = None,
+                 force_path_style:  pulumi.Input[bool] = None,
                  workspace: pulumi.Input[str] = None):
         """
         Constructs an S3BackendArgs.
@@ -476,6 +480,10 @@ class S3BackendArgs:
         using a non-default workspace, and defaults to `env:`.
         :param iam_endpoint: A custom endpoint for the IAM API. Sourced from `AWS_IAM_ENDPOINT`, if unset.
         :param sts_endpoint: A custom endpoint for the STS API. Sourced from `AWS_STS_ENDPOINT`, if unset.
+        :param skip_credentials_validation: Skip the credentials validation via STS API.
+        :param skip_region_validation: Skip static validation of region name.
+        :param skip_metadata_api_check: Skip the AWS Metadata API check.
+        :param force_path_style: Force s3 to use path style api.
         :param workspace: The Terraform workspace from which to read state.
         """
         self.props = dict()
@@ -494,6 +502,10 @@ class S3BackendArgs:
         self.props["workspace_key_prefix"] = workspace_key_prefix
         self.props["iam_endpoint"] = iam_endpoint
         self.props["sts_endpoint"] = sts_endpoint
+        self.props["skip_credentials_validation"] = skip_credentials_validation
+        self.props["skip_region_validation"] = skip_region_validation
+        self.props["skip_metadata_api_check"] = skip_metadata_api_check
+        self.props["force_path_style"] = force_path_style
         self.props["workspace"] = workspace
 
 

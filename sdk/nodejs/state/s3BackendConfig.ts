@@ -103,6 +103,26 @@ export interface S3RemoteStateReferenceArgs {
     readonly stsEndpoint?: pulumi.Input<string>;
 
     /**
+     * Skip the credentials validation via STS API.
+     */
+    readonly skipCredentialsValidation?: pulumi.Input<boolean>;
+
+    /**
+     * Skip static validation of region name.
+     */
+    readonly skipRegionValidation?: pulumi.Input<boolean>;
+
+    /**
+     * Skip the AWS Metadata API check.
+     */
+    readonly skipMetadataApiCheck?: pulumi.Input<boolean>;
+
+    /**
+     * Force s3 to use path style api.
+     */
+    readonly forcePathStyle?: pulumi.Input<boolean>;
+
+    /**
      * The Terraform workspace from which to read state.
      */
     readonly workspace?: pulumi.Input<string>;

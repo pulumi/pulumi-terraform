@@ -59,6 +59,18 @@ type S3Args struct {
 	// STSEndpoint is a custom endpoint for the STS API. Sources from `AWS_STS_ENDPOINT` if unset.
 	STSEndpoint pulumi.StringPtrInput
 
+	// SkipRegionValidation skips static validation of region name.
+	SkipRegionValidation pulumi.BoolPtrInput
+
+	// SkipCredentialsValidation skips the credentials validation via STS API.
+	SkipCredentialsValidation pulumi.BoolPtrInput
+
+	// SkipMetadataApiCheck skips the AWS Metadata API check.
+	SkipMetadataApiCheck pulumi.BoolPtrInput
+
+	// ForcePathStyle forces s3 to use path style api.
+	ForcePathStyle pulumi.BoolPtrInput
+
 	// Workspace is the Terraform workspace from which to read state
 	Workspace pulumi.StringPtrInput
 }
