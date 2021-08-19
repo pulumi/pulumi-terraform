@@ -1,18 +1,4 @@
-// Copyright 2016-2019, Pulumi Corporation.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-package main
+package shim
 
 import (
 	"context"
@@ -20,14 +6,19 @@ import (
 	"log"
 
 	structpb "github.com/golang/protobuf/ptypes/struct"
-	be "github.com/hashicorp/terraform/backend"
-	backendInit "github.com/hashicorp/terraform/backend/init"
-	"github.com/pulumi/pulumi/sdk/v3/proto/go"
+	"github.com/hashicorp/terraform-svchost/disco"
+	be "github.com/hashicorp/terraform/internal/backend"
+	backendInit "github.com/hashicorp/terraform/internal/backend/init"
+	pulumirpc "github.com/pulumi/pulumi/sdk/v3/proto/go"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func remoteStateReferenceRead(ctx context.Context, req *pulumirpc.ReadRequest) (*pulumirpc.ReadResponse, error) {
+func InitTfBackend() {
+	backendInit.Init(disco.New())
+}
+
+func RemoteStateReferenceRead(ctx context.Context, req *pulumirpc.ReadRequest) (*pulumirpc.ReadResponse, error) {
 	// Prevent Terraform from logging minutia
 	log.SetOutput(ioutil.Discard)
 

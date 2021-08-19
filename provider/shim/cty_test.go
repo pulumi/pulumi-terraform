@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package shim
 
 import (
 	"testing"
 
 	structpb "github.com/golang/protobuf/ptypes/struct"
-	"github.com/hashicorp/terraform/states"
+	"github.com/hashicorp/terraform/internal/states"
 	"github.com/stretchr/testify/require"
 	"github.com/zclconf/go-cty/cty"
 )
