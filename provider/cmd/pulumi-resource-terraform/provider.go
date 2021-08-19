@@ -19,8 +19,7 @@ import (
 	"log"
 
 	"github.com/golang/protobuf/ptypes/empty"
-	"github.com/hashicorp/terraform-svchost/disco"
-	backendInit "github.com/hashicorp/terraform/backend/init"
+	"github.com/hashicorp/terraform/shim"
 	"github.com/pulumi/pulumi/pkg/v3/resource/provider"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/resource"
 	"github.com/pulumi/pulumi/sdk/v3/proto/go"
@@ -35,7 +34,7 @@ type Provider struct {
 
 func NewProvider(ctx context.Context, host *provider.HostClient, version string) *Provider {
 	log.SetOutput(NewTerraformLogRedirector(ctx, host))
-	backendInit.Init(disco.New())
+	shim.InitTfBackend()
 
 	p := &Provider{
 		version: version,
@@ -102,7 +101,7 @@ func (*Provider) Read(ctx context.Context, req *pulumirpc.ReadRequest) (*pulumir
 		return nil, err
 	}
 
-	return remoteStateReferenceRead(ctx, req)
+	return shim.RemoteStateReferenceRead(ctx, req)
 }
 
 func (*Provider) Update(context.Context, *pulumirpc.UpdateRequest) (*pulumirpc.UpdateResponse, error) {
@@ -115,6 +114,11 @@ func (*Provider) Delete(context.Context, *pulumirpc.DeleteRequest) (*empty.Empty
 
 func (*Provider) Cancel(context.Context, *empty.Empty) (*empty.Empty, error) {
 	return &empty.Empty{}, nil
+}
+
+// Call dynamically executes a method in the provider associated with a component resource.
+func (p *Provider) Call(ctx context.Context, req *pulumirpc.CallRequest) (*pulumirpc.CallResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "Call is not yet implemented")
 }
 
 func (p *Provider) GetPluginInfo(context.Context, *empty.Empty) (*pulumirpc.PluginInfo, error) {
