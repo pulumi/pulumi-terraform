@@ -2,7 +2,7 @@ CHANGELOG
 =========
 
 ## HEAD (Unreleased)
-* Upgrade to Terraform v1.0.5
+* Upgrade to Terraform v1.0.6
 
 ---
 
