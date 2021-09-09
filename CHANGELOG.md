@@ -2,9 +2,12 @@ CHANGELOG
 =========
 
 ## HEAD (Unreleased)
-* Upgrade to Terraform v1.0.6
+_(none)_
 
 ---
+
+## 5.3.0 (2021-09-09)
+* Upgrade to Terraform v1.0.6
 
 ## 5.2.1 (2021-08-17)
 * Add support for S3-style supported backends to the S3 Backend
