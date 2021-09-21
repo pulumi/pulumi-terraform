@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	github.com/golang/protobuf v1.4.3
-	github.com/hashicorp/terraform v1.0.6
+	github.com/hashicorp/terraform v1.0.7
 	github.com/hashicorp/terraform-svchost v0.0.0-20200729002733-f050f53b9734
 	github.com/pkg/errors v0.9.1
 	github.com/pulumi/pulumi/sdk/v3 v3.10.3
