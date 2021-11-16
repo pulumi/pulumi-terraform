@@ -110,9 +110,10 @@ func outputsToStructpb(outputs map[string]*states.OutputValue) (*structpb.Struct
 			return nil, errors.Wrap(err, "error unmarshaling JSON")
 		}
 
-		val, err := plugin.MarshalPropertyValue(resource.NewPropertyValue(actual), plugin.MarshalOptions{
-			SkipNulls: true,
-		})
+		val, err := plugin.MarshalPropertyValue(resource.PropertyKey(key), resource.NewPropertyValue(actual),
+			plugin.MarshalOptions{
+				SkipNulls: true,
+			})
 		if err != nil {
 			return nil, errors.Wrap(err, "error marshalling PropertyValue")
 		}
