@@ -4,12 +4,12 @@ go 1.15
 
 require (
 	github.com/golang/protobuf v1.4.3
-	github.com/hashicorp/terraform v1.0.10
+	github.com/hashicorp/terraform v1.0.11
 	github.com/hashicorp/terraform-svchost v0.0.0-20200729002733-f050f53b9734
 	github.com/pkg/errors v0.9.1
-	github.com/pulumi/pulumi/sdk/v3 v3.10.3
+	github.com/pulumi/pulumi/sdk/v3 v3.17.0
 	github.com/stretchr/testify v1.6.1
-	github.com/zclconf/go-cty v1.9.1
+	github.com/zclconf/go-cty v1.10.0
 	google.golang.org/grpc v1.36.0
 )
 
