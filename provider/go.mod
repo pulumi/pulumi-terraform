@@ -7,13 +7,13 @@ require (
 	github.com/hashicorp/terraform/shim v0.0.0
 	github.com/pulumi/pulumi/pkg/v3 v3.17.0
 	github.com/pulumi/pulumi/sdk/v3 v3.17.0
-	github.com/stretchr/testify v1.6.1
-	golang.org/x/net v0.0.0-20210614182718-04defd469f4e
+	github.com/stretchr/testify v1.7.0
+	golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d
 	google.golang.org/grpc v1.37.0
 )
 
 replace (
 	github.com/hashicorp/terraform/shim => ./shim
 	google.golang.org/grpc => google.golang.org/grpc v1.27.1
-	k8s.io/client-go => k8s.io/client-go v0.0.0-20190620085101-78d2af792bab
+	k8s.io/client-go => k8s.io/client-go v0.21.3
 )
