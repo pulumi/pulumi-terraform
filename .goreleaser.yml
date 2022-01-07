@@ -27,6 +27,7 @@ builds:
 changelog:
   skip: true
 release:
-  disable: false
-snapshot:
+changelog:
+  use: git
+  sort: asc
   name_template: '{{ .Tag }}-SNAPSHOT'
