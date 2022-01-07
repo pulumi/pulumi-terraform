@@ -25,7 +25,8 @@ builds:
   - -X github.com/pulumi/pulumi-terraform/provider/v5/pkg/version.Version={{.Tag}}
   main: ./cmd/pulumi-resource-terraform/
 changelog:
-  skip: true
+  use: git
+  sort: asc
 release:
   disable: false
 snapshot:
