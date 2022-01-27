@@ -13,5 +13,6 @@
 // limitations under the License.
 
 // Export sub-modules
+export * from "./module";
 import * as state from "./state/index"
 export {state};

@@ -28,7 +28,13 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+const (
+	ResourceTypeRemoteStateReference = "terraform:state:RemoteStateReference"
+	ResourceTypeModule               = "terraform:tf:Module"
+)
+
 type Provider struct {
+	host    *provider.HostClient
 	version string
 }
 
@@ -36,23 +42,9 @@ func NewProvider(ctx context.Context, host *provider.HostClient, version string)
 	log.SetOutput(NewTerraformLogRedirector(ctx, host))
 	shim.InitTfBackend()
 
-	p := &Provider{
+	return &Provider{
+		host:    host,
 		version: version,
-	}
-	return p
-}
-
-func validateAndExtractResourceType(urnValue string) (string, error) {
-	urn := resource.URN(urnValue)
-	resourceType := urn.Type()
-
-	const resourceTypeRemoteStateReference = "terraform:state:RemoteStateReference"
-
-	switch resourceType {
-	case resourceTypeRemoteStateReference:
-		return resourceTypeRemoteStateReference, nil
-	default:
-		return "", status.Error(codes.InvalidArgument, fmt.Sprintf("unknown resource type: %q", resourceType))
 	}
 }
 
@@ -73,6 +65,7 @@ func (*Provider) DiffConfig(context.Context, *pulumirpc.DiffRequest) (*pulumirpc
 }
 
 func (p *Provider) Configure(context.Context, *pulumirpc.ConfigureRequest) (*pulumirpc.ConfigureResponse, error) {
+	// TODO: anything to configure? step 1
 	return &pulumirpc.ConfigureResponse{}, nil
 }
 
@@ -81,15 +74,25 @@ func (*Provider) Invoke(context.Context, *pulumirpc.InvokeRequest) (*pulumirpc.I
 }
 
 func (*Provider) Check(ctx context.Context, req *pulumirpc.CheckRequest) (*pulumirpc.CheckResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "Check is not yet implemented")
+	// TODO: validate module inputs, etc. step 2
+	// TODO: any way we can make the TF internal resources look like children somehow?
+	return &pulumirpc.CheckResponse{
+		Inputs: req.News,
+	}, nil
 }
 
 func (*Provider) Diff(context.Context, *pulumirpc.DiffRequest) (*pulumirpc.DiffResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "Diff is not yet implemented")
+	// TODO: diff the previous/new state, etc. step 3
+	return &pulumirpc.DiffResponse{}, nil
 }
 
-func (*Provider) Create(context.Context, *pulumirpc.CreateRequest) (*pulumirpc.CreateResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "Create is not yet implemented")
+func (p *Provider) Create(ctx context.Context, req *pulumirpc.CreateRequest) (*pulumirpc.CreateResponse, error) {
+	switch t := resource.URN(req.Urn).Type(); t {
+	case ResourceTypeModule:
+		return p.createModuleResource(ctx, req)
+	default:
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("unknown resource type: %q", t))
+	}
 }
 
 func (p *Provider) Construct(context.Context, *pulumirpc.ConstructRequest) (*pulumirpc.ConstructResponse, error) {
@@ -97,19 +100,30 @@ func (p *Provider) Construct(context.Context, *pulumirpc.ConstructRequest) (*pul
 }
 
 func (*Provider) Read(ctx context.Context, req *pulumirpc.ReadRequest) (*pulumirpc.ReadResponse, error) {
-	if _, err := validateAndExtractResourceType(req.Urn); err != nil {
-		return nil, err
+	switch t := resource.URN(req.Urn).Type(); t {
+	case ResourceTypeRemoteStateReference:
+		return shim.RemoteStateReferenceRead(ctx, req)
+	default:
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("unknown resource type: %q", t))
 	}
-
-	return shim.RemoteStateReferenceRead(ctx, req)
 }
 
-func (*Provider) Update(context.Context, *pulumirpc.UpdateRequest) (*pulumirpc.UpdateResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "Update is not yet implemented")
+func (p *Provider) Update(ctx context.Context, req *pulumirpc.UpdateRequest) (*pulumirpc.UpdateResponse, error) {
+	switch t := resource.URN(req.Urn).Type(); t {
+	case ResourceTypeModule:
+		return p.updateModuleResource(ctx, req)
+	default:
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("unknown resource type: %q", t))
+	}
 }
 
-func (*Provider) Delete(context.Context, *pulumirpc.DeleteRequest) (*empty.Empty, error) {
-	return nil, status.Error(codes.Unimplemented, "Delete is not yet implemented")
+func (p *Provider) Delete(ctx context.Context, req *pulumirpc.DeleteRequest) (*empty.Empty, error) {
+	switch t := resource.URN(req.Urn).Type(); t {
+	case ResourceTypeModule:
+		return p.destroyModuleResource(ctx, req)
+	default:
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("unknown resource type: %q", t))
+	}
 }
 
 func (*Provider) Cancel(context.Context, *empty.Empty) (*empty.Empty, error) {

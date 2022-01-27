@@ -1,0 +1,3 @@
+name: ec2vpc
+runtime: nodejs
+description: A VPC from a Terraform module and an EC2 instance
