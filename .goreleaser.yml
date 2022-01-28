@@ -25,8 +25,12 @@ builds:
   - -X github.com/pulumi/pulumi-terraform/provider/v5/pkg/version.Version={{.Tag}}
   main: ./cmd/pulumi-resource-terraform/
 changelog:
-  use: git
+  filters:
+    exclude:
+    - Merge branch
+    - Merge pull request
   sort: asc
+  use: git
 release:
   disable: false
 snapshot:
