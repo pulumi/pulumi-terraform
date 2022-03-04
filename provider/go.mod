@@ -5,10 +5,10 @@ go 1.16
 require (
 	github.com/golang/protobuf v1.5.2
 	github.com/hashicorp/terraform/shim v0.0.0
-	github.com/pulumi/pulumi/pkg/v3 v3.17.0
-	github.com/pulumi/pulumi/sdk/v3 v3.17.0
+	github.com/pulumi/pulumi/pkg/v3 v3.25.0
+	github.com/pulumi/pulumi/sdk/v3 v3.25.0
 	github.com/stretchr/testify v1.7.0
-	golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d
+	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f
 	google.golang.org/grpc v1.37.0
 )
 
