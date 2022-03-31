@@ -21,20 +21,12 @@ builds:
   - darwin
   - windows
   - linux
-  ignore: []
   ldflags:
   - -X github.com/pulumi/pulumi-terraform/provider/v5/pkg/version.Version={{.Tag}}
   main: ./cmd/pulumi-resource-terraform/
 changelog:
-  filters:
-    exclude:
-    - Merge branch
-    - Merge pull request
-    - '[internal]'
-    - '[ci]'
-    - '[chore]'
-  sort: asc
   use: git
+  sort: asc
 release:
   disable: false
 snapshot:
