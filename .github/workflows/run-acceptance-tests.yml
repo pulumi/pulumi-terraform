@@ -10,6 +10,7 @@ env:
   PROVIDER: terraform
   PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
   PULUMI_API: https://api.pulumi-staging.io
+  PULUMI_GO_DEP_ROOT: ${{ github.workspace }}/..
   PULUMI_LOCAL_NUGET: ${{ github.workspace }}/nuget
   PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
   SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -44,7 +45,7 @@ jobs:
       with:
         repo: pulumi/pulumictl
     - name: Install Pulumi CLI
-      uses: pulumi/action-install-pulumi-cli@v1
+      uses: pulumi/action-install-pulumi-cli@v2
     - name: Setup Node
       uses: actions/setup-node@v2
       with:
@@ -92,7 +93,7 @@ jobs:
         dotnetversion:
         - 3.1.301
         goversion:
-        - 1.16.x
+        - 1.17.x
         language:
         - nodejs
         - python
@@ -107,13 +108,13 @@ jobs:
     name: comment-notification
     runs-on: ubuntu-latest
     steps:
-    - id: var
+    - id: run-url
       name: Create URL to the run output
       run: echo ::set-output name=run-url::https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
     - name: Update with Result
       uses: peter-evans/create-or-update-comment@v1
       with:
-        body: Please view the PR build - ${{ steps.vars.outputs.run-url }}
+        body: 'Please view the PR build: ${{ steps.run-url.outputs.run-url }}'
         issue-number: ${{ github.event.client_payload.github.payload.issue.number
           }}
         repository: ${{ github.event.client_payload.github.payload.repository.full_name
@@ -146,7 +147,7 @@ jobs:
       with:
         repo: pulumi/pulumictl
     - name: Install Pulumi CLI
-      uses: pulumi/action-install-pulumi-cli@v1
+      uses: pulumi/action-install-pulumi-cli@v2
     - name: Build tfgen & provider binaries
       run: make provider
     - name: Tar provider binaries
@@ -170,7 +171,7 @@ jobs:
         dotnetversion:
         - 3.1.301
         goversion:
-        - 1.16.x
+        - 1.17.x
         nodeversion:
         - 14.x
         pythonversion:
@@ -202,7 +203,7 @@ jobs:
       with:
         repo: pulumi/pulumictl
     - name: Install Pulumi CLI
-      uses: pulumi/action-install-pulumi-cli@v1
+      uses: pulumi/action-install-pulumi-cli@v2
     - name: Setup Node
       uses: actions/setup-node@v2
       with:
@@ -251,9 +252,13 @@ jobs:
         role-to-assume: ${{ secrets.AWS_CI_ROLE_ARN }}
     - name: Install dependencies
       run: make install_${{ matrix.language}}_sdk
+    - name: Install gotestfmt
+      uses: jaxxstorm/action-install-gh-release@v1.2.0
+      with:
+        repo: haveyoudebuggedit/gotestfmt
     - name: Run tests
-      run: cd examples && go test -v -count=1 -cover -timeout 2h -tags=${{ matrix.language
-        }} -parallel 4 .
+      run: cd examples && go test -v -json -count=1 -cover -timeout 2h -tags=${{ matrix.language
+        }} -parallel 4 . 2>&1 | tee /tmp/gotest.log | gotestfmt
     - if: failure() && github.event_name == 'push'
       name: Notify Slack
       uses: 8398a7/action-slack@v3
@@ -267,7 +272,7 @@ jobs:
         dotnetversion:
         - 3.1.301
         goversion:
-        - 1.16.x
+        - 1.17.x
         language:
         - nodejs
         - python
