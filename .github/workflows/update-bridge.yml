@@ -1,0 +1,97 @@
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  PULUMI_EXTRA_MAPPING_ERROR: false
+  PULUMI_MISSING_MAPPING_ERROR: false
+jobs:
+  update_bridge:
+    name: update-bridge
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v2
+    - name: Unshallow clone for tags
+      run: git fetch --prune --unshallow --tags
+    - name: Install Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: ${{matrix.goversion}}
+    - name: Install pulumictl
+      uses: jaxxstorm/action-install-gh-release@v1.2.0
+      with:
+        repo: pulumi/pulumictl
+    - name: Install Pulumi CLI
+      uses: pulumi/action-install-pulumi-cli@v2
+    - name: Setup DotNet
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: ${{matrix.dotnetversion}}
+    - name: Setup Node
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{matrix.nodeversion}}
+        registry-url: https://registry.npmjs.org
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{matrix.pythonversion}}
+    - name: Update pulumi-terraform-bridge
+      run: cd provider && go mod edit -require github.com/pulumi/pulumi-terraform-bridge/v3@v${{
+        github.event.inputs.bridge_version }} && go mod tidy
+    - name: Update Pulumi SDK (provider/go.mod)
+      run: cd provider && go mod edit -require github.com/pulumi/pulumi/sdk/v3@v${{
+        github.event.inputs.sdk_version }} && go mod tidy
+    - name: Update Pulumi SDK (sdk/go.mod)
+      run: cd sdk && go mod edit -require github.com/pulumi/pulumi/sdk/v3@v${{ github.event.inputs.sdk_version
+        }} && go mod tidy
+    - run: make tfgen
+    - run: make build_sdks
+    - id: create-pr
+      name: Create PR
+      uses: peter-evans/create-pull-request@v3.12.0
+      with:
+        author: pulumi-bot <bot@pulumi.com>
+        base: master
+        body: This pull request was generated automatically by the update-bridge workflow
+          in this repository.
+        branch: pulumi-bot/bridge-v${{ github.event.inputs.bridge_version }}-${{ github.run_id}}
+        commit-message: Update pulumi-terraform-bridge to v${{ github.event.inputs.bridge_version
+          }}
+        committer: pulumi-bot <bot@pulumi.com>
+        labels: impact/no-changelog-required
+        team-reviewers: platform-integrations
+        title: Update pulumi-terraform-bridge to v${{ github.event.inputs.bridge_version
+          }}
+        token: ${{ secrets.PULUMI_BOT_TOKEN }}
+    - if: steps.create-pr.outputs.pull-request-operation == 'created'
+      name: Set Automerge
+      uses: peter-evans/enable-pull-request-automerge@v1
+      with:
+        merge-method: squash
+        pull-request-number: ${{ steps.create-pr.outputs.pull-request-number }}
+        repository: ${{ github.repository }}
+        token: ${{ secrets.PULUMI_BOT_TOKEN }}
+    strategy:
+      fail-fast: true
+      matrix:
+        dotnetversion:
+        - 3.1.301
+        goversion:
+        - 1.17.x
+        nodeversion:
+        - 14.x
+        pythonversion:
+        - "3.7"
+name: Update pulumi-terraform-bridge
+"on":
+  workflow_dispatch:
+    inputs:
+      bridge_version:
+        description: The version of pulumi/pulumi-terraform-bridge to update to. Do
+          not include the 'v' prefix. Must be major version 3.
+        required: true
+        type: string
+      sdk_version:
+        description: The version of pulumi/pulumi/sdk to update to. Do not include
+          the 'v' prefix. Must be major version 3.
+        required: true
+        type: string

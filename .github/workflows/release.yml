@@ -1,7 +1,5 @@
 env:
   AWS_REGION: us-west-2
-  ALICLOUD_ACCESS_KEY: ${{ secrets.ALICLOUD_ACCESS_KEY }}
-  ALICLOUD_SECRET_KEY: ${{ secrets.ALICLOUD_SECRET_KEY }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
   NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -63,6 +61,10 @@ jobs:
       run: |-
         tar -zxf ${{ github.workspace }}/bin/provider.tar.gz -C ${{ github.workspace}}/bin
         find ${{ github.workspace }} -name "pulumi-*-${{ env.PROVIDER }}" -print -exec chmod +x {} \;
+    - name: Install plugins
+      run: make install_plugins
+    - name: Update path
+      run: echo "${{ github.workspace }}/bin" >> $GITHUB_PATH
     - name: Build SDK
       run: make build_${{ matrix.language }}
     - name: Check worktree clean
@@ -134,11 +136,32 @@ jobs:
         repo: pulumi/pulumictl
     - name: Install Pulumi CLI
       uses: pulumi/action-install-pulumi-cli@v2
+    - if: github.event_name == 'pull_request'
+      name: Install Schema Tools
+      uses: jaxxstorm/action-install-gh-release@v1.2.0
+      with:
+        repo: mikhailshilkov/schema-tools
     - name: Build tfgen & provider binaries
       run: make provider
+    - if: github.event_name == 'pull_request'
+      name: Check Schema is Valid
+      run: |-
+        echo 'SCHEMA_CHANGES<<EOF' >> $GITHUB_ENV
+        schema-tools compare ${{ env.PROVIDER }} master --local-path=provider/cmd/pulumi-resource-${{ env.PROVIDER }}/schema.json >> $GITHUB_ENV
+        echo 'EOF' >> $GITHUB_ENV
+    - if: github.event_name == 'pull_request'
+      name: Comment on PR with Details of Schema Check
+      uses: thollander/actions-comment-pull-request@v1
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        message: |
+          ### Does the PR have any schema changes?
+
+          ${{ env.SCHEMA_CHANGES }}
     - name: Tar provider binaries
       run: tar -zcf ${{ github.workspace }}/bin/provider.tar.gz -C ${{ github.workspace
-        }}/bin/ pulumi-resource-${{ env.PROVIDER }}
+        }}/bin/ pulumi-resource-${{ env.PROVIDER }} pulumi-tfgen-${{ env.PROVIDER
+        }}
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
@@ -187,7 +210,7 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-region: us-east-2
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        role-duration-seconds: 3600
+        role-duration-seconds: 7200
         role-external-id: upload-pulumi-release
         role-session-name: ${{ env.PROVIDER }}@githubActions
         role-to-assume: ${{ secrets.AWS_UPLOAD_ROLE_ARN }}
@@ -303,15 +326,15 @@ jobs:
     needs: publish_sdk
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v2
-      - name: Install pulumictl
-        uses: jaxxstorm/action-install-gh-release@v1.2.0
-        with:
-          repo: pulumi/pulumictl
-      - name: Add SDK version tag
-        run: git tag sdk/v$(pulumictl get version --language generic) && git push origin
-          sdk/v$(pulumictl get version --language generic)
+    - name: Checkout Repo
+      uses: actions/checkout@v2
+    - name: Install pulumictl
+      uses: jaxxstorm/action-install-gh-release@v1.2.0
+      with:
+        repo: pulumi/pulumictl
+    - name: Add SDK version tag
+      run: git tag sdk/v$(pulumictl get version --language generic) && git push origin
+        sdk/v$(pulumictl get version --language generic)
   test:
     name: test
     needs: build_sdk
@@ -389,8 +412,8 @@ jobs:
       with:
         repo: haveyoudebuggedit/gotestfmt
     - name: Run tests
-      run: cd examples && go test -v -count=1 -cover -timeout 2h -tags=${{ matrix.language
-        }} -parallel 4 .
+      run: cd examples && go test -v -json -count=1 -cover -timeout 2h -tags=${{ matrix.language
+        }} -parallel 4 . 2>&1 | tee /tmp/gotest.log | gotestfmt
     - if: failure() && github.event_name == 'push'
       name: Notify Slack
       uses: 8398a7/action-slack@v3
