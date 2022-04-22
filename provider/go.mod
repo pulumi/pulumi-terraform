@@ -15,5 +15,5 @@ require (
 replace (
 	github.com/hashicorp/terraform/shim => ./shim
 	google.golang.org/grpc => google.golang.org/grpc v1.27.1
-	k8s.io/client-go => k8s.io/client-go v0.21.3
+	k8s.io/client-go => k8s.io/client-go v0.23.4
 )
