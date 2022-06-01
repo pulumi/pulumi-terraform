@@ -1,6 +1,6 @@
 archives:
 - id: archive
-  name_template: '{{ .Binary }}-{{ .Tag }}-{{ .Os }}-{{ .Arch }}'
+  name_template: "{{ .Binary }}-{{ .Tag }}-{{ .Os }}-{{ .Arch }}"
 blobs:
 - bucket: get.pulumi.com
   folder: releases/plugins/
@@ -23,7 +23,8 @@ builds:
   - linux
   ignore: []
   ldflags:
-  - -X github.com/pulumi/pulumi-terraform/provider/v5/pkg/version.Version={{.Tag}}
+  - -X
+    github.com/pulumi/pulumi-terraform/provider/v5/pkg/version.Version={{.Tag}}
   main: ./cmd/pulumi-resource-terraform/
 changelog:
   filters:
@@ -33,9 +34,9 @@ changelog:
     - \Winternal\W
     - \Wci\W
     - \Wchore\W
-  use: git
   sort: asc
+  use: git
 release:
   disable: false
 snapshot:
-  name_template: '{{ .Tag }}-SNAPSHOT'
+  name_template: "{{ .Tag }}-SNAPSHOT"
