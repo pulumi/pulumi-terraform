@@ -87,7 +87,7 @@ require (
 	github.com/hashicorp/hcl/v2 v2.12.0 // indirect
 	github.com/hashicorp/jsonapi v0.0.0-20210826224640-ee7dae0fb22d // indirect
 	github.com/hashicorp/serf v0.9.5 // indirect
-	github.com/hashicorp/terraform v1.2.5 // indirect
+	github.com/hashicorp/terraform v1.2.6 // indirect
 	github.com/hashicorp/terraform-svchost v0.0.0-20200729002733-f050f53b9734 // indirect
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
