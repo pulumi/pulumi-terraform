@@ -116,6 +116,10 @@ func (*Provider) Cancel(context.Context, *empty.Empty) (*empty.Empty, error) {
 	return &empty.Empty{}, nil
 }
 
+func (*Provider) Attach(context.Context, *pulumirpc.PluginAttach) (*empty.Empty, error) {
+	return &empty.Empty{}, nil
+}
+
 // Call dynamically executes a method in the provider associated with a component resource.
 func (p *Provider) Call(ctx context.Context, req *pulumirpc.CallRequest) (*pulumirpc.CallResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "Call is not yet implemented")
