@@ -22,13 +22,15 @@ import (
 	"github.com/hashicorp/terraform/shim"
 	"github.com/pulumi/pulumi/pkg/v3/resource/provider"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/resource"
-	"github.com/pulumi/pulumi/sdk/v3/proto/go"
+	pulumirpc "github.com/pulumi/pulumi/sdk/v3/proto/go"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 type Provider struct {
+	pulumirpc.UnimplementedResourceProviderServer
+
 	version string
 }
 
