@@ -1,6 +1,6 @@
 module github.com/hashicorp/terraform/shim
 
-go 1.18
+go 1.19
 
 replace (
 	github.com/hashicorp/consul/api => github.com/hashicorp/consul/api v1.9.1
@@ -14,14 +14,17 @@ require (
 	github.com/hashicorp/terraform-svchost v0.0.0-20200729002733-f050f53b9734
 	github.com/pkg/errors v0.9.1
 	github.com/pulumi/pulumi/sdk/v3 v3.53.0
-	github.com/stretchr/testify v1.8.0
+	github.com/stretchr/testify v1.8.1
 	github.com/zclconf/go-cty v1.12.1
-	google.golang.org/grpc v1.51.0
+	google.golang.org/grpc v1.53.0
 )
 
 require (
-	cloud.google.com/go v0.81.0 // indirect
-	cloud.google.com/go/storage v1.10.0 // indirect
+	cloud.google.com/go v0.110.0 // indirect
+	cloud.google.com/go/compute v1.18.0 // indirect
+	cloud.google.com/go/compute/metadata v0.2.3 // indirect
+	cloud.google.com/go/iam v0.12.0 // indirect
+	cloud.google.com/go/storage v1.29.0 // indirect
 	github.com/Azure/azure-sdk-for-go v59.2.0+incompatible // indirect
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
 	github.com/Azure/go-autorest/autorest v0.11.24 // indirect
@@ -48,7 +51,7 @@ require (
 	github.com/apparentlymart/go-versions v1.0.1 // indirect
 	github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da // indirect
 	github.com/armon/go-radix v1.0.0 // indirect
-	github.com/aws/aws-sdk-go v1.42.35 // indirect
+	github.com/aws/aws-sdk-go v1.44.214 // indirect
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d // indirect
 	github.com/bgentry/speakeasy v0.1.0 // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
@@ -68,13 +71,14 @@ require (
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt/v4 v4.2.0 // indirect
-	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b // indirect
+	github.com/golang/glog v1.0.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
-	github.com/google/go-cmp v0.5.8 // indirect
+	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
-	github.com/googleapis/gax-go/v2 v2.0.5 // indirect
+	github.com/googleapis/enterprise-certificate-proxy v0.2.3 // indirect
+	github.com/googleapis/gax-go/v2 v2.7.0 // indirect
 	github.com/googleapis/gnostic v0.5.5 // indirect
 	github.com/grpc-ecosystem/grpc-opentracing v0.0.0-20180507213350-8e809c8a8645 // indirect
 	github.com/hashicorp/aws-sdk-go-base v0.7.1 // indirect
@@ -82,7 +86,7 @@ require (
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-azure-helpers v0.43.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
-	github.com/hashicorp/go-getter v1.6.2 // indirect
+	github.com/hashicorp/go-getter v1.7.0 // indirect
 	github.com/hashicorp/go-hclog v0.15.0 // indirect
 	github.com/hashicorp/go-immutable-radix v1.0.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
@@ -104,9 +108,8 @@ require (
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/jstemmer/go-junit-report v0.9.1 // indirect
 	github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 // indirect
-	github.com/klauspost/compress v1.11.2 // indirect
+	github.com/klauspost/compress v1.16.0 // indirect
 	github.com/lib/pq v1.10.3 // indirect
 	github.com/manicminer/hamilton v0.44.0 // indirect
 	github.com/manicminer/hamilton-autorest v0.2.0 // indirect
@@ -118,7 +121,7 @@ require (
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/go-ps v1.0.0 // indirect
-	github.com/mitchellh/go-testing-interface v1.0.4 // indirect
+	github.com/mitchellh/go-testing-interface v1.14.1 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/mitchellh/mapstructure v1.1.2 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
@@ -148,27 +151,26 @@ require (
 	github.com/tweekmonster/luser v0.0.0-20161003172636-3fa38070dbd7 // indirect
 	github.com/uber/jaeger-client-go v2.22.1+incompatible // indirect
 	github.com/uber/jaeger-lib v2.2.0+incompatible // indirect
-	github.com/ulikunitz/xz v0.5.8 // indirect
+	github.com/ulikunitz/xz v0.5.11 // indirect
 	github.com/vmihailenco/msgpack/v4 v4.3.12 // indirect
 	github.com/vmihailenco/tagparser v0.1.1 // indirect
 	github.com/xanzy/ssh-agent v0.3.2 // indirect
 	github.com/zclconf/go-cty-yaml v1.0.2 // indirect
-	go.opencensus.io v0.23.0 // indirect
+	go.opencensus.io v0.24.0 // indirect
 	go.uber.org/atomic v1.6.0 // indirect
-	golang.org/x/crypto v0.5.0 // indirect
-	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
-	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
-	golang.org/x/net v0.5.0 // indirect
-	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f // indirect
-	golang.org/x/sys v0.4.0 // indirect
-	golang.org/x/term v0.4.0 // indirect
-	golang.org/x/text v0.6.0 // indirect
+	golang.org/x/crypto v0.7.0 // indirect
+	golang.org/x/mod v0.8.0 // indirect
+	golang.org/x/net v0.8.0 // indirect
+	golang.org/x/oauth2 v0.6.0 // indirect
+	golang.org/x/sys v0.6.0 // indirect
+	golang.org/x/term v0.6.0 // indirect
+	golang.org/x/text v0.8.0 // indirect
 	golang.org/x/time v0.0.0-20220722155302-e5dcc9cfc0b9 // indirect
-	golang.org/x/tools v0.1.12 // indirect
-	google.golang.org/api v0.44.0-impersonate-preview // indirect
+	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
+	google.golang.org/api v0.111.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20210602131652-f16073e35f0c // indirect
-	google.golang.org/protobuf v1.27.1 // indirect
+	google.golang.org/genproto v0.0.0-20230303212802-e74f57abe488 // indirect
+	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.66.2 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect

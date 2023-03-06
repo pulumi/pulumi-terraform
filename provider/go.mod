@@ -1,6 +1,6 @@
 module github.com/pulumi/pulumi-terraform/provider/v5
 
-go 1.18
+go 1.19
 
 replace (
 	cloud.google.com/go/storage => cloud.google.com/go/storage v1.10.0
@@ -16,16 +16,16 @@ require (
 	github.com/pulumi/pulumi/pkg/v3 v3.53.0
 	github.com/pulumi/pulumi/sdk/v3 v3.53.0
 	github.com/stretchr/testify v1.8.1
-	golang.org/x/net v0.5.0
-	google.golang.org/grpc v1.51.0
+	golang.org/x/net v0.8.0
+	google.golang.org/grpc v1.53.0
 )
 
 require (
-	cloud.google.com/go v0.107.0 // indirect
-	cloud.google.com/go/compute v1.13.0 // indirect
-	cloud.google.com/go/compute/metadata v0.2.2 // indirect
-	cloud.google.com/go/iam v0.7.0 // indirect
-	cloud.google.com/go/storage v1.28.0 // indirect
+	cloud.google.com/go v0.110.0 // indirect
+	cloud.google.com/go/compute v1.18.0 // indirect
+	cloud.google.com/go/compute/metadata v0.2.3 // indirect
+	cloud.google.com/go/iam v0.12.0 // indirect
+	cloud.google.com/go/storage v1.29.0 // indirect
 	github.com/Azure/azure-sdk-for-go v66.0.0+incompatible // indirect
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
 	github.com/Azure/go-autorest/autorest v0.11.28 // indirect
@@ -53,7 +53,7 @@ require (
 	github.com/apparentlymart/go-versions v1.0.1 // indirect
 	github.com/armon/go-metrics v0.4.1 // indirect
 	github.com/armon/go-radix v1.0.0 // indirect
-	github.com/aws/aws-sdk-go v1.44.151 // indirect
+	github.com/aws/aws-sdk-go v1.44.214 // indirect
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d // indirect
 	github.com/bgentry/speakeasy v0.1.0 // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
@@ -87,7 +87,7 @@ require (
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-azure-helpers v0.43.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
-	github.com/hashicorp/go-getter v1.6.2 // indirect
+	github.com/hashicorp/go-getter v1.7.0 // indirect
 	github.com/hashicorp/go-hclog v1.3.1 // indirect
 	github.com/hashicorp/go-immutable-radix v1.3.1 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
@@ -112,7 +112,7 @@ require (
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kevinburke/ssh_config v1.1.0 // indirect
-	github.com/klauspost/compress v1.15.1 // indirect
+	github.com/klauspost/compress v1.16.0 // indirect
 	github.com/lib/pq v1.10.3 // indirect
 	github.com/manicminer/hamilton v0.44.0 // indirect
 	github.com/manicminer/hamilton-autorest v0.2.0 // indirect
@@ -155,7 +155,7 @@ require (
 	github.com/tweekmonster/luser v0.0.0-20161003172636-3fa38070dbd7 // indirect
 	github.com/uber/jaeger-client-go v2.30.0+incompatible // indirect
 	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
-	github.com/ulikunitz/xz v0.5.8 // indirect
+	github.com/ulikunitz/xz v0.5.11 // indirect
 	github.com/vmihailenco/msgpack/v4 v4.3.12 // indirect
 	github.com/vmihailenco/tagparser v0.1.1 // indirect
 	github.com/xanzy/ssh-agent v0.3.2 // indirect
@@ -163,17 +163,17 @@ require (
 	github.com/zclconf/go-cty-yaml v1.0.2 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
-	golang.org/x/crypto v0.5.0 // indirect
-	golang.org/x/mod v0.6.0 // indirect
-	golang.org/x/oauth2 v0.2.0 // indirect
-	golang.org/x/sys v0.4.0 // indirect
-	golang.org/x/term v0.4.0 // indirect
-	golang.org/x/text v0.6.0 // indirect
+	golang.org/x/crypto v0.7.0 // indirect
+	golang.org/x/mod v0.8.0 // indirect
+	golang.org/x/oauth2 v0.6.0 // indirect
+	golang.org/x/sys v0.6.0 // indirect
+	golang.org/x/term v0.6.0 // indirect
+	golang.org/x/text v0.8.0 // indirect
 	golang.org/x/time v0.2.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
-	google.golang.org/api v0.103.0 // indirect
+	google.golang.org/api v0.111.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20221201204527-e3fa12d562f3 // indirect
+	google.golang.org/genproto v0.0.0-20230303212802-e74f57abe488 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.66.2 // indirect
