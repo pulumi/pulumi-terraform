@@ -568,8 +568,8 @@ github.com/hashicorp/memberlist v0.2.2 h1:5+RffWKwqJ71YPu9mWsF7ZOscZmwfasdA8kbdC
 github.com/hashicorp/memberlist v0.2.2/go.mod h1:MS2lj3INKhZjWNqd3N0m3J+Jxf3DAOnAH9VT3Sh9MUE=
 github.com/hashicorp/serf v0.9.5 h1:EBWvyu9tcRszt3Bxp3KNssBMP1KuHWyO51lz9+786iM=
 github.com/hashicorp/serf v0.9.5/go.mod h1:UWDWwZeL5cuWDJdl0C6wrvrUwEqtQ4ZKBKKENpqIUyk=
-github.com/hashicorp/terraform v1.4.2 h1:OBjqKYC50sq713AqB0FQcoVUH9NWNbNjXfM8bvvaRD8=
-github.com/hashicorp/terraform v1.4.2/go.mod h1:fAYJGv6LKbLadzkqmwgxiejUBtbh0NZNX7o1jh64q1c=
+github.com/hashicorp/terraform v1.4.5 h1:M/URZavIntevAYowa2u/ad9JQdezAon6DxvwBKAlJiE=
+github.com/hashicorp/terraform v1.4.5/go.mod h1:fAYJGv6LKbLadzkqmwgxiejUBtbh0NZNX7o1jh64q1c=
 github.com/hashicorp/terraform-config-inspect v0.0.0-20210209133302-4fd17a0faac2 h1:l+bLFvHjqtgNQwWxwrFX9PemGAAO2P1AGZM7zlMNvCs=
 github.com/hashicorp/terraform-registry-address v0.0.0-20220623143253-7d51757b572c h1:D8aRO6+mTqHfLsK/BC3j5OAoogv1WLRWzY1AaTo3rBg=
 github.com/hashicorp/terraform-registry-address v0.0.0-20220623143253-7d51757b572c/go.mod h1:Wn3Na71knbXc1G8Lh+yu/dQWWJeFQEpDeJMtWMtlmNI=
