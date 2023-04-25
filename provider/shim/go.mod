@@ -10,7 +10,7 @@ replace (
 
 require (
 	github.com/golang/protobuf v1.5.2
-	github.com/hashicorp/terraform v1.4.2
+	github.com/hashicorp/terraform v1.4.5
 	github.com/hashicorp/terraform-svchost v0.1.0
 	github.com/pkg/errors v0.9.1
 	github.com/pulumi/pulumi/sdk/v3 v3.53.0
