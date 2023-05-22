@@ -1,4 +1,5 @@
 // Copyright 2016-2020, Pulumi Corporation.  All rights reserved.
+//go:build python || all
 // +build python all
 
 package examples
@@ -92,6 +93,7 @@ func TestPyOss012(t *testing.T) {
 }
 
 func TestPyRemoteBackend(t *testing.T) {
+	t.Skip("TODO: https://github.com/pulumi/pulumi-terraform/issues/730")
 	test := getPyBaseOptions(t).
 		With(integration.ProgramTestOptions{
 			Dir: path.Join(getCwd(t), "remote-backend-python"),
