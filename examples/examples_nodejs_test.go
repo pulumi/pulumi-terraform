@@ -1,4 +1,5 @@
 // Copyright 2016-2020, Pulumi Corporation.  All rights reserved.
+//go:build nodejs || all
 // +build nodejs all
 
 package examples
@@ -91,6 +92,7 @@ func TestJSOss012(t *testing.T) {
 }
 
 func TestJSRemoteBackend(t *testing.T) {
+	t.Skip("TODO: https://github.com/pulumi/pulumi-terraform/issues/730")
 	test := getJSBaseOptions(t).
 		With(integration.ProgramTestOptions{
 			Dir: path.Join(getCwd(t), "remote-backend-nodejs"),

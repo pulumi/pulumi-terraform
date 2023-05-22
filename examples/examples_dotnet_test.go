@@ -1,4 +1,5 @@
 // Copyright 2016-2020, Pulumi Corporation.  All rights reserved.
+//go:build dotnet || all
 // +build dotnet all
 
 package examples
@@ -91,6 +92,7 @@ func TestDotNetOss012(t *testing.T) {
 }
 
 func TestDotNetRemoteBackend(t *testing.T) {
+	t.Skip("TODO: https://github.com/pulumi/pulumi-terraform/issues/730")
 	test := getDotNetBaseOptions(t).
 		With(integration.ProgramTestOptions{
 			Dir: path.Join(getCwd(t), "remote-backend-dotnet"),

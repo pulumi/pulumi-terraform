@@ -1,4 +1,5 @@
 // Copyright 2016-2020, Pulumi Corporation.  All rights reserved.
+//go:build go || all
 // +build go all
 
 package examples
@@ -67,7 +68,7 @@ func TestGoS3012(t *testing.T) {
 }
 
 func TestGoRemoteBackend(t *testing.T) {
-	t.Skip("temp skipping while preping for major version change")
+	t.Skip("TODO: https://github.com/pulumi/pulumi-terraform/issues/730")
 	test := getGoBaseOptions(t).
 		With(integration.ProgramTestOptions{
 			Dir: path.Join(getCwd(t), "remote-backend-go"),
