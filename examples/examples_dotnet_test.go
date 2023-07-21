@@ -92,7 +92,6 @@ func TestDotNetOss012(t *testing.T) {
 }
 
 func TestDotNetRemoteBackend(t *testing.T) {
-	t.Skip("TODO: https://github.com/pulumi/pulumi-terraform/issues/730")
 	test := getDotNetBaseOptions(t).
 		With(integration.ProgramTestOptions{
 			Dir: path.Join(getCwd(t), "remote-backend-dotnet"),
