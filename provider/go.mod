@@ -13,10 +13,10 @@ replace (
 require (
 	github.com/golang/protobuf v1.5.3
 	github.com/hashicorp/terraform/shim v0.0.0
-	github.com/pulumi/pulumi/pkg/v3 v3.75.0
-	github.com/pulumi/pulumi/sdk/v3 v3.75.0
+	github.com/pulumi/pulumi/pkg/v3 v3.76.1
+	github.com/pulumi/pulumi/sdk/v3 v3.76.1
 	github.com/stretchr/testify v1.8.3
-	golang.org/x/net v0.9.0
+	golang.org/x/net v0.10.0
 	google.golang.org/grpc v1.56.1
 )
 
@@ -101,7 +101,7 @@ require (
 	github.com/hashicorp/hcl/v2 v2.16.2 // indirect
 	github.com/hashicorp/jsonapi v0.0.0-20210826224640-ee7dae0fb22d // indirect
 	github.com/hashicorp/serf v0.9.5 // indirect
-	github.com/hashicorp/terraform v1.5.3 // indirect
+	github.com/hashicorp/terraform v1.5.4 // indirect
 	github.com/hashicorp/terraform-registry-address v0.0.0-20220623143253-7d51757b572c // indirect
 	github.com/hashicorp/terraform-svchost v0.1.0 // indirect
 	github.com/huandu/xstrings v1.4.0 // indirect
@@ -116,7 +116,7 @@ require (
 	github.com/manicminer/hamilton v0.44.0 // indirect
 	github.com/manicminer/hamilton-autorest v0.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
-	github.com/mattn/go-isatty v0.0.17 // indirect
+	github.com/mattn/go-isatty v0.0.18 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/mitchellh/cli v1.1.5 // indirect
 	github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db // indirect
@@ -141,7 +141,7 @@ require (
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/sabhiram/go-gitignore v0.0.0-20210923224102-525f6e181f06 // indirect
 	github.com/santhosh-tekuri/jsonschema/v5 v5.0.0 // indirect
-	github.com/sergi/go-diff v1.2.0 // indirect
+	github.com/sergi/go-diff v1.3.1 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/skeema/knownhosts v1.1.0 // indirect
 	github.com/spf13/afero v1.9.5 // indirect
@@ -168,8 +168,8 @@ require (
 	golang.org/x/crypto v0.7.0 // indirect
 	golang.org/x/mod v0.10.0 // indirect
 	golang.org/x/oauth2 v0.7.0 // indirect
-	golang.org/x/sys v0.7.0 // indirect
-	golang.org/x/term v0.7.0 // indirect
+	golang.org/x/sys v0.9.0 // indirect
+	golang.org/x/term v0.8.0 // indirect
 	golang.org/x/text v0.9.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
