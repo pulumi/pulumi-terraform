@@ -98,19 +98,6 @@ jobs:
         - 14.x
         pythonversion:
         - "3.7"
-  create_docs_build:
-    name: create_docs_build
-    needs: tag_sdk
-    runs-on: ubuntu-latest
-    steps:
-    - name: Install pulumictl
-      uses: jaxxstorm/action-install-gh-release@v1.2.0
-      with:
-        repo: pulumi/pulumictl
-    - env:
-        GITHUB_TOKEN: ${{ secrets.PULUMI_BOT_TOKEN }}
-      name: Dispatch Event
-      run: pulumictl create docs-build pulumi-${{ env.PROVIDER }} ${GITHUB_REF#refs/tags/}
   prerequisites:
     name: prerequisites
     runs-on: ubuntu-latest
