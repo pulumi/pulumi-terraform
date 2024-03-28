@@ -92,18 +92,18 @@ jobs:
       fail-fast: true
       matrix:
         dotnetversion:
-        - 3.1.301
+        - 6.x
         goversion:
-        - 1.18.x
+        - 1.21.x
         language:
         - nodejs
         - python
         - dotnet
         - go
         nodeversion:
-        - 14.x
+        - 18.x
         pythonversion:
-        - "3.7"
+        - "3.8"
   comment-notification:
     if: github.event_name == 'repository_dispatch'
     name: comment-notification
@@ -170,13 +170,13 @@ jobs:
       fail-fast: true
       matrix:
         dotnetversion:
-        - 3.1.301
+        - 6.x
         goversion:
-        - 1.18.x
+        - 1.21.x
         nodeversion:
-        - 14.x
+        - 18.x
         pythonversion:
-        - "3.7"
+        - "3.8"
   test:
     if: github.event_name == 'repository_dispatch' || github.event.pull_request.head.repo.full_name
       == github.repository
@@ -271,18 +271,18 @@ jobs:
       fail-fast: true
       matrix:
         dotnetversion:
-        - 3.1.301
+        - 6.x
         goversion:
-        - 1.18.x
+        - 1.21.x
         language:
         - nodejs
         - python
         - dotnet
         - go
         nodeversion:
-        - 14.x
+        - 18.x
         pythonversion:
-        - "3.7"
+        - "3.8"
 name: run-acceptance-tests
 "on":
   pull_request:

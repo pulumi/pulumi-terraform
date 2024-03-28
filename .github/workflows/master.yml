@@ -87,18 +87,18 @@ jobs:
       fail-fast: true
       matrix:
         dotnetversion:
-        - 3.1.301
+        - 6.x
         goversion:
-        - 1.18.x
+        - 1.21.x
         language:
         - nodejs
         - python
         - dotnet
         - go
         nodeversion:
-        - 14.x
+        - 18.x
         pythonversion:
-        - "3.7"
+        - "3.8"
   prerequisites:
     name: prerequisites
     runs-on: ubuntu-latest
@@ -143,13 +143,13 @@ jobs:
       fail-fast: true
       matrix:
         dotnetversion:
-        - 3.1.301
+        - 6.x
         goversion:
-        - 1.18.x
+        - 1.21.x
         nodeversion:
-        - 14.x
+        - 18.x
         pythonversion:
-        - "3.7"
+        - "3.8"
   publish:
     name: publish
     needs: test
@@ -199,13 +199,13 @@ jobs:
       fail-fast: true
       matrix:
         dotnetversion:
-        - 3.1.301
+        - 6.x
         goversion:
-        - 1.18.x
+        - 1.21.x
         nodeversion:
-        - 14.x
+        - 18.x
         pythonversion:
-        - "3.7"
+        - "3.8"
   publish_sdk:
     name: publish_sdk
     needs: publish
@@ -280,13 +280,13 @@ jobs:
       fail-fast: true
       matrix:
         dotnetversion:
-        - 3.1.301
+        - 6.x
         goversion:
-        - 1.18.x
+        - 1.21.x
         nodeversion:
-        - 14.x
+        - 18.x
         pythonversion:
-        - "3.7"
+        - "3.8"
   test:
     name: test
     needs: build_sdk
@@ -377,18 +377,18 @@ jobs:
       fail-fast: true
       matrix:
         dotnetversion:
-        - 3.1.301
+        - 6.x
         goversion:
-        - 1.18.x
+        - 1.21.x
         language:
         - nodejs
         - python
         - dotnet
         - go
         nodeversion:
-        - 14.x
+        - 18.x
         pythonversion:
-        - "3.7"
+        - "3.8"
 name: master
 "on":
   push:
