@@ -25,5 +25,6 @@ export * from "./mantaBackendConfig"
 export * from "./remoteBackendConfig"
 export * from "./remoteStateReference";
 export * from "./s3BackendConfig";
-export * from "./swiftBackendConfig"
-export * from "./ossBackendConfig"
+export * from "./swiftBackendConfig";
+export * from "./ossBackendConfig";
+export * from "./pgBackendConfig";
