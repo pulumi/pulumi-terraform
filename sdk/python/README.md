@@ -27,9 +27,9 @@ To use from Python, install using `pip`:
 
 ## Concepts
 
-The `@pulumi/terraform` package provides a resource named `RemoteStateReference`
-which is used to read outputs from a Terraform state file stored in one of the
-supported Terraform remote state backends.
+The `@pulumi/terraform` package provides a [resource](https://www.pulumi.com/docs/concepts/resources/) named `RemoteStateReference`
+which is used to read outputs from a Terraform state file stored in one of the supported
+Terraform remote state backends.
 
 ## Examples
 
