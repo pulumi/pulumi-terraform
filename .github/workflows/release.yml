@@ -175,7 +175,7 @@ jobs:
       run: echo "GORELEASER_CURRENT_TAG=v$(pulumictl get version --language generic)"
         >> $GITHUB_ENV
     - name: Run GoReleaser
-      uses: goreleaser/goreleaser-action@v2
+      uses: goreleaser/goreleaser-action@v5
       with:
         args: -p 3 release --clean --timeout 60m0s
         version: latest
