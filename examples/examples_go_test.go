@@ -12,7 +12,6 @@ import (
 )
 
 func TestGoLocal013(t *testing.T) {
-	t.Skip("temp skipping while preping for major version change")
 	test := getGoBaseOptions(t).
 		With(integration.ProgramTestOptions{
 			Dir: path.Join(getCwd(t), "localstate-go"),
@@ -25,7 +24,6 @@ func TestGoLocal013(t *testing.T) {
 }
 
 func TestGoLocal012(t *testing.T) {
-	t.Skip("temp skipping while preping for major version change")
 	test := getGoBaseOptions(t).
 		With(integration.ProgramTestOptions{
 			Dir: path.Join(getCwd(t), "localstate-go"),
@@ -38,7 +36,6 @@ func TestGoLocal012(t *testing.T) {
 }
 
 func TestGoS3013(t *testing.T) {
-	t.Skip("temp skipping while preping for major version change")
 	test := getGoBaseOptions(t).
 		With(integration.ProgramTestOptions{
 			Dir: path.Join(getCwd(t), "s3state-go"),
@@ -53,7 +50,6 @@ func TestGoS3013(t *testing.T) {
 }
 
 func TestGoS3012(t *testing.T) {
-	t.Skip("temp skipping while preping for major version change")
 	test := getGoBaseOptions(t).
 		With(integration.ProgramTestOptions{
 			Dir: path.Join(getCwd(t), "s3state-go"),
@@ -85,7 +81,6 @@ func TestGoRemoteBackend(t *testing.T) {
 }
 
 func getGoBaseOptions(t *testing.T) integration.ProgramTestOptions {
-	t.Skip("temp skipping while preping for major version change")
 	base := getBaseOptions()
 	baseGo := base.With(integration.ProgramTestOptions{
 		RunUpdateTest: false,
