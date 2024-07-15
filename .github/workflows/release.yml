@@ -42,8 +42,6 @@ jobs:
         repo: pulumi/pulumictl
     - name: Install Pulumi CLI
       uses: pulumi/actions@v5
-      with:
-        pulumi-version: v3.108.1
     - name: Setup Node
       uses: actions/setup-node@v2
       with:
@@ -117,8 +115,6 @@ jobs:
         repo: pulumi/pulumictl
     - name: Install Pulumi CLI
       uses: pulumi/actions@v5
-      with:
-        pulumi-version: v3.108.1
     - name: Build tfgen & provider binaries
       run: make provider
     - name: Tar provider binaries
@@ -159,8 +155,6 @@ jobs:
         repo: pulumi/pulumictl
     - name: Install Pulumi CLI
       uses: pulumi/actions@v5
-      with:
-        pulumi-version: v3.108.1
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
@@ -214,8 +208,6 @@ jobs:
         repo: pulumi/pulumictl
     - name: Install Pulumi CLI
       uses: pulumi/actions@v5
-      with:
-        pulumi-version: v3.108.1
     - name: Setup Node
       uses: actions/setup-node@v2
       with:
@@ -304,8 +296,6 @@ jobs:
         repo: pulumi/pulumictl
     - name: Install Pulumi CLI
       uses: pulumi/actions@v5
-      with:
-        pulumi-version: v3.108.1
     - name: Setup Node
       uses: actions/setup-node@v2
       with:
