@@ -33,7 +33,7 @@ func main() {
 	// This method defines the provider implemented in this repository.
 	terraformProvider := terraform.NewProvider()
 
-	// This method starts serving requests using the Command provider.
+	// This method starts serving requests using the Terraform provider.
 	err := p.RunProvider("terraform", version, terraformProvider)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %s", err.Error())

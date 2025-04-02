@@ -19,7 +19,7 @@ import (
 	"github.com/pulumi/pulumi-go-provider/infer"
 	"github.com/pulumi/pulumi-go-provider/middleware/schema"
 
-	"github.com/pulumi/pulumi-command/provider/pkg/provider/local"
+	"github.com/pulumi/pulumi-terraform/provider/pkg/provider/local"
 )
 
 const (
@@ -57,7 +57,7 @@ func NewProvider() p.Provider {
 				"go": map[string]any{
 					"respectSchemaVersion":           true,
 					"generateResourceContainerTypes": true,
-					"importBasePath":                 "github.com/pulumi/pulumi-command/sdk/go/command",
+					"importBasePath":                 "github.com/pulumi/pulumi-terraform/sdk/go/state",
 				},
 				"nodejs": map[string]any{
 					"respectSchemaVersion": true,
@@ -81,7 +81,7 @@ func NewProvider() p.Provider {
 		},
 		// A list of `infer.Resource` that are provided by the provider.
 		Resources: []infer.InferredResource{
-			// The Command resource implementation is commented extensively for new pulumi-go-provider developers.
+			// The Terraform resource implementation is commented extensively for new pulumi-go-provider developers.
 			infer.Resource[
 				// 1. This type is an interface that implements the logic for the Resource
 				//    these methods include `Create`, `Update`, `Delete`, and `WireDependencies`.

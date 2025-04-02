@@ -15,6 +15,7 @@ type ResourceInputs struct {
 	Delete *string `pulumi:"delete,optional"`
 }
 
+// TODO: how is this different for each resource?
 // Annotate lets you provide descriptions and default values for fields and they will
 // be visible in the provider's schema and the generated SDKs.
 func (c *ResourceInputs) Annotate(a infer.Annotator) {
