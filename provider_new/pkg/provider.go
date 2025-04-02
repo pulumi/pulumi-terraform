@@ -18,8 +18,6 @@ import (
 	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
 	"github.com/pulumi/pulumi-go-provider/middleware/schema"
-
-	"github.com/pulumi/pulumi-terraform/provider/pkg/provider/local"
 )
 
 const (
@@ -80,23 +78,8 @@ func NewProvider() p.Provider {
 			},
 		},
 		// A list of `infer.Resource` that are provided by the provider.
-		Resources: []infer.InferredResource{
-			// The Terraform resource implementation is commented extensively for new pulumi-go-provider developers.
-			infer.Resource[
-				// 1. This type is an interface that implements the logic for the Resource
-				//    these methods include `Create`, `Update`, `Delete`, and `WireDependencies`.
-				//    `WireDependencies` should be implemented to preserve the secretness of an input
-				*RemoteStateReference,
-				// 2. The type of the Inputs/Arguments to supply to the Resource.
-				RemoteStateReferenceInputs,
-				// 3. The type of the Output/Properties/Fields of a created Resource.
-				RemoteStateReferenceOutputs,
-			](),
-		},
+		Resources: []infer.InferredResource{},
 		// Functions or invokes that are provided by the provider.
-		Functions: []infer.InferredFunction{
-			// The Read function is commented extensively for new pulumi-go-provider developers.
-			infer.Function[*ReadResource, local.ReadResourceInputs, local.ReadResourceOutputs](),
-		},
+		Functions: []infer.InferredFunction{},
 	})
 }
