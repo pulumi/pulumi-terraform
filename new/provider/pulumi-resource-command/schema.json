@@ -1,0 +1,383 @@
+{
+  // TODO: this should be inline with the config in provider.go
+  "name": "terraform",
+  "displayName": "Terraform",
+  "description": "The Pulumi Command Provider enables you to execute commands and scripts either locally or remotely as part of the Pulumi resource model.",
+  "keywords": [
+    "pulumi",
+    "command",
+    "category/utility",
+    "kind/native"
+  ],
+  "homepage": "https://pulumi.com",
+  "license": "Apache-2.0",
+  "repository": "https://github.com/pulumi/pulumi-command",
+  "logoUrl": "https://raw.githubusercontent.com/pulumi/pulumi-command/master/assets/logo.svg",
+  "publisher": "Pulumi",
+  "meta": {
+    "moduleFormat": "(.*)"
+  },
+  "language": {
+    "csharp": {
+      "packageReferences": {
+        "Pulumi": "3.*"
+      },
+      "respectSchemaVersion": true
+    },
+    "go": {
+      "generateResourceContainerTypes": true,
+      "importBasePath": "github.com/pulumi/pulumi-command/sdk/go/command",
+      "respectSchemaVersion": true
+    },
+    "java": {
+      "buildFiles": "gradle",
+      "dependencies": {
+        "com.google.code.findbugs:jsr305": "3.0.2",
+        "com.google.code.gson:gson": "2.8.9",
+        "com.pulumi:pulumi": "1.0.0"
+      },
+      "gradleNexusPublishPluginVersion": "2.0.0"
+    },
+    "nodejs": {
+      "respectSchemaVersion": true
+    },
+    "python": {
+      "pyproject": {
+        "enabled": true
+      },
+      "respectSchemaVersion": true
+    }
+  },
+  "config": {},
+  "types": {
+    "command:local:Logging": {
+      // TODO: we don't seem to have any types other than the resource to declare yet.
+      // What about the nested structs in input/output?
+      "type": "string",
+      "enum": [
+        {
+          "description": "Capture stdout in logs but not stderr",
+          "value": "stdout"
+        },
+        {
+          "description": "Capture stderr in logs but not stdout",
+          "value": "stderr"
+        },
+        {
+          "description": "Capture stdout and stderr in logs",
+          "value": "stdoutAndStderr"
+        },
+        {
+          "description": "Capture no logs",
+          "value": "none"
+        }
+      ]
+    }
+  },
+  "provider": {
+    "type": "object"
+  },
+  "resources": {
+    "command:local:RemoteStateReference": {
+      "description": "A local command to be executed.\n\nThis command can be inserted into the life cycles of other resources using the `dependsOn` or `parent` resource options. A command is considered to have failed when it finished with a non-zero exit code. This will fail the CRUD step of the `Command` resource.\n\n{{% examples %}}\n\n## Example Usage\n\n{{% example %}}\n\n### Basic Example\n\nThis example shows the simplest use case, simply running a command on `create` in the Pulumi lifecycle.\n\n```typescript\nimport { local } from \"@pulumi/command\";\n\nconst random = new local.Command(\"random\", {\n    create: \"openssl rand -hex 16\",\n});\n\nexport const output = random.stdout;\n```\n\n```csharp\nusing System.Collections.Generic;\nusing Pulumi;\nusing Pulumi.Command.Local;\n\nawait Deployment.RunAsync(() =>\n{\n    var command = new Command(\"random\", new CommandArgs\n    {\n        Create = \"openssl rand -hex 16\"\n    });\n\n    return new Dictionary<string, object?>\n    {\n        [\"stdOut\"] = command.Stdout\n    };\n});\n```\n\n```python\nimport pulumi\nfrom pulumi_command import local\n\nrandom = local.Command(\"random\",\n    create=\"openssl rand -hex 16\"\n)\n\npulumi.export(\"random\", random.stdout)\n```\n\n```go\npackage main\n\nimport (\n\t\"github.com/pulumi/pulumi-command/sdk/go/command/local\"\n\t\"github.com/pulumi/pulumi/sdk/v3/go/pulumi\"\n)\n\nfunc main() {\n\tpulumi.Run(func(ctx *pulumi.Context) error {\n\t\trandom, err := local.NewCommand(ctx, \"my-bucket\", &local.CommandArgs{\n\t\t\tCreate: pulumi.String(\"openssl rand -hex 16\"),\n\t\t})\n\t\tif err != nil {\n\t\t\treturn err\n\t\t}\n\n\t\tctx.Export(\"output\", random.Stdout)\n\t\treturn nil\n\t})\n}\n```\n\n```java\npackage generated_program;\n\nimport com.pulumi.Context;\nimport com.pulumi.Pulumi;\nimport com.pulumi.command.local.Command;\nimport com.pulumi.command.local.CommandArgs;\n\npublic class App {\n    public static void main(String[] args) {\n        Pulumi.run(App::stack);\n    }\n\n    public static void stack(Context ctx) {\n        var random = new Command(\"random\", CommandArgs.builder()\n            .create(\"openssl rand -hex 16\")\n            .build());\n\n        ctx.export(\"rand\", random.stdout());\n    }\n}\n```\n\n```yaml\noutputs:\n  rand: \"${random.stdout}\"\nresources:\n  random:\n    type: command:local:Command\n    properties:\n      create: \"openssl rand -hex 16\"\n```\n\n{{% /example %}}\n\n{{% example %}}\n\n### Invoking a Lambda during Pulumi Deployment\n\nThis example show using a local command to invoke an AWS Lambda once it's deployed. The Lambda invocation could also depend on other resources.\n\n```typescript\nimport * as aws from \"@pulumi/aws\";\nimport { local } from \"@pulumi/command\";\nimport { getStack } from \"@pulumi/pulumi\";\n\nconst f = new aws.lambda.CallbackFunction(\"f\", {\n    publish: true,\n    callback: async (ev: any) => {\n        return `Stack ${ev.stackName} is deployed!`;\n    }\n});\n\nconst invoke = new local.Command(\"execf\", {\n    create: `aws lambda invoke --function-name \"$FN\" --payload '{\"stackName\": \"${getStack()}\"}' --cli-binary-format raw-in-base64-out out.txt >/dev/null && cat out.txt | tr -d '\"'  && rm out.txt`,\n    environment: {\n        FN: f.qualifiedArn,\n        AWS_REGION: aws.config.region!,\n        AWS_PAGER: \"\",\n    },\n}, { dependsOn: f })\n\nexport const output = invoke.stdout;\n```\n\n```python\nimport pulumi\nimport json\nimport pulumi_aws as aws\nimport pulumi_command as command\n\nlambda_role = aws.iam.Role(\"lambdaRole\", assume_role_policy=json.dumps({\n    \"Version\": \"2012-10-17\",\n    \"Statement\": [{\n        \"Action\": \"sts:AssumeRole\",\n        \"Effect\": \"Allow\",\n        \"Principal\": {\n            \"Service\": \"lambda.amazonaws.com\",\n        },\n    }],\n}))\n\nlambda_function = aws.lambda_.Function(\"lambdaFunction\",\n    name=\"f\",\n    publish=True,\n    role=lambda_role.arn,\n    handler=\"index.handler\",\n    runtime=aws.lambda_.Runtime.NODE_JS20D_X,\n    code=pulumi.FileArchive(\"./handler\"))\n\naws_config = pulumi.Config(\"aws\")\naws_region = aws_config.require(\"region\")\n\ninvoke_command = command.local.Command(\"invokeCommand\",\n    create=f\"aws lambda invoke --function-name \\\"$FN\\\" --payload '{{\\\"stackName\\\": \\\"{pulumi.get_stack()}\\\"}}' --cli-binary-format raw-in-base64-out out.txt >/dev/null && cat out.txt | tr -d '\\\"'  && rm out.txt\",\n    environment={\n        \"FN\": lambda_function.arn,\n        \"AWS_REGION\": aws_region,\n        \"AWS_PAGER\": \"\",\n    },\n    opts = pulumi.ResourceOptions(depends_on=[lambda_function]))\n\npulumi.export(\"output\", invoke_command.stdout)\n```\n\n```go\npackage main\n\nimport (\n\t\"encoding/json\"\n\t\"fmt\"\n\n\t\"github.com/pulumi/pulumi-aws/sdk/v6/go/aws/iam\"\n\t\"github.com/pulumi/pulumi-aws/sdk/v6/go/aws/lambda\"\n\t\"github.com/pulumi/pulumi-command/sdk/go/command/local\"\n\t\"github.com/pulumi/pulumi/sdk/v3/go/pulumi\"\n\t\"github.com/pulumi/pulumi/sdk/v3/go/pulumi/config\"\n)\n\nfunc main() {\n\tpulumi.Run(func(ctx *pulumi.Context) error {\n\t\tawsConfig := config.New(ctx, \"aws\")\n\t\tawsRegion := awsConfig.Require(\"region\")\n\n\t\ttmpJSON0, err := json.Marshal(map[string]interface{}{\n\t\t\t\"Version\": \"2012-10-17\",\n\t\t\t\"Statement\": []map[string]interface{}{\n\t\t\t\t{\n\t\t\t\t\t\"Action\": \"sts:AssumeRole\",\n\t\t\t\t\t\"Effect\": \"Allow\",\n\t\t\t\t\t\"Principal\": map[string]interface{}{\n\t\t\t\t\t\t\"Service\": \"lambda.amazonaws.com\",\n\t\t\t\t\t},\n\t\t\t\t},\n\t\t\t},\n\t\t})\n\t\tif err != nil {\n\t\t\treturn err\n\t\t}\n\t\tjson0 := string(tmpJSON0)\n\t\tlambdaRole, err := iam.NewRole(ctx, \"lambdaRole\", &iam.RoleArgs{\n\t\t\tAssumeRolePolicy: pulumi.String(json0),\n\t\t})\n\t\tif err != nil {\n\t\t\treturn err\n\t\t}\n\t\tlambdaFunction, err := lambda.NewFunction(ctx, \"lambdaFunction\", &lambda.FunctionArgs{\n\t\t\tName:    pulumi.String(\"f\"),\n\t\t\tPublish: pulumi.Bool(true),\n\t\t\tRole:    lambdaRole.Arn,\n\t\t\tHandler: pulumi.String(\"index.handler\"),\n\t\t\tRuntime: pulumi.String(lambda.RuntimeNodeJS20dX),\n\t\t\tCode:    pulumi.NewFileArchive(\"./handler\"),\n\t\t})\n\t\tif err != nil {\n\t\t\treturn err\n\t\t}\n\t\tinvokeCommand, err := local.NewCommand(ctx, \"invokeCommand\", &local.CommandArgs{\n\t\t\tCreate: pulumi.String(fmt.Sprintf(\"aws lambda invoke --function-name \\\"$FN\\\" --payload '{\\\"stackName\\\": \\\"%v\\\"}' --cli-binary-format raw-in-base64-out out.txt >/dev/null && cat out.txt | tr -d '\\\"'  && rm out.txt\", ctx.Stack())),\n\t\t\tEnvironment: pulumi.StringMap{\n\t\t\t\t\"FN\":         lambdaFunction.Arn,\n\t\t\t\t\"AWS_REGION\": pulumi.String(awsRegion),\n\t\t\t\t\"AWS_PAGER\":  pulumi.String(\"\"),\n\t\t\t},\n\t\t}, pulumi.DependsOn([]pulumi.Resource{\n\t\t\tlambdaFunction,\n\t\t}))\n\t\tif err != nil {\n\t\t\treturn err\n\t\t}\n\t\tctx.Export(\"output\", invokeCommand.Stdout)\n\t\treturn nil\n\t})\n}\n```\n\n```csharp\nusing System.Collections.Generic;\nusing System.Text.Json;\nusing Pulumi;\nusing Aws = Pulumi.Aws;\nusing Command = Pulumi.Command;\n\nreturn await Deployment.RunAsync(() => \n{\n    var awsConfig = new Config(\"aws\");\n\n    var lambdaRole = new Aws.Iam.Role(\"lambdaRole\", new()\n    {\n        AssumeRolePolicy = JsonSerializer.Serialize(new Dictionary<string, object?>\n        {\n            [\"Version\"] = \"2012-10-17\",\n            [\"Statement\"] = new[]\n            {\n                new Dictionary<string, object?>\n                {\n                    [\"Action\"] = \"sts:AssumeRole\",\n                    [\"Effect\"] = \"Allow\",\n                    [\"Principal\"] = new Dictionary<string, object?>\n                    {\n                        [\"Service\"] = \"lambda.amazonaws.com\",\n                    },\n                },\n            },\n        }),\n    });\n\n    var lambdaFunction = new Aws.Lambda.Function(\"lambdaFunction\", new()\n    {\n        Name = \"f\",\n        Publish = true,\n        Role = lambdaRole.Arn,\n        Handler = \"index.handler\",\n        Runtime = Aws.Lambda.Runtime.NodeJS20dX,\n        Code = new FileArchive(\"./handler\"),\n    });\n\n    var invokeCommand = new Command.Local.Command(\"invokeCommand\", new()\n    {\n        Create = $\"aws lambda invoke --function-name \\\"$FN\\\" --payload '{{\\\"stackName\\\": \\\"{Deployment.Instance.StackName}\\\"}}' --cli-binary-format raw-in-base64-out out.txt >/dev/null && cat out.txt | tr -d '\\\"'  && rm out.txt\",\n        Environment = \n        {\n            { \"FN\", lambdaFunction.Arn },\n            { \"AWS_REGION\", awsConfig.Require(\"region\") },\n            { \"AWS_PAGER\", \"\" },\n        },\n    }, new CustomResourceOptions\n    {\n        DependsOn =\n        {\n            lambdaFunction,\n        },\n    });\n\n    return new Dictionary<string, object?>\n    {\n        [\"output\"] = invokeCommand.Stdout,\n    };\n});\n```\n\n```java\npackage generated_program;\n\nimport com.pulumi.Context;\nimport com.pulumi.Pulumi;\nimport com.pulumi.aws.iam.Role;\nimport com.pulumi.aws.iam.RoleArgs;\nimport com.pulumi.aws.lambda.Function;\nimport com.pulumi.aws.lambda.FunctionArgs;\nimport com.pulumi.command.local.Command;\nimport com.pulumi.command.local.CommandArgs;\nimport static com.pulumi.codegen.internal.Serialization.*;\nimport com.pulumi.resources.CustomResourceOptions;\nimport com.pulumi.asset.FileArchive;\nimport java.util.Map;\n\npublic class App {\n    public static void main(String[] args) {\n        Pulumi.run(App::stack);\n    }\n\n    public static void stack(Context ctx) {\n        var awsConfig = ctx.config(\"aws\");\n        var awsRegion = awsConfig.require(\"region\");\n\n        var lambdaRole = new Role(\"lambdaRole\", RoleArgs.builder()\n                .assumeRolePolicy(serializeJson(\n                        jsonObject(\n                                jsonProperty(\"Version\", \"2012-10-17\"),\n                                jsonProperty(\"Statement\", jsonArray(jsonObject(\n                                        jsonProperty(\"Action\", \"sts:AssumeRole\"),\n                                        jsonProperty(\"Effect\", \"Allow\"),\n                                        jsonProperty(\"Principal\", jsonObject(\n                                                jsonProperty(\"Service\", \"lambda.amazonaws.com\")))))))))\n                .build());\n\n        var lambdaFunction = new Function(\"lambdaFunction\", FunctionArgs.builder()\n                .name(\"f\")\n                .publish(true)\n                .role(lambdaRole.arn())\n                .handler(\"index.handler\")\n                .runtime(\"nodejs20.x\")\n                .code(new FileArchive(\"./handler\"))\n                .build());\n\n        // Work around the lack of Output.all for Maps in Java. We cannot use a plain Map because\n        // `lambdaFunction.arn()` is an Output<String>.\n        var invokeEnv = Output.tuple(\n                Output.of(\"FN\"), lambdaFunction.arn(),\n                Output.of(\"AWS_REGION\"), Output.of(awsRegion),\n                Output.of(\"AWS_PAGER\"), Output.of(\"\")\n        ).applyValue(t -> Map.of(t.t1, t.t2, t.t3, t.t4, t.t5, t.t6));\n\n        var invokeCommand = new Command(\"invokeCommand\", CommandArgs.builder()\n                .create(String.format(\n                        \"aws lambda invoke --function-name \\\"$FN\\\" --payload '{\\\"stackName\\\": \\\"%s\\\"}' --cli-binary-format raw-in-base64-out out.txt >/dev/null && cat out.txt | tr -d '\\\"'  && rm out.txt\",\n                        ctx.stackName()))\n                .environment(invokeEnv)\n                .build(),\n                CustomResourceOptions.builder()\n                        .dependsOn(lambdaFunction)\n                        .build());\n\n        ctx.export(\"output\", invokeCommand.stdout());\n    }\n}\n```\n\n```yaml\nresources:\n  lambdaRole:\n    type: aws:iam:Role\n    properties:\n      assumeRolePolicy:\n        fn::toJSON:\n          Version: \"2012-10-17\"\n          Statement:\n            - Action: sts:AssumeRole\n              Effect: Allow\n              Principal:\n                Service: lambda.amazonaws.com\n\n  lambdaFunction:\n    type: aws:lambda:Function\n    properties:\n      name: f\n      publish: true\n      role: ${lambdaRole.arn}\n      handler: index.handler\n      runtime: \"nodejs20.x\"\n      code:\n        fn::fileArchive: ./handler\n\n  invokeCommand:\n    type: command:local:Command\n    properties:\n      create: 'aws lambda invoke --function-name \"$FN\" --payload ''{\"stackName\": \"${pulumi.stack}\"}'' --cli-binary-format raw-in-base64-out out.txt >/dev/null && cat out.txt | tr -d ''\"''  && rm out.txt'\n      environment:\n        FN: ${lambdaFunction.arn}\n        AWS_REGION: ${aws:region}\n        AWS_PAGER: \"\"\n    options:\n      dependsOn:\n        - ${lambdaFunction}\n\noutputs:\n  output: ${invokeCommand.stdout}\n```\n\n{{% /example %}}\n\n{{% example %}}\n\n### Using Triggers\n\nThis example defines several trigger values of various kinds. Changes to any of them will cause `cmd` to be re-run.\n\n```typescript\nimport * as pulumi from \"@pulumi/pulumi\";\nimport * as command from \"@pulumi/command\";\nimport * as random from \"@pulumi/random\";\n\nconst str = \"foo\";\nconst fileAsset = new pulumi.asset.FileAsset(\"Pulumi.yaml\");\nconst rand = new random.RandomString(\"rand\", {length: 5});\nconst localFile = new command.local.Command(\"localFile\", {\n    create: \"touch foo.txt\",\n    archivePaths: [\"*.txt\"],\n});\n\nconst cmd = new command.local.Command(\"cmd\", {\n    create: \"echo create > op.txt\",\n    delete: \"echo delete >> op.txt\",\n    triggers: [\n        str,\n        rand.result,\n        fileAsset,\n        localFile.archive,\n    ],\n});\n```\n\n```python\nimport pulumi\nimport pulumi_command as command\nimport pulumi_random as random\n\nfoo = \"foo\"\nfile_asset_var = pulumi.FileAsset(\"Pulumi.yaml\")\nrand = random.RandomString(\"rand\", length=5)\nlocal_file = command.local.Command(\"localFile\",\n    create=\"touch foo.txt\",\n    archive_paths=[\"*.txt\"])\n\ncmd = command.local.Command(\"cmd\",\n    create=\"echo create > op.txt\",\n    delete=\"echo delete >> op.txt\",\n    triggers=[\n        foo,\n        rand.result,\n        file_asset_var,\n        local_file.archive,\n    ])\n```\n\n```go\npackage main\n\nimport (\n\t\"github.com/pulumi/pulumi-command/sdk/go/command/local\"\n\t\"github.com/pulumi/pulumi-random/sdk/v4/go/random\"\n\t\"github.com/pulumi/pulumi/sdk/v3/go/pulumi\"\n)\n\nfunc main() {\n\tpulumi.Run(func(ctx *pulumi.Context) error {\n\t\tstr := pulumi.String(\"foo\")\n\n\t\tfileAsset := pulumi.NewFileAsset(\"Pulumi.yaml\")\n\n\t\trand, err := random.NewRandomString(ctx, \"rand\", &random.RandomStringArgs{\n\t\t\tLength: pulumi.Int(5),\n\t\t})\n\t\tif err != nil {\n\t\t\treturn err\n\t\t}\n\n\t\tlocalFile, err := local.NewCommand(ctx, \"localFile\", &local.CommandArgs{\n\t\t\tCreate: pulumi.String(\"touch foo.txt\"),\n\t\t\tArchivePaths: pulumi.StringArray{\n\t\t\t\tpulumi.String(\"*.txt\"),\n\t\t\t},\n\t\t})\n\t\tif err != nil {\n\t\t\treturn err\n\t\t}\n\n\t\t_, err = local.NewCommand(ctx, \"cmd\", &local.CommandArgs{\n\t\t\tCreate: pulumi.String(\"echo create > op.txt\"),\n\t\t\tDelete: pulumi.String(\"echo delete >> op.txt\"),\n\t\t\tTriggers: pulumi.Array{\n\t\t\t\tstr,\n\t\t\t\trand.Result,\n\t\t\t\tfileAsset,\n\t\t\t\tlocalFile.Archive,\n\t\t\t},\n\t\t})\n\t\tif err != nil {\n\t\t\treturn err\n\t\t}\n\t\treturn nil\n\t})\n}\n```\n\n```csharp\nusing Pulumi;\nusing Command = Pulumi.Command;\nusing Random = Pulumi.Random;\n\nreturn await Deployment.RunAsync(() =>\n{\n    var str = \"foo\";\n\n    var fileAssetVar = new FileAsset(\"Pulumi.yaml\");\n\n    var rand = new Random.RandomString(\"rand\", new()\n    {\n        Length = 5,\n    });\n\n    var localFile = new Command.Local.Command(\"localFile\", new()\n    {\n        Create = \"touch foo.txt\",\n        ArchivePaths = new[]\n        {\n            \"*.txt\",\n        },\n    });\n\n    var cmd = new Command.Local.Command(\"cmd\", new()\n    {\n        Create = \"echo create > op.txt\",\n        Delete = \"echo delete >> op.txt\",\n        Triggers = new object[]\n        {\n            str,\n            rand.Result,\n            fileAssetVar,\n            localFile.Archive,\n        },\n    });\n\n});\n```\n\n```java\npublic class App {\n    public static void main(String[] args) {\n        Pulumi.run(App::stack);\n    }\n\n    public static void stack(Context ctx) {\n        final var fileAssetVar = new FileAsset(\"Pulumi.yaml\");\n\n        var rand = new RandomString(\"rand\", RandomStringArgs.builder()\n            .length(5)\n            .build());\n\n        var localFile = new Command(\"localFile\", CommandArgs.builder()\n            .create(\"touch foo.txt\")\n            .archivePaths(\"*.txt\")\n            .build());\n\n        var cmd = new Command(\"cmd\", CommandArgs.builder()\n            .create(\"echo create > op.txt\")\n            .delete(\"echo delete >> op.txt\")\n            .triggers(\n                rand.result(),\n                fileAssetVar,\n                localFile.archive())\n            .build());\n\n    }\n}\n```\n\n```yaml\nconfig: {}\noutputs: {}\nresources:\n  rand:\n    type: random:index/randomString:RandomString\n    properties:\n      length: 5\n\n  localFile:\n    type: command:local:Command\n    properties:\n      create: touch foo.txt\n      archivePaths:\n        - \"*.txt\"\n\n  cmd:\n    type: command:local:Command\n    properties:\n      create: echo create > op.txt\n      delete: echo delete >> op.txt\n      triggers:\n        - ${rand.result}\n        - ${fileAsset}\n        - ${localFile.archive}\n\nvariables:\n  fileAsset:\n    fn::fileAsset: \"Pulumi.yaml\"\n```\n\n{{% /example %}}\n\n{{% /examples %}}",
+      "properties": {
+        "addPreviousOutputInEnv": {
+          "type": "boolean",
+          "description": "If the previous command's stdout and stderr (as generated by the prior create/update) is\ninjected into the environment of the next run as PULUMI_COMMAND_STDOUT and PULUMI_COMMAND_STDERR.\nDefaults to true.",
+          "default": true
+        },
+        "archive": {
+          "$ref": "pulumi.json#/Archive",
+          "description": "An archive asset containing files found after running the command."
+        },
+        "archivePaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "A list of path globs to return as a single archive asset after the command completes.\n\nWhen specifying glob patterns the following rules apply:\n- We only include files not directories for assets and archives.\n- Path separators are `/` on all platforms - including Windows.\n- Patterns starting with `!` are 'exclude' rules.\n- Rules are evaluated in order, so exclude rules should be after inclusion rules.\n- `*` matches anything except `/`\n- `**` matches anything, _including_ `/`\n- All returned paths are relative to the working directory (without leading `./`) e.g. `file.text` or `subfolder/file.txt`.\n- For full details of the globbing syntax, see [github.com/gobwas/glob](https://github.com/gobwas/glob)\n\n#### Example\n\nGiven the rules:\n```yaml\n- \"assets/**\"\n- \"src/**.js\"\n- \"!**secret.*\"\n```\n\nWhen evaluating against this folder:\n\n```yaml\n- assets/\n  - logos/\n    - logo.svg\n- src/\n  - index.js\n  - secret.js\n```\n\nThe following paths will be returned:\n\n```yaml\n- assets/logos/logo.svg\n- src/index.js\n```"
+        },
+        "assetPaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "A list of path globs to read after the command completes.\n\nWhen specifying glob patterns the following rules apply:\n- We only include files not directories for assets and archives.\n- Path separators are `/` on all platforms - including Windows.\n- Patterns starting with `!` are 'exclude' rules.\n- Rules are evaluated in order, so exclude rules should be after inclusion rules.\n- `*` matches anything except `/`\n- `**` matches anything, _including_ `/`\n- All returned paths are relative to the working directory (without leading `./`) e.g. `file.text` or `subfolder/file.txt`.\n- For full details of the globbing syntax, see [github.com/gobwas/glob](https://github.com/gobwas/glob)\n\n#### Example\n\nGiven the rules:\n```yaml\n- \"assets/**\"\n- \"src/**.js\"\n- \"!**secret.*\"\n```\n\nWhen evaluating against this folder:\n\n```yaml\n- assets/\n  - logos/\n    - logo.svg\n- src/\n  - index.js\n  - secret.js\n```\n\nThe following paths will be returned:\n\n```yaml\n- assets/logos/logo.svg\n- src/index.js\n```"
+        },
+        "assets": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "pulumi.json#/Asset"
+          },
+          "description": "A map of assets found after running the command.\nThe key is the relative path from the command dir"
+        },
+        "create": {
+          "type": "string",
+          "description": "The command to run on create."
+        },
+        "delete": {
+          "type": "string",
+          "description": "The command to run on delete. The environment variables PULUMI_COMMAND_STDOUT\nand PULUMI_COMMAND_STDERR are set to the stdout and stderr properties of the\nCommand resource from previous create or update steps."
+        },
+        "dir": {
+          "type": "string",
+          "description": "The directory from which to run the command from. If `dir` does not exist, then\n`Command` will fail."
+        },
+        "environment": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Additional environment variables available to the command's process."
+        },
+        "interpreter": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The program and arguments to run the command.\nOn Linux and macOS, defaults to: `[\"/bin/sh\", \"-c\"]`. On Windows, defaults to: `[\"cmd\", \"/C\"]`"
+        },
+        "logging": {
+          "$ref": "#/types/command:local:Logging",
+          "description": "If the command's stdout and stderr should be logged. This doesn't affect the capturing of\nstdout and stderr as outputs. If there might be secrets in the output, you can disable logging here and mark the\noutputs as secret via 'additionalSecretOutputs'. Defaults to logging both stdout and stderr."
+        },
+        "stderr": {
+          "type": "string",
+          "description": "The standard error of the command's process"
+        },
+        "stdin": {
+          "type": "string",
+          "description": "Pass a string to the command's process as standard in"
+        },
+        "stdout": {
+          "type": "string",
+          "description": "The standard output of the command's process"
+        },
+        "triggers": {
+          "type": "array",
+          "items": {
+            "$ref": "pulumi.json#/Any"
+          },
+          "description": "Trigger a resource replacement on changes to any of these values. The\ntrigger values can be of any type. If a value is different in the current update compared to the\nprevious update, the resource will be replaced, i.e., the \"create\" command will be re-run.\nPlease see the resource documentation for examples.",
+          "replaceOnChanges": true
+        },
+        "update": {
+          "type": "string",
+          "description": "The command to run on update, if empty, create will \nrun again. The environment variables PULUMI_COMMAND_STDOUT and PULUMI_COMMAND_STDERR \nare set to the stdout and stderr properties of the Command resource from previous \ncreate or update steps."
+        }
+      },
+      "type": "object",
+      "required": [
+        "stderr",
+        "stdout"
+      ],
+      "inputProperties": {
+        "addPreviousOutputInEnv": {
+          "type": "boolean",
+          "description": "If the previous command's stdout and stderr (as generated by the prior create/update) is\ninjected into the environment of the next run as PULUMI_COMMAND_STDOUT and PULUMI_COMMAND_STDERR.\nDefaults to true.",
+          "default": true
+        },
+        "archivePaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "A list of path globs to return as a single archive asset after the command completes.\n\nWhen specifying glob patterns the following rules apply:\n- We only include files not directories for assets and archives.\n- Path separators are `/` on all platforms - including Windows.\n- Patterns starting with `!` are 'exclude' rules.\n- Rules are evaluated in order, so exclude rules should be after inclusion rules.\n- `*` matches anything except `/`\n- `**` matches anything, _including_ `/`\n- All returned paths are relative to the working directory (without leading `./`) e.g. `file.text` or `subfolder/file.txt`.\n- For full details of the globbing syntax, see [github.com/gobwas/glob](https://github.com/gobwas/glob)\n\n#### Example\n\nGiven the rules:\n```yaml\n- \"assets/**\"\n- \"src/**.js\"\n- \"!**secret.*\"\n```\n\nWhen evaluating against this folder:\n\n```yaml\n- assets/\n  - logos/\n    - logo.svg\n- src/\n  - index.js\n  - secret.js\n```\n\nThe following paths will be returned:\n\n```yaml\n- assets/logos/logo.svg\n- src/index.js\n```"
+        },
+        "assetPaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "A list of path globs to read after the command completes.\n\nWhen specifying glob patterns the following rules apply:\n- We only include files not directories for assets and archives.\n- Path separators are `/` on all platforms - including Windows.\n- Patterns starting with `!` are 'exclude' rules.\n- Rules are evaluated in order, so exclude rules should be after inclusion rules.\n- `*` matches anything except `/`\n- `**` matches anything, _including_ `/`\n- All returned paths are relative to the working directory (without leading `./`) e.g. `file.text` or `subfolder/file.txt`.\n- For full details of the globbing syntax, see [github.com/gobwas/glob](https://github.com/gobwas/glob)\n\n#### Example\n\nGiven the rules:\n```yaml\n- \"assets/**\"\n- \"src/**.js\"\n- \"!**secret.*\"\n```\n\nWhen evaluating against this folder:\n\n```yaml\n- assets/\n  - logos/\n    - logo.svg\n- src/\n  - index.js\n  - secret.js\n```\n\nThe following paths will be returned:\n\n```yaml\n- assets/logos/logo.svg\n- src/index.js\n```"
+        },
+        "create": {
+          "type": "string",
+          "description": "The command to run on create."
+        },
+        "delete": {
+          "type": "string",
+          "description": "The command to run on delete. The environment variables PULUMI_COMMAND_STDOUT\nand PULUMI_COMMAND_STDERR are set to the stdout and stderr properties of the\nCommand resource from previous create or update steps."
+        },
+        "dir": {
+          "type": "string",
+          "description": "The directory from which to run the command from. If `dir` does not exist, then\n`Command` will fail."
+        },
+        "environment": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Additional environment variables available to the command's process."
+        },
+        "interpreter": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The program and arguments to run the command.\nOn Linux and macOS, defaults to: `[\"/bin/sh\", \"-c\"]`. On Windows, defaults to: `[\"cmd\", \"/C\"]`"
+        },
+        "logging": {
+          "$ref": "#/types/command:local:Logging",
+          "description": "If the command's stdout and stderr should be logged. This doesn't affect the capturing of\nstdout and stderr as outputs. If there might be secrets in the output, you can disable logging here and mark the\noutputs as secret via 'additionalSecretOutputs'. Defaults to logging both stdout and stderr."
+        },
+        "stdin": {
+          "type": "string",
+          "description": "Pass a string to the command's process as standard in"
+        },
+        "triggers": {
+          "type": "array",
+          "items": {
+            "$ref": "pulumi.json#/Any"
+          },
+          "description": "Trigger a resource replacement on changes to any of these values. The\ntrigger values can be of any type. If a value is different in the current update compared to the\nprevious update, the resource will be replaced, i.e., the \"create\" command will be re-run.\nPlease see the resource documentation for examples.",
+          "replaceOnChanges": true
+        },
+        "update": {
+          "type": "string",
+          "description": "The command to run on update, if empty, create will \nrun again. The environment variables PULUMI_COMMAND_STDOUT and PULUMI_COMMAND_STDERR \nare set to the stdout and stderr properties of the Command resource from previous \ncreate or update steps."
+        }
+      }
+    }
+  },
+  "functions": {
+    "command:local:readResource": {
+      "description": "A local command to be executed.\nThis command will always be run on any preview or deployment. Use `local.Command` to avoid duplicating executions.",
+      "inputs": {
+        "properties": {
+          "addPreviousOutputInEnv": {
+            "type": "boolean",
+            "description": "If the previous command's stdout and stderr (as generated by the prior create/update) is\ninjected into the environment of the next run as PULUMI_COMMAND_STDOUT and PULUMI_COMMAND_STDERR.\nDefaults to true.",
+            "default": true
+          },
+          "archivePaths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "A list of path globs to return as a single archive asset after the command completes.\n\nWhen specifying glob patterns the following rules apply:\n- We only include files not directories for assets and archives.\n- Path separators are `/` on all platforms - including Windows.\n- Patterns starting with `!` are 'exclude' rules.\n- Rules are evaluated in order, so exclude rules should be after inclusion rules.\n- `*` matches anything except `/`\n- `**` matches anything, _including_ `/`\n- All returned paths are relative to the working directory (without leading `./`) e.g. `file.text` or `subfolder/file.txt`.\n- For full details of the globbing syntax, see [github.com/gobwas/glob](https://github.com/gobwas/glob)\n\n#### Example\n\nGiven the rules:\n```yaml\n- \"assets/**\"\n- \"src/**.js\"\n- \"!**secret.*\"\n```\n\nWhen evaluating against this folder:\n\n```yaml\n- assets/\n  - logos/\n    - logo.svg\n- src/\n  - index.js\n  - secret.js\n```\n\nThe following paths will be returned:\n\n```yaml\n- assets/logos/logo.svg\n- src/index.js\n```"
+          },
+          "assetPaths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "A list of path globs to read after the command completes.\n\nWhen specifying glob patterns the following rules apply:\n- We only include files not directories for assets and archives.\n- Path separators are `/` on all platforms - including Windows.\n- Patterns starting with `!` are 'exclude' rules.\n- Rules are evaluated in order, so exclude rules should be after inclusion rules.\n- `*` matches anything except `/`\n- `**` matches anything, _including_ `/`\n- All returned paths are relative to the working directory (without leading `./`) e.g. `file.text` or `subfolder/file.txt`.\n- For full details of the globbing syntax, see [github.com/gobwas/glob](https://github.com/gobwas/glob)\n\n#### Example\n\nGiven the rules:\n```yaml\n- \"assets/**\"\n- \"src/**.js\"\n- \"!**secret.*\"\n```\n\nWhen evaluating against this folder:\n\n```yaml\n- assets/\n  - logos/\n    - logo.svg\n- src/\n  - index.js\n  - secret.js\n```\n\nThe following paths will be returned:\n\n```yaml\n- assets/logos/logo.svg\n- src/index.js\n```"
+          },
+          "command": {
+            "type": "string",
+            "description": "The command to run."
+          },
+          "dir": {
+            "type": "string",
+            "description": "The directory from which to run the command from. If `dir` does not exist, then\n`Command` will fail."
+          },
+          "environment": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Additional environment variables available to the command's process."
+          },
+          "interpreter": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The program and arguments to run the command.\nOn Linux and macOS, defaults to: `[\"/bin/sh\", \"-c\"]`. On Windows, defaults to: `[\"cmd\", \"/C\"]`"
+          },
+          "logging": {
+            "$ref": "#/types/command:local:Logging",
+            "description": "If the command's stdout and stderr should be logged. This doesn't affect the capturing of\nstdout and stderr as outputs. If there might be secrets in the output, you can disable logging here and mark the\noutputs as secret via 'additionalSecretOutputs'. Defaults to logging both stdout and stderr."
+          },
+          "stdin": {
+            "type": "string",
+            "description": "Pass a string to the command's process as standard in"
+          }
+        },
+        "type": "object",
+        "required": [
+          "command"
+        ]
+      },
+      "outputs": {
+        "properties": {
+          "addPreviousOutputInEnv": {
+            "default": true,
+            "description": "If the previous command's stdout and stderr (as generated by the prior create/update) is\ninjected into the environment of the next run as PULUMI_COMMAND_STDOUT and PULUMI_COMMAND_STDERR.\nDefaults to true.",
+            "type": "boolean"
+          },
+          "archive": {
+            "$ref": "pulumi.json#/Archive",
+            "description": "An archive asset containing files found after running the command."
+          },
+          "archivePaths": {
+            "description": "A list of path globs to return as a single archive asset after the command completes.\n\nWhen specifying glob patterns the following rules apply:\n- We only include files not directories for assets and archives.\n- Path separators are `/` on all platforms - including Windows.\n- Patterns starting with `!` are 'exclude' rules.\n- Rules are evaluated in order, so exclude rules should be after inclusion rules.\n- `*` matches anything except `/`\n- `**` matches anything, _including_ `/`\n- All returned paths are relative to the working directory (without leading `./`) e.g. `file.text` or `subfolder/file.txt`.\n- For full details of the globbing syntax, see [github.com/gobwas/glob](https://github.com/gobwas/glob)\n\n#### Example\n\nGiven the rules:\n```yaml\n- \"assets/**\"\n- \"src/**.js\"\n- \"!**secret.*\"\n```\n\nWhen evaluating against this folder:\n\n```yaml\n- assets/\n  - logos/\n    - logo.svg\n- src/\n  - index.js\n  - secret.js\n```\n\nThe following paths will be returned:\n\n```yaml\n- assets/logos/logo.svg\n- src/index.js\n```",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "assetPaths": {
+            "description": "A list of path globs to read after the command completes.\n\nWhen specifying glob patterns the following rules apply:\n- We only include files not directories for assets and archives.\n- Path separators are `/` on all platforms - including Windows.\n- Patterns starting with `!` are 'exclude' rules.\n- Rules are evaluated in order, so exclude rules should be after inclusion rules.\n- `*` matches anything except `/`\n- `**` matches anything, _including_ `/`\n- All returned paths are relative to the working directory (without leading `./`) e.g. `file.text` or `subfolder/file.txt`.\n- For full details of the globbing syntax, see [github.com/gobwas/glob](https://github.com/gobwas/glob)\n\n#### Example\n\nGiven the rules:\n```yaml\n- \"assets/**\"\n- \"src/**.js\"\n- \"!**secret.*\"\n```\n\nWhen evaluating against this folder:\n\n```yaml\n- assets/\n  - logos/\n    - logo.svg\n- src/\n  - index.js\n  - secret.js\n```\n\nThe following paths will be returned:\n\n```yaml\n- assets/logos/logo.svg\n- src/index.js\n```",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "assets": {
+            "additionalProperties": {
+              "$ref": "pulumi.json#/Asset"
+            },
+            "description": "A map of assets found after running the command.\nThe key is the relative path from the command dir",
+            "type": "object"
+          },
+          "command": {
+            "description": "The command to run.",
+            "type": "string"
+          },
+          "dir": {
+            "description": "The directory from which to run the command from. If `dir` does not exist, then\n`Command` will fail.",
+            "type": "string"
+          },
+          "environment": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Additional environment variables available to the command's process.",
+            "type": "object"
+          },
+          "interpreter": {
+            "description": "The program and arguments to run the command.\nOn Linux and macOS, defaults to: `[\"/bin/sh\", \"-c\"]`. On Windows, defaults to: `[\"cmd\", \"/C\"]`",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "logging": {
+            "$ref": "#/types/command:local:Logging",
+            "description": "If the command's stdout and stderr should be logged. This doesn't affect the capturing of\nstdout and stderr as outputs. If there might be secrets in the output, you can disable logging here and mark the\noutputs as secret via 'additionalSecretOutputs'. Defaults to logging both stdout and stderr."
+          },
+          "stderr": {
+            "description": "The standard error of the command's process",
+            "type": "string"
+          },
+          "stdin": {
+            "description": "Pass a string to the command's process as standard in",
+            "type": "string"
+          },
+          "stdout": {
+            "description": "The standard output of the command's process",
+            "type": "string"
+          }
+        },
+        "required": [
+          "command",
+          "stderr",
+          "stdout"
+        ],
+        "type": "object"
+      }
+    }
+  }
+}
