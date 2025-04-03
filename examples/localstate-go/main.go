@@ -4,9 +4,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/pulumi/pulumi-terraform/sdk/v5/go/state"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi/config"
+
+	"github.com/pulumi/pulumi-terraform/sdk/go/terraform"
 )
 
 func main() {
@@ -20,14 +21,14 @@ func main() {
 			return err
 		}
 
-		state, err := state.NewRemoteStateReference(ctx, "localstate", &state.LocalStateArgs{
+		output := terraform.RemoteStateReferenceOutput(ctx, terraform.RemoteStateReferenceOutputArgs{
 			Path: pulumi.String(filepath.Join(cwd, fileName)),
 		})
 		if err != nil {
 			return err
 		}
 
-		ctx.Export("test", state.Outputs)
+		ctx.Export("test", output)
 
 		return nil
 	})

@@ -4,7 +4,7 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi/config"
 
-	"github.com/pulumi/pulumi-terraform/sdk/go/state/provider"
+	"github.com/pulumi/pulumi-terraform/sdk/go/terraform"
 )
 
 func main() {
@@ -15,22 +15,19 @@ func main() {
 		organization := conf.Require("organization")
 		workspace := conf.Require("workspaceName")
 
-		state, err := provider.RemoteStateReference(ctx, &provider.RemoteStateReferenceArgs{
+		output := terraform.RemoteStateReferenceOutput(ctx, terraform.RemoteStateReferenceOutputArgs{
 			// TODO: This should be optional as it's hardcoded somewhere by default
-			BackendType: "remote",
-			BackendConfig: provider.BackendConfig{
-				Organization: organization,
-				Token:        token.ElementType().String(),
+			BackendType: pulumi.String("remote"),
+			BackendConfig: terraform.BackendConfigArgs{
+				Organization: pulumi.String(organization),
+				Token:        pulumi.StringInput(token),
 			},
-			Workspaces: provider.WorkspaceStateArgs{
-				Name: &workspace,
+			Workspaces: terraform.WorkspaceArgs{
+				Name: pulumi.StringPtr(workspace),
 			},
 		})
-		if err != nil {
-			return err
-		}
 
-		ctx.Export("test", state.Outputs())
+		ctx.Export("test", output)
 
 		return nil
 	})
