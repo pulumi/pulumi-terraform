@@ -29,7 +29,6 @@ const (
 
 // This provider uses the `pulumi-go-provider` library to produce a code-first provider definition.
 func NewProvider() p.Provider {
-
 	pkg := infer.Provider(infer.Options{
 		// This is the metadata for the provider
 		Metadata: schema.Metadata{
@@ -91,6 +90,7 @@ func NewProvider() p.Provider {
 	{ // Initialize the TF back-end exactly once during provider configuration
 		oldConfigure := pkg.Configure
 		pkg.Configure = func(ctx context.Context, req p.ConfigureRequest) error {
+			NewTerraformLogRedirector(ctx)
 			provider.InitTfBackend()
 			return oldConfigure(ctx, req)
 		}
