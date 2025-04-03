@@ -16,7 +16,6 @@ package provider
 
 import (
 	"context"
-	_ "embed"
 
 	"github.com/hashicorp/terraform/shim"
 	"github.com/pulumi/pulumi-go-provider/infer"
@@ -83,7 +82,9 @@ type RemoteStateReferenceOutputs struct {
 func InitTfBackend() { shim.InitTfBackend() }
 
 // Call implements the infer.Fn interface for RemoteStateReference.
-func (r RemoteStateReference) Call(ctx context.Context, inputs RemoteStateReferenceInputs) (RemoteStateReferenceOutputs, error) {
+func (r RemoteStateReference) Call(
+	ctx context.Context, inputs RemoteStateReferenceInputs,
+) (RemoteStateReferenceOutputs, error) {
 	// Implement the logic for the Call method here.
 	// Replace the following line with actual implementation.
 	results, err := shim.RemoteStateReferenceRead(ctx, shim.RemoteStateReferenceInputs{

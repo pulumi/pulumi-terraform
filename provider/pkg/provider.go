@@ -83,7 +83,11 @@ func NewProvider() p.Provider {
 		// Functions or invokes that are provided by the provider.
 		Functions: []infer.InferredFunction{
 			// The Read function is commented extensively for new pulumi-go-provider developers.
-			infer.Function[provider.RemoteStateReference, provider.RemoteStateReferenceInputs, provider.RemoteStateReferenceOutputs](),
+			infer.Function[
+				provider.RemoteStateReference,
+				provider.RemoteStateReferenceInputs,
+				provider.RemoteStateReferenceOutputs,
+			](),
 		},
 	})
 

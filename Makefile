@@ -24,3 +24,6 @@ build_nodejs: .make/phony/sdk/nodejs
 build_python: .make/phony/sdk/python
 build_java:   .make/phony/sdk/java
 build_dotnet: .make/phony/sdk/dotnet
+
+lint:
+	golangci-lint run --config ./.golangci.yml
