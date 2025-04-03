@@ -1,10 +1,10 @@
-module github.com/pulumi/pulumi-terraform/provider
+module github.com/pulumi/pulumi-terraform
 
 go 1.24
 
 replace (
 	cloud.google.com/go/storage => cloud.google.com/go/storage v1.10.0
-	github.com/hashicorp/terraform/shim => ./shim
+	github.com/hashicorp/terraform/shim => ./provider/shim
 	github.com/spf13/afero => github.com/spf13/afero v1.2.2
 	google.golang.org/api => google.golang.org/api v0.44.0-impersonate-preview
 	k8s.io/client-go => k8s.io/client-go v0.23.4
@@ -13,7 +13,6 @@ replace (
 require (
 	github.com/hashicorp/terraform/shim v0.0.0-00010101000000-000000000000
 	github.com/pulumi/pulumi-go-provider v0.25.0
-	github.com/pulumi/pulumi-terraform/provider v0.0.0-20200502155626-bb2f1b41b8a1
 )
 
 require (
