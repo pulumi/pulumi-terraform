@@ -1,0 +1,123 @@
+{
+  "name": "terraform",
+  "displayName": "Terraform",
+  "description": "TODO",
+  "keywords": [
+    "pulumi",
+    "terraform"
+  ],
+  "homepage": "https://pulumi.com",
+  "license": "Apache-2.0",
+  "repository": "https://github.com/pulumi/pulumi-terraform",
+  "logoUrl": "TODO",
+  "publisher": "Pulumi",
+  "meta": {
+    "moduleFormat": "(.*)"
+  },
+  "language": {
+    "csharp": {
+      "packageReferences": {
+        "Pulumi": "3.*"
+      },
+      "respectSchemaVersion": true
+    },
+    "go": {
+      "generateResourceContainerTypes": true,
+      "importBasePath": "github.com/pulumi/pulumi-terraform/sdk/go/state",
+      "respectSchemaVersion": true
+    },
+    "java": {
+      "buildFiles": "gradle",
+      "dependencies": {
+        "com.google.code.findbugs:jsr305": "3.0.2",
+        "com.google.code.gson:gson": "2.8.9",
+        "com.pulumi:pulumi": "1.0.0"
+      },
+      "gradleNexusPublishPluginVersion": "2.0.0"
+    },
+    "nodejs": {
+      "respectSchemaVersion": true
+    },
+    "python": {
+      "pyproject": {
+        "enabled": true
+      },
+      "respectSchemaVersion": true
+    }
+  },
+  "config": {},
+  "types": {
+    "terraform:provider:BackendConfig": {
+      "properties": {
+        "hostname": {
+          "type": "string"
+        },
+        "organization": {
+          "type": "string"
+        },
+        "resourceName": {
+          "type": "string"
+        },
+        "token": {
+          "type": "string"
+        }
+      },
+      "type": "object",
+      "required": [
+        "organization",
+        "token"
+      ]
+    },
+    "terraform:provider:WorkspaceStateArgs": {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "prefix": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "provider": {
+    "type": "object"
+  },
+  "functions": {
+    "terraform:provider:remoteStateReference": {
+      "inputs": {
+        "properties": {
+          "backendConfig": {
+            "$ref": "#/types/terraform:provider:BackendConfig"
+          },
+          "backendType": {
+            "type": "string"
+          },
+          "workspaces": {
+            "$ref": "#/types/terraform:provider:WorkspaceStateArgs"
+          }
+        },
+        "type": "object",
+        "required": [
+          "backendConfig",
+          "backendType",
+          "workspaces"
+        ]
+      },
+      "outputs": {
+        "properties": {
+          "outputs": {
+            "additionalProperties": {
+              "$ref": "pulumi.json#/Any"
+            },
+            "type": "object"
+          }
+        },
+        "required": [
+          "outputs"
+        ],
+        "type": "object"
+      }
+    }
+  }
+}
