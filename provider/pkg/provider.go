@@ -85,6 +85,11 @@ func NewProvider() p.Provider {
 		Functions: []infer.InferredFunction{
 			// The Read function is commented extensively for new pulumi-go-provider developers.
 			infer.Function[
+				*provider.LocalStateReference,
+				provider.LocalStateReferenceInputs,
+				provider.LocalStateReferenceOutputs,
+			](),
+			infer.Function[
 				provider.RemoteStateReference,
 				provider.RemoteStateReferenceInputs,
 				provider.RemoteStateReferenceOutputs,
@@ -100,7 +105,10 @@ func NewProvider() p.Provider {
 		pkg.Configure = func(ctx context.Context, req p.ConfigureRequest) error {
 			NewTerraformLogRedirector(ctx)
 			provider.InitTfBackend()
-			return oldConfigure(ctx, req)
+			if oldConfigure != nil {
+				return oldConfigure(ctx, req)
+			}
+			return nil
 		}
 	}
 

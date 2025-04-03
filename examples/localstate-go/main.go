@@ -21,7 +21,7 @@ func main() {
 			return err
 		}
 
-		output := terraform.RemoteStateReferenceOutput(ctx, terraform.RemoteStateReferenceOutputArgs{
+		output := terraform.LocalStateReferenceOutput(ctx, terraform.LocalStateReferenceOutputArgs{
 			Path: pulumi.String(filepath.Join(cwd, fileName)),
 		})
 		if err != nil {
