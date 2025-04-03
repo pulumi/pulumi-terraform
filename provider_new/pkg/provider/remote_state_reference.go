@@ -17,21 +17,10 @@ package provider
 import (
 	"context"
 	_ "embed"
-	"io/ioutil"
-	"log"
 
-	"github.com/hashicorp/terraform-svchost/disco"
-	be "github.com/hashicorp/terraform/internal/backend"
-	backendInit "github.com/hashicorp/terraform/internal/backend/init"
+	"github.com/hashicorp/terraform/shim"
 	"github.com/pulumi/pulumi-go-provider/infer"
-	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/structpb"
 )
-
-//go:embed terraform.md
-var resourceDoc string
 
 // This is the type that implements the RemoteStateReference resource methods.
 // The methods are declared in the read_resource.go file.
@@ -46,171 +35,72 @@ var _ = (infer.Annotated)((*RemoteStateReference)(nil))
 // Implementing Annotate lets you provide descriptions and default values for resources and they will
 // be visible in the provider's schema and the generated SDKs.
 func (r *RemoteStateReference) Annotate(a infer.Annotator) {
-	a.Describe(&r, resourceDoc)
+	a.Describe(&r, "")
 }
 
-// These are the inputs (or arguments) to a RemoteStateReference resource.
 type RemoteStateReferenceInputs struct {
 	// TODO: what is this for? Is it always be pulumi.String("remote")?
-	BackendType pulumi.StringPtrInput
+	BackendType string `pulumi:"backendType"`
 
-	// The name of the resource to read.
-	ResourceName pulumi.StringInput
-
-	// Organization is the name of the organization containing the targeted workspace(s).
-	Organization pulumi.StringInput
-
-	// Hostname is the remote backend hostname to which to connect. Defaults to `app.terraform.io`.
-	Hostname pulumi.StringPtrInput
-
-	// Token is the token used to authenticate with the remote backend.
-	Token pulumi.StringPtrInput
+	BackendConfig BackendConfig `pulumi:"backendConfig"`
 
 	// Workspace is a struct specifying which remote workspace(s) to use.
-	Workspaces WorkspaceStateArgs
+	Workspaces WorkspaceStateArgs `pulumi:"workspaces"`
+}
+
+type BackendConfig struct {
+	// The name of the resource to read.
+	ResourceName string `pulumi:"resourceName,optional"`
+
+	// Organization is the name of the organization containing the targeted workspace(s).
+	Organization string `pulumi:"organization"`
+
+	// Hostname is the remote backend hostname to which to connect. Defaults to `app.terraform.io`.
+	Hostname string `pulumi:"hostname,optional"`
+
+	// Token is the token used to authenticate with the remote backend.
+	Token string `pulumi:"token"`
 }
 
 // WorkspaceStateArgs specifies the configuration options for a workspace for use with the remote enhanced backend.
 type WorkspaceStateArgs struct {
 	// Name is the full name of one remote workspace. When configured, only the default workspace
 	// can be used. This option conflicts with prefix.
-	Name pulumi.StringPtrInput
+	Name string `pulumi:"name,optional"`
 
 	// Prefix is the prefix used in the names of one or more remote workspaces, all of which can be used
 	// with this configuration. If unset, only the default workspace can be used. This option
 	// conflicts with name
-	Prefix pulumi.StringPtrInput
+	Prefix string `pulumi:"prefix,optional"`
 }
 
 // These are the outputs (or properties) of a RemoteStateReference resource.
 type RemoteStateReferenceOutputs struct {
-	pulumi.CustomResourceState
-
 	// Outputs is a map of the outputs from the Terraform state file
-	Outputs pulumi.MapOutput `pulumi:"outputs"`
+	Outputs map[string]any `pulumi:"outputs"`
 }
 
-func InitTfBackend() {
-	backendInit.Init(disco.New())
-}
-
-func (r RemoteStateReference) ReadRemoteState(ctx context.Context, inputs RemoteStateReferenceInputs) (RemoteStateReferenceOutputs, error) {
-	// Prevent Terraform from logging minutia
-	log.SetOutput(ioutil.Discard)
-
-	// Pull the backendType out of the backendConfig, ensure it's a string
-	// backendTypePB, hasBackendType := req.GetProperties().GetFields()["backendType"]
-	// if !hasBackendType {
-	// 	return nil, status.Errorf(codes.InvalidArgument,
-	// 		"missing required property %q", "backendType")
-	// }
-	// if _, isString := backendTypePB.Kind.(*structpb.Value_StringValue); !isString {
-	// 	return nil, status.Errorf(codes.InvalidArgument,
-	// 		"expected a string value for property %q", "backendType")
-	// }
-	// backendType := backendTypePB.GetStringValue()
-	backendType := inputs.BackendType
-
-	// Ensure the backendType is known about by Terraform
-	backendInitFn := backendInit.Backend(backendType)
-	if backendInitFn == nil {
-		return RemoteStateReferenceOutputs{}, status.Errorf(codes.InvalidArgument,
-			"unsupported backend type %q", backendType)
-	}
-
-	// If we have a workspace specified, get the value for that. Use the default otherwise
-	workspaceName := be.DefaultStateName
-	workspace := inputs.Workspaces
-	if workspace.Name != nil {
-		workspaceName = workspace.Name
-	}
-	// if workspacePB, hasWorkspaceTypePB := req.GetProperties().GetFields()["workspace"]; hasWorkspaceTypePB {
-	// 	if _, isString := workspacePB.Kind.(*structpb.Value_StringValue); !isString {
-	// 		return nil, status.Errorf(codes.InvalidArgument,
-	// 			"expected a string value for property %q", "workspace")
-	// 	}
-
-	// 	workspaceName = workspacePB.GetStringValue()
-	// }
-
-	// Convert our backendConfig struct to something usable with the backend configuration schema
-	terraformNamedNews := structpbNamesPulumiToTerraform(inputs.GetProperties())
-
-	// Delete fields which are known not to be part of the Terraform remote state config
-	// which will cause unknown field failures if passed to a go-cty CoerceValue function
-	delete(terraformNamedNews.GetFields(), "backend_type")
-	delete(terraformNamedNews.GetFields(), "workspace")
-	delete(terraformNamedNews.GetFields(), "outputs")
-
-	backendConfigCty, err := structpbToCtyObject(terraformNamedNews)
-	if err != nil {
-		return RemoteStateReferenceOutputs{}, status.Errorf(codes.Internal, "error mapping config from Pulumi format to cty: %s", err)
-	}
-
-	// Get the configuration schema from the backend
-	backend := backendInitFn()
-
-	// Attempt to coerce our config object into the config schema types - note errors
-	backendConfigCoerced, err := backend.ConfigSchema().CoerceValue(backendConfigCty)
-	if err != nil {
-		return RemoteStateReferenceOutputs{}, status.Errorf(codes.Internal, "error coercing config from Pulumi format to cty: %s", err)
-	}
-
-	// Attempt to prepare the backend with configuration, returning any diagnostics to the engine
-	preparedBackendConfig, diagnostics := backend.PrepareConfig(backendConfigCoerced)
-	if diagnostics.HasErrors() {
-		return RemoteStateReferenceOutputs{}, status.Errorf(codes.Internal, "error preparing config: %s", diagnostics.Err())
-	}
-
-	// Actually prepare the backend with the valid configuration
-	diagnostics = backend.Configure(preparedBackendConfig)
-	if diagnostics.HasErrors() {
-		return RemoteStateReferenceOutputs{}, status.Errorf(codes.InvalidArgument, "error in backend configuration: %s",
-			diagnostics.ErrWithWarnings())
-	}
-
-	// Get the state manager from the backend for the appropriate workspace
-	stateManager, err := backend.StateMgr(workspaceName)
-	if err != nil {
-		return RemoteStateReferenceOutputs{}, status.Errorf(codes.Internal, "error constructing backend state manager: %s", err)
-	}
-
-	// Refresh the state
-	if err := stateManager.RefreshState(); err != nil {
-		return RemoteStateReferenceOutputs{}, status.Errorf(codes.NotFound, "error refreshing Terraform state: %s", err)
-	}
-
-	// Check the state isn't empty
-	state := stateManager.State()
-	if state == nil {
-		return RemoteStateReferenceOutputs{}, status.Error(codes.NotFound, "remote state not found")
-	}
-
-	// Get the root module outputs and process them from a map of string to cty.Value into a structpb
-	outputsCty := state.RootModule().OutputValues
-	outputsStructpb, err := outputsToStructpb(outputsCty)
-	if err != nil {
-		return RemoteStateReferenceOutputs{}, status.Errorf(codes.Internal, "error converting Terraform outputs: %s", err)
-	}
-
-	// Construct our properties based on the outputs
-	req.GetProperties().Fields["outputs"] = &structpb.Value{
-		Kind: &structpb.Value_StructValue{
-			StructValue: outputsStructpb,
-		},
-	}
-
-	// Return a successful response to the engine
-	return &RemoteStateReferenceOutputs{
-		Id:         req.Id,
-		Inputs:     req.Inputs,
-		Properties: req.GetProperties(),
-	}, nil
-}
+func InitTfBackend() { shim.InitTfBackend() }
 
 // Call implements the infer.Fn interface for RemoteStateReference.
 func (r RemoteStateReference) Call(ctx context.Context, inputs RemoteStateReferenceInputs) (RemoteStateReferenceOutputs, error) {
 	// Implement the logic for the Call method here.
 	// Replace the following line with actual implementation.
-	return r.ReadRemoteState(ctx, inputs)
+	results, err := shim.RemoteStateReferenceRead(ctx, shim.RemoteStateReferenceInputs{
+		BackendType: inputs.BackendType,
+		BackendConfig: shim.BackendConfig{
+			ResourceName: inputs.BackendConfig.ResourceName,
+			Organization: inputs.BackendConfig.Organization,
+			Hostname:     inputs.BackendConfig.Hostname,
+			Token:        inputs.BackendConfig.Token,
+		},
+		Workspaces: shim.WorkspaceStateArgs{
+			Name:   inputs.Workspaces.Name,
+			Prefix: inputs.Workspaces.Prefix,
+		},
+	})
+	if err != nil {
+		return RemoteStateReferenceOutputs{}, err
+	}
+	return RemoteStateReferenceOutputs{results}, nil
 }

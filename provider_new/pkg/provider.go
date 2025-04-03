@@ -15,6 +15,8 @@
 package provider
 
 import (
+	"context"
+
 	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
 	"github.com/pulumi/pulumi-go-provider/middleware/schema"
@@ -27,7 +29,8 @@ const (
 
 // This provider uses the `pulumi-go-provider` library to produce a code-first provider definition.
 func NewProvider() p.Provider {
-	return infer.Provider(infer.Options{
+
+	pkg := infer.Provider(infer.Options{
 		// This is the metadata for the provider
 		Metadata: schema.Metadata{
 			DisplayName: "Terraform",
@@ -78,12 +81,20 @@ func NewProvider() p.Provider {
 				},
 			},
 		},
-		// A list of `infer.Resource` that are provided by the provider.
-		Resources: []infer.InferredResource{},
 		// Functions or invokes that are provided by the provider.
 		Functions: []infer.InferredFunction{
 			// The Read function is commented extensively for new pulumi-go-provider developers.
 			infer.Function[provider.RemoteStateReference, provider.RemoteStateReferenceInputs, provider.RemoteStateReferenceOutputs](),
 		},
 	})
+
+	{ // Initialize the TF back-end exactly once during provider configuration
+		oldConfigure := pkg.Configure
+		pkg.Configure = func(ctx context.Context, req p.ConfigureRequest) error {
+			provider.InitTfBackend()
+			return oldConfigure(ctx, req)
+		}
+	}
+
+	return pkg
 }
