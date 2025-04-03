@@ -20,7 +20,7 @@ import (
 	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
 	"github.com/pulumi/pulumi-go-provider/middleware/schema"
-	"github.com/pulumi/pulumi-terraform/provider_new/pkg/provider"
+	"github.com/pulumi/pulumi-terraform/provider/pkg/provider"
 )
 
 const (
