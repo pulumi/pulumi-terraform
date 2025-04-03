@@ -23,7 +23,7 @@
     },
     "go": {
       "generateResourceContainerTypes": true,
-      "importBasePath": "github.com/pulumi/pulumi-terraform/sdk/go/state",
+      "importBasePath": "github.com/pulumi/pulumi-terraform/sdk/go/terraform",
       "respectSchemaVersion": true
     },
     "java": {
@@ -47,7 +47,7 @@
   },
   "config": {},
   "types": {
-    "terraform:provider:BackendConfig": {
+    "terraform:index:BackendConfig": {
       "properties": {
         "hostname": {
           "type": "string"
@@ -68,7 +68,7 @@
         "token"
       ]
     },
-    "terraform:provider:WorkspaceStateArgs": {
+    "terraform:index:WorkspaceStateArgs": {
       "properties": {
         "name": {
           "type": "string"
@@ -84,17 +84,17 @@
     "type": "object"
   },
   "functions": {
-    "terraform:provider:remoteStateReference": {
+    "terraform:index:remoteStateReference": {
       "inputs": {
         "properties": {
           "backendConfig": {
-            "$ref": "#/types/terraform:provider:BackendConfig"
+            "$ref": "#/types/terraform:index:BackendConfig"
           },
           "backendType": {
             "type": "string"
           },
           "workspaces": {
-            "$ref": "#/types/terraform:provider:WorkspaceStateArgs"
+            "$ref": "#/types/terraform:index:WorkspaceStateArgs"
           }
         },
         "type": "object",

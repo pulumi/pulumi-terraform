@@ -21,6 +21,7 @@ import (
 	"github.com/pulumi/pulumi-go-provider/infer"
 	"github.com/pulumi/pulumi-go-provider/middleware/schema"
 	"github.com/pulumi/pulumi-terraform/provider/pkg/provider"
+	"github.com/pulumi/pulumi/sdk/v3/go/common/tokens"
 )
 
 const (
@@ -58,7 +59,7 @@ func NewProvider() p.Provider {
 				"go": map[string]any{
 					"respectSchemaVersion":           true,
 					"generateResourceContainerTypes": true,
-					"importBasePath":                 "github.com/pulumi/pulumi-terraform/sdk/go/state",
+					"importBasePath":                 "github.com/pulumi/pulumi-terraform/sdk/go/terraform",
 				},
 				"nodejs": map[string]any{
 					"respectSchemaVersion": true,
@@ -88,6 +89,9 @@ func NewProvider() p.Provider {
 				provider.RemoteStateReferenceInputs,
 				provider.RemoteStateReferenceOutputs,
 			](),
+		},
+		ModuleMap: map[tokens.ModuleName]tokens.ModuleName{
+			"provider": "index",
 		},
 	})
 
