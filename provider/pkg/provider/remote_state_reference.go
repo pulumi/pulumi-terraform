@@ -79,7 +79,7 @@ type RemoteStateReferenceOutputs struct {
 func InitTfBackend() { shim.InitTfBackend() }
 
 // Call implements the infer.Fn interface for RemoteStateReference.
-func (r RemoteStateReference) Call(
+func (r *RemoteStateReference) Call(
 	ctx context.Context, inputs RemoteStateReferenceInputs,
 ) (RemoteStateReferenceOutputs, error) {
 	// Implement the logic for the Call method here.

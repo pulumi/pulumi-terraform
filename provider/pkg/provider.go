@@ -90,7 +90,7 @@ func NewProvider() p.Provider {
 				provider.LocalStateReferenceOutputs,
 			](),
 			infer.Function[
-				provider.RemoteStateReference,
+				*provider.RemoteStateReference,
 				provider.RemoteStateReferenceInputs,
 				provider.RemoteStateReferenceOutputs,
 			](),
@@ -100,7 +100,8 @@ func NewProvider() p.Provider {
 		},
 	})
 
-	{ // Initialize the TF back-end exactly once during provider configuration
+	{
+		// Initialize the TF back-end exactly once during provider configuration
 		oldConfigure := pkg.Configure
 		pkg.Configure = func(ctx context.Context, req p.ConfigureRequest) error {
 			NewTerraformLogRedirector(ctx)
