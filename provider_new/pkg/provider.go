@@ -18,6 +18,7 @@ import (
 	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
 	"github.com/pulumi/pulumi-go-provider/middleware/schema"
+	"github.com/pulumi/pulumi-terraform/provider_new/pkg/provider"
 )
 
 const (
@@ -80,6 +81,9 @@ func NewProvider() p.Provider {
 		// A list of `infer.Resource` that are provided by the provider.
 		Resources: []infer.InferredResource{},
 		// Functions or invokes that are provided by the provider.
-		Functions: []infer.InferredFunction{},
+		Functions: []infer.InferredFunction{
+			// The Read function is commented extensively for new pulumi-go-provider developers.
+			infer.Function[provider.RemoteStateReference, provider.RemoteStateReferenceInputs, provider.RemoteStateReferenceOutputs](),
+		},
 	})
 }
