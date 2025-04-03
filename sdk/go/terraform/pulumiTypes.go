@@ -80,64 +80,64 @@ func (o BackendConfigOutput) Token() pulumi.StringOutput {
 	return o.ApplyT(func(v BackendConfig) string { return v.Token }).(pulumi.StringOutput)
 }
 
-type WorkspaceStateArgs struct {
+type Workspace struct {
 	Name   *string `pulumi:"name"`
 	Prefix *string `pulumi:"prefix"`
 }
 
-// WorkspaceStateArgsInput is an input type that accepts WorkspaceStateArgsArgs and WorkspaceStateArgsOutput values.
-// You can construct a concrete instance of `WorkspaceStateArgsInput` via:
+// WorkspaceInput is an input type that accepts WorkspaceArgs and WorkspaceOutput values.
+// You can construct a concrete instance of `WorkspaceInput` via:
 //
-//	WorkspaceStateArgsArgs{...}
-type WorkspaceStateArgsInput interface {
+//	WorkspaceArgs{...}
+type WorkspaceInput interface {
 	pulumi.Input
 
-	ToWorkspaceStateArgsOutput() WorkspaceStateArgsOutput
-	ToWorkspaceStateArgsOutputWithContext(context.Context) WorkspaceStateArgsOutput
+	ToWorkspaceOutput() WorkspaceOutput
+	ToWorkspaceOutputWithContext(context.Context) WorkspaceOutput
 }
 
-type WorkspaceStateArgsArgs struct {
+type WorkspaceArgs struct {
 	Name   pulumi.StringPtrInput `pulumi:"name"`
 	Prefix pulumi.StringPtrInput `pulumi:"prefix"`
 }
 
-func (WorkspaceStateArgsArgs) ElementType() reflect.Type {
-	return reflect.TypeOf((*WorkspaceStateArgs)(nil)).Elem()
+func (WorkspaceArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*Workspace)(nil)).Elem()
 }
 
-func (i WorkspaceStateArgsArgs) ToWorkspaceStateArgsOutput() WorkspaceStateArgsOutput {
-	return i.ToWorkspaceStateArgsOutputWithContext(context.Background())
+func (i WorkspaceArgs) ToWorkspaceOutput() WorkspaceOutput {
+	return i.ToWorkspaceOutputWithContext(context.Background())
 }
 
-func (i WorkspaceStateArgsArgs) ToWorkspaceStateArgsOutputWithContext(ctx context.Context) WorkspaceStateArgsOutput {
-	return pulumi.ToOutputWithContext(ctx, i).(WorkspaceStateArgsOutput)
+func (i WorkspaceArgs) ToWorkspaceOutputWithContext(ctx context.Context) WorkspaceOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(WorkspaceOutput)
 }
 
-type WorkspaceStateArgsOutput struct{ *pulumi.OutputState }
+type WorkspaceOutput struct{ *pulumi.OutputState }
 
-func (WorkspaceStateArgsOutput) ElementType() reflect.Type {
-	return reflect.TypeOf((*WorkspaceStateArgs)(nil)).Elem()
+func (WorkspaceOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*Workspace)(nil)).Elem()
 }
 
-func (o WorkspaceStateArgsOutput) ToWorkspaceStateArgsOutput() WorkspaceStateArgsOutput {
+func (o WorkspaceOutput) ToWorkspaceOutput() WorkspaceOutput {
 	return o
 }
 
-func (o WorkspaceStateArgsOutput) ToWorkspaceStateArgsOutputWithContext(ctx context.Context) WorkspaceStateArgsOutput {
+func (o WorkspaceOutput) ToWorkspaceOutputWithContext(ctx context.Context) WorkspaceOutput {
 	return o
 }
 
-func (o WorkspaceStateArgsOutput) Name() pulumi.StringPtrOutput {
-	return o.ApplyT(func(v WorkspaceStateArgs) *string { return v.Name }).(pulumi.StringPtrOutput)
+func (o WorkspaceOutput) Name() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v Workspace) *string { return v.Name }).(pulumi.StringPtrOutput)
 }
 
-func (o WorkspaceStateArgsOutput) Prefix() pulumi.StringPtrOutput {
-	return o.ApplyT(func(v WorkspaceStateArgs) *string { return v.Prefix }).(pulumi.StringPtrOutput)
+func (o WorkspaceOutput) Prefix() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v Workspace) *string { return v.Prefix }).(pulumi.StringPtrOutput)
 }
 
 func init() {
 	pulumi.RegisterInputType(reflect.TypeOf((*BackendConfigInput)(nil)).Elem(), BackendConfigArgs{})
-	pulumi.RegisterInputType(reflect.TypeOf((*WorkspaceStateArgsInput)(nil)).Elem(), WorkspaceStateArgsArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*WorkspaceInput)(nil)).Elem(), WorkspaceArgs{})
 	pulumi.RegisterOutputType(BackendConfigOutput{})
-	pulumi.RegisterOutputType(WorkspaceStateArgsOutput{})
+	pulumi.RegisterOutputType(WorkspaceOutput{})
 }

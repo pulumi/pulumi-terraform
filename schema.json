@@ -68,7 +68,7 @@
         "token"
       ]
     },
-    "terraform:index:WorkspaceStateArgs": {
+    "terraform:index:Workspace": {
       "properties": {
         "name": {
           "type": "string"
@@ -94,7 +94,7 @@
             "type": "string"
           },
           "workspaces": {
-            "$ref": "#/types/terraform:index:WorkspaceStateArgs"
+            "$ref": "#/types/terraform:index:Workspace"
           }
         },
         "type": "object",

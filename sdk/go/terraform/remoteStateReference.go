@@ -22,9 +22,9 @@ func RemoteStateReference(ctx *pulumi.Context, args *RemoteStateReferenceArgs, o
 }
 
 type RemoteStateReferenceArgs struct {
-	BackendConfig BackendConfig      `pulumi:"backendConfig"`
-	BackendType   string             `pulumi:"backendType"`
-	Workspaces    WorkspaceStateArgs `pulumi:"workspaces"`
+	BackendConfig BackendConfig `pulumi:"backendConfig"`
+	BackendType   string        `pulumi:"backendType"`
+	Workspaces    Workspace     `pulumi:"workspaces"`
 }
 
 type RemoteStateReferenceResult struct {
@@ -41,9 +41,9 @@ func RemoteStateReferenceOutput(ctx *pulumi.Context, args RemoteStateReferenceOu
 }
 
 type RemoteStateReferenceOutputArgs struct {
-	BackendConfig BackendConfigInput      `pulumi:"backendConfig"`
-	BackendType   pulumi.StringInput      `pulumi:"backendType"`
-	Workspaces    WorkspaceStateArgsInput `pulumi:"workspaces"`
+	BackendConfig BackendConfigInput `pulumi:"backendConfig"`
+	BackendType   pulumi.StringInput `pulumi:"backendType"`
+	Workspaces    WorkspaceInput     `pulumi:"workspaces"`
 }
 
 func (RemoteStateReferenceOutputArgs) ElementType() reflect.Type {

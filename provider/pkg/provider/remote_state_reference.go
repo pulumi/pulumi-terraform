@@ -44,7 +44,7 @@ type RemoteStateReferenceInputs struct {
 	BackendConfig BackendConfig `pulumi:"backendConfig"`
 
 	// Workspace is a struct specifying which remote workspace(s) to use.
-	Workspaces WorkspaceStateArgs `pulumi:"workspaces"`
+	Workspaces Workspace `pulumi:"workspaces"`
 }
 
 type BackendConfig struct {
@@ -61,8 +61,8 @@ type BackendConfig struct {
 	Token string `pulumi:"token"`
 }
 
-// WorkspaceStateArgs specifies the configuration options for a workspace for use with the remote enhanced backend.
-type WorkspaceStateArgs struct {
+// Workspace specifies the configuration options for a workspace for use with the remote enhanced backend.
+type Workspace struct {
 	// Name is the full name of one remote workspace. When configured, only the default workspace
 	// can be used. This option conflicts with prefix.
 	Name string `pulumi:"name,optional"`
