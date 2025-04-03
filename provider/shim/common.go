@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-svchost/disco"
-	be "github.com/hashicorp/terraform/internal/backend"
 	backendInit "github.com/hashicorp/terraform/internal/backend/init"
 	"github.com/zclconf/go-cty/cty"
 	ctyjson "github.com/zclconf/go-cty/cty/json"
@@ -26,11 +25,6 @@ func StateReferenceRead(
 	backendInitFn := backendInit.Backend(backendType)
 	if backendInitFn == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "unsupported backend type %q", backendType)
-	}
-
-	// If we have a workspace specified, get the value for that. Use the default otherwise
-	if workspaceName == "" {
-		workspaceName = be.DefaultStateName
 	}
 
 	// Get the configuration schema from the backend

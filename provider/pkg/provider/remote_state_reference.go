@@ -48,9 +48,6 @@ type RemoteStateReferenceInputs struct {
 }
 
 type BackendConfig struct {
-	// The name of the resource to read.
-	ResourceName string `pulumi:"resourceName,optional"`
-
 	// Organization is the name of the organization containing the targeted workspace(s).
 	Organization string `pulumi:"organization"`
 
@@ -88,9 +85,7 @@ func (r RemoteStateReference) Call(
 	// Implement the logic for the Call method here.
 	// Replace the following line with actual implementation.
 	results, err := shim.RemoteStateReferenceRead(ctx, shim.RemoteStateReferenceInputs{
-		BackendType: inputs.BackendType,
 		BackendConfig: shim.BackendConfig{
-			ResourceName: inputs.BackendConfig.ResourceName,
 			Organization: inputs.BackendConfig.Organization,
 			Hostname:     inputs.BackendConfig.Hostname,
 			Token:        inputs.BackendConfig.Token,

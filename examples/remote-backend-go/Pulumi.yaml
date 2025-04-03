@@ -1,3 +1,7 @@
 name: remote-backend-go
 runtime: go
 description: An example demonstrating the Terraform Remote State resource in Go
+config:
+  remote-backend-go:tfeToken: AAABABomfHRRGNtJJ5ibdM7VmLRWFlcVeeQ4RcYTuCavO+nhSWS9qZlqSnPy
+  remote-backend-go:organization: pulumi
+  remote-backend-go:workspaceName: default

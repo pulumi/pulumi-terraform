@@ -3,13 +3,11 @@ package shim
 import (
 	"context"
 
+	be "github.com/hashicorp/terraform/internal/backend"
 	"github.com/zclconf/go-cty/cty"
 )
 
 type RemoteStateReferenceInputs struct {
-	// TODO: what is this for? Is it always be pulumi.String("remote")?
-	BackendType string
-
 	BackendConfig BackendConfig
 
 	// Workspace is a struct specifying which remote workspace(s) to use.
@@ -17,9 +15,6 @@ type RemoteStateReferenceInputs struct {
 }
 
 type BackendConfig struct {
-	// The name of the resource to read.
-	ResourceName string
-
 	// Organization is the name of the organization containing the targeted workspace(s).
 	Organization string
 
@@ -43,10 +38,18 @@ type WorkspaceStateArgs struct {
 }
 
 func RemoteStateReferenceRead(ctx context.Context, args RemoteStateReferenceInputs) (map[string]any, error) {
+	// If we have a workspace specified, get the value for that. Use the default otherwise
+	if args.Workspaces.Name == "" {
+		args.Workspaces.Name = be.DefaultStateName
+	}
+
 	return StateReferenceRead(ctx, "remote", args.Workspaces.Name, map[string]cty.Value{
-		"token":         cty.StringVal(args.BackendConfig.Token),
-		"organization":  cty.StringVal(args.BackendConfig.Organization),
-		"hostname":      cty.StringVal(args.BackendConfig.Hostname),
-		"resource_name": cty.StringVal(args.BackendConfig.ResourceName),
+		"token":        cty.StringVal(args.BackendConfig.Token),
+		"organization": cty.StringVal(args.BackendConfig.Organization),
+		"hostname":     cty.StringVal(args.BackendConfig.Hostname),
+		"workspaces": cty.ObjectVal(map[string]cty.Value{
+			"name":   cty.StringVal(args.Workspaces.Name),
+			"prefix": cty.StringVal(args.Workspaces.Prefix),
+		}),
 	})
 }

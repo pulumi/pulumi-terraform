@@ -16,7 +16,6 @@ var _ = internal.GetEnvOrDefault
 type BackendConfig struct {
 	Hostname     *string `pulumi:"hostname"`
 	Organization string  `pulumi:"organization"`
-	ResourceName *string `pulumi:"resourceName"`
 	Token        string  `pulumi:"token"`
 }
 
@@ -34,7 +33,6 @@ type BackendConfigInput interface {
 type BackendConfigArgs struct {
 	Hostname     pulumi.StringPtrInput `pulumi:"hostname"`
 	Organization pulumi.StringInput    `pulumi:"organization"`
-	ResourceName pulumi.StringPtrInput `pulumi:"resourceName"`
 	Token        pulumi.StringInput    `pulumi:"token"`
 }
 
@@ -70,10 +68,6 @@ func (o BackendConfigOutput) Hostname() pulumi.StringPtrOutput {
 
 func (o BackendConfigOutput) Organization() pulumi.StringOutput {
 	return o.ApplyT(func(v BackendConfig) string { return v.Organization }).(pulumi.StringOutput)
-}
-
-func (o BackendConfigOutput) ResourceName() pulumi.StringPtrOutput {
-	return o.ApplyT(func(v BackendConfig) *string { return v.ResourceName }).(pulumi.StringPtrOutput)
 }
 
 func (o BackendConfigOutput) Token() pulumi.StringOutput {

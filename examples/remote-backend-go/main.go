@@ -16,8 +16,6 @@ func main() {
 		workspace := conf.Require("workspaceName")
 
 		output := terraform.RemoteStateReferenceOutput(ctx, terraform.RemoteStateReferenceOutputArgs{
-			// TODO: This should be optional as it's hardcoded somewhere by default
-			BackendType: pulumi.String("remote"),
 			BackendConfig: terraform.BackendConfigArgs{
 				Organization: pulumi.String(organization),
 				Token:        pulumi.StringInput(token),
