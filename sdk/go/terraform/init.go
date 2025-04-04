@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"github.com/blang/semver"
-	"github.com/pulumi/pulumi-terraform/sdk/go/terraform/internal"
+	"github.com/pulumi/pulumi-terraform/sdk/v6/go/terraform/internal"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 

@@ -1,6 +1,6 @@
 // Copyright 2016-2025, Pulumi Corporation.  All rights reserved.
-//go:build yaml || all
-// +build yaml all
+//go:build go || all
+// +build go all
 
 package examples
 
@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func TestYAML(t *testing.T) {
+func TestGo(t *testing.T) {
 	t.Parallel()
-	LanguageTests(t, "yaml")
+	LanguageTests(t, "go")
 }

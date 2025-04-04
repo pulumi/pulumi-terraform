@@ -16,11 +16,13 @@ package provider
 
 import (
 	"context"
+	"fmt"
 
 	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
 	"github.com/pulumi/pulumi-go-provider/middleware/schema"
 	"github.com/pulumi/pulumi-terraform/provider/state_reference"
+	"github.com/pulumi/pulumi-terraform/provider/version"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/tokens"
 )
 
@@ -58,7 +60,8 @@ There is one function per kind of Terraform state backend to consume state from.
 				"go": map[string]any{
 					"respectSchemaVersion":           true,
 					"generateResourceContainerTypes": true,
-					"importBasePath":                 "github.com/pulumi/pulumi-terraform/sdk/go/terraform",
+					"importBasePath": fmt.Sprintf(
+						"github.com/pulumi/pulumi-terraform/sdk/v%d/go/terraform", version.Version.Major),
 				},
 				"nodejs": map[string]any{
 					"respectSchemaVersion": true,

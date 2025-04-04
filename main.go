@@ -17,7 +17,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	p "github.com/pulumi/pulumi-go-provider"
 
@@ -28,13 +27,11 @@ import (
 // A provider is a program that listens for requests from the Pulumi engine
 // to interact with cloud providers using a CRUD-based model.
 func main() {
-	version := strings.TrimPrefix(version.Version, "v")
-
 	// This method defines the provider implemented in this repository.
 	terraformProvider := terraform.NewProvider()
 
 	// This method starts serving requests using the Terraform provider.
-	err := p.RunProvider("terraform", version, terraformProvider)
+	err := p.RunProvider("terraform", version.Version.String(), terraformProvider)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %s", err.Error())
 		os.Exit(1)

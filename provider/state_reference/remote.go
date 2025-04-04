@@ -24,8 +24,10 @@ import (
 
 type RemoteStateReference struct{}
 
-var _ = (infer.Annotated)((*RemoteStateReference)(nil))
-var _ = (infer.ExplicitDependencies[RemoteStateReferenceInputs, StateReferenceOutputs])((*RemoteStateReference)(nil))
+var (
+	_ = (infer.Annotated)((*RemoteStateReference)(nil))
+	_ = (infer.ExplicitDependencies[RemoteStateReferenceInputs, StateReferenceOutputs])((*RemoteStateReference)(nil))
+)
 
 func (r *RemoteStateReference) Annotate(a infer.Annotator) {
 	a.Describe(&r, "Access state from a remote backend.")
@@ -48,7 +50,9 @@ func (r *RemoteStateReferenceInputs) Annotate(a infer.Annotator) {
 }
 
 // TODO: This doesn't seem to work correctly - investigate why not
-func (r *RemoteStateReference) WireDependencies(f infer.FieldSelector, args *RemoteStateReferenceInputs, state *StateReferenceOutputs) {
+func (r *RemoteStateReference) WireDependencies(
+	f infer.FieldSelector, _ *RemoteStateReferenceInputs, state *StateReferenceOutputs,
+) {
 	f.OutputField(&state).NeverSecret() // The output should never be secret by default
 }
 

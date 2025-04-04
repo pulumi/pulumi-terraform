@@ -1,5 +1,5 @@
 MODULE          := github.com/pulumi/pulumi-terraform
-VERSION         := $(shell pulumictl get version)
+VERSION         := 6.0.0 # $(shell pulumictl get version)
 
 .PHONY: all
 all: schema.json build_sdks bin/pulumi-resource-terraform
@@ -9,7 +9,7 @@ _ := $(shell mkdir -p .make/sdk)
 _ := $(shell go build -o bin/helpmakego github.com/iwahbe/helpmakego)
 
 bin/pulumi-resource-terraform: $(shell bin/helpmakego .)
-	go build -o $@ -ldflags "-X ${MODULE}/provider/version.Version=${VERSION}" "${MODULE}"
+	go build -o $@ -ldflags "-X ${MODULE}/provider/version.version=${VERSION}" "${MODULE}"
 
 schema.json: bin/pulumi-resource-terraform
 	pulumi package get-schema $< > $@
@@ -29,7 +29,7 @@ build_java:   .make/phony/sdk/java
 build_dotnet: .make/phony/sdk/dotnet
 
 lint:
-	golangci-lint run --config ./.golangci.yml
+	golangci-lint run --config ./.golangci.yml --build-tags all
 
 .PHONY: test test_unit test_integration
 
@@ -46,4 +46,4 @@ test_unit:
 #
 test_integration: TAGS ?= all
 test_integration: bin/pulumi-resource-terraform
-	go test $$(go list ./... | grep /examples) -tags ${TAGS} -count 1
+	go test $$(go list ./... | grep /examples) -tags ${TAGS} -count 1 -v
