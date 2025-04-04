@@ -30,3 +30,20 @@ build_dotnet: .make/phony/sdk/dotnet
 
 lint:
 	golangci-lint run --config ./.golangci.yml
+
+.PHONY: test test_unit test_integration
+
+test: test_unit test_integration
+
+test_unit:
+	go test $$(go list ./... | grep -v /examples)
+
+# By default, `$(MAKE) test_integration` will run all integration tests.
+#
+# To run a specific integration test, you can override TAGS:
+#
+#     make test_integration TAGS=yaml
+#
+test_integration: TAGS ?= all
+test_integration:
+	go test $$(go list ./... | grep /examples) -tags ${TAGS}

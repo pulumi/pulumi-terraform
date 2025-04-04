@@ -19,7 +19,10 @@ func getCwd(t *testing.T) string {
 func getBaseOptions() integration.ProgramTestOptions {
 	return integration.ProgramTestOptions{
 		RunUpdateTest: false,
-		Quick:         true,
+		LocalProviders: []integration.LocalDependency{{
+			Package: "terraform",
+			Path:    "../bin",
+		}},
 	}
 }
 

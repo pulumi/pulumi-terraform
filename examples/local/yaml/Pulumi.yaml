@@ -1,0 +1,13 @@
+name: terraform-local-state-with-yaml
+runtime: yaml
+outputs:
+  state:
+    fn::invoke:
+      function: terraform:index:localStateReference
+      arguments:
+        path: ./terraform.0-12-24.tfstate
+      return: outputs
+plugins:
+  providers:
+    - name: terraform
+      path: ../../../bin
