@@ -113,7 +113,8 @@
           },
           "token": {
             "type": "string",
-            "description": "The token used to authenticate with the remote backend."
+            "description": "The token used to authenticate with the remote backend.",
+            "secret": true
           },
           "workspaces": {
             "$ref": "#/types/terraform:index:Workspaces"

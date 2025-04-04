@@ -43,3 +43,10 @@ func ctyStringOrNil(v *string) cty.Value {
 	}
 	return cty.StringVal(*v)
 }
+
+func stringOrZero(v *string) string {
+	if v == nil {
+		return ""
+	}
+	return *v
+}

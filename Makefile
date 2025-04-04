@@ -45,5 +45,5 @@ test_unit:
 #     make test_integration TAGS=yaml
 #
 test_integration: TAGS ?= all
-test_integration:
-	go test $$(go list ./... | grep /examples) -tags ${TAGS}
+test_integration: bin/pulumi-resource-terraform
+	go test $$(go list ./... | grep /examples) -tags ${TAGS} -count 1

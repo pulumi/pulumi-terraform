@@ -7,7 +7,3 @@ outputs:
       arguments:
         path: ./terraform.0-12-24.tfstate
       return: outputs
-plugins:
-  providers:
-    - name: terraform
-      path: ../../../bin

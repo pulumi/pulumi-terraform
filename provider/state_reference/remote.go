@@ -25,6 +25,7 @@ import (
 type RemoteStateReference struct{}
 
 var _ = (infer.Annotated)((*RemoteStateReference)(nil))
+var _ = (infer.ExplicitDependencies[RemoteStateReferenceInputs, StateReferenceOutputs])((*RemoteStateReference)(nil))
 
 func (r *RemoteStateReference) Annotate(a infer.Annotator) {
 	a.Describe(&r, "Access state from a remote backend.")
@@ -34,7 +35,7 @@ func (r *RemoteStateReference) Annotate(a infer.Annotator) {
 type RemoteStateReferenceInputs struct {
 	Hostname     *string    `pulumi:"hostname,optional"`
 	Organization string     `pulumi:"organization"`
-	Token        *string    `pulumi:"token,optional"`
+	Token        *string    `pulumi:"token,optional" provider:"secret"`
 	Workspaces   Workspaces `pulumi:"workspaces"`
 }
 
@@ -44,6 +45,11 @@ func (r *RemoteStateReferenceInputs) Annotate(a infer.Annotator) {
 	a.Describe(&r.Token, "The token used to authenticate with the remote backend.")
 
 	a.SetDefault(&r.Hostname, "app.terraform.io")
+}
+
+// TODO: This doesn't seem to work correctly - investigate why not
+func (r *RemoteStateReference) WireDependencies(f infer.FieldSelector, args *RemoteStateReferenceInputs, state *StateReferenceOutputs) {
+	f.OutputField(&state).NeverSecret() // The output should never be secret by default
 }
 
 type Workspaces struct {
@@ -63,7 +69,7 @@ func (r *Workspaces) Annotate(a infer.Annotator) {
 func (r *RemoteStateReference) Call(
 	ctx context.Context, args RemoteStateReferenceInputs,
 ) (StateReferenceOutputs, error) {
-	results, err := shim.StateReferenceRead(ctx, "remote", "", map[string]cty.Value{
+	results, err := shim.StateReferenceRead(ctx, "remote", stringOrZero(args.Workspaces.Name), map[string]cty.Value{
 		"hostname":     ctyStringOrNil(args.Hostname),
 		"organization": cty.StringVal(args.Organization),
 		"token":        ctyStringOrNil(args.Token),

@@ -1,0 +1,14 @@
+name: terraform-remote-state-with-yaml
+runtime: yaml
+outputs:
+  prefix:
+    fn::invoke:
+      function: terraform:index:remoteStateReference
+      arguments:
+        organization: ${remote_tf_org} # A config value - sourced from TFE_ORGANIZATION in testing
+        token:
+          fn::secret: ${remote_tf_token} # A config value - sourced from TFE_TOKEN in testing
+        workspaces:
+          prefix: dev
+      return: outputs
+  name: {}
