@@ -51,10 +51,12 @@
     "terraform:index:Workspaces": {
       "properties": {
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "The full name of one remote workspace. When configured, only the default workspace can be used. This option conflicts with prefix."
         },
         "prefix": {
-          "type": "string"
+          "type": "string",
+          "description": "A prefix used in the names of one or more remote workspaces, all of which can be used with this configuration. The full workspace names are used in HCP Terraform, and the short names (minus the prefix) are used on the command line for Terraform CLI workspaces. If omitted, only the default workspace can be used. This option conflicts with name."
         }
       },
       "type": "object"
@@ -65,17 +67,19 @@
   },
   "functions": {
     "terraform:index:localStateReference": {
-      "description": "TODO",
+      "description": "Access state from the local filesystem.",
       "inputs": {
         "properties": {
           "path": {
-            "type": "string"
+            "type": "string",
+            "description": "The path to the tfstate file. This defaults to \"terraform.tfstate\" relative to the root module by default."
+          },
+          "workspaceDir": {
+            "type": "string",
+            "description": "The path to non-default workspaces."
           }
         },
-        "type": "object",
-        "required": [
-          "path"
-        ]
+        "type": "object"
       },
       "outputs": {
         "description": "The result of fetching from a Terraform state store.",
@@ -95,17 +99,21 @@
       }
     },
     "terraform:index:remoteStateReference": {
-      "description": "TODO",
+      "description": "Access state from a remote backend.",
       "inputs": {
         "properties": {
           "hostname": {
-            "type": "string"
+            "type": "string",
+            "description": "The remote backend hostname to connect to.",
+            "default": "app.terraform.io"
           },
           "organization": {
-            "type": "string"
+            "type": "string",
+            "description": "The name of the organization containing the targeted workspace(s)."
           },
           "token": {
-            "type": "string"
+            "type": "string",
+            "description": "The token used to authenticate with the remote backend."
           },
           "workspaces": {
             "$ref": "#/types/terraform:index:Workspaces"

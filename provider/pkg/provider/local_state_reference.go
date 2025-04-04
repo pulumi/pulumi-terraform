@@ -27,18 +27,26 @@ type LocalStateReference struct{}
 var _ = (infer.Annotated)((*LocalStateReference)(nil))
 
 func (r *LocalStateReference) Annotate(a infer.Annotator) {
-	a.Describe(&r, "TODO")
+	a.Describe(&r, "Access state from the local filesystem.")
 }
 
+// Taken from https://developer.hashicorp.com/terraform/language/backend/local#configuration-variables
 type LocalStateReferenceInputs struct {
-	Path string `pulumi:"path"`
+	Path         *string `pulumi:"path,optional"`
+	WorkspaceDir *string `pulumi:"workspaceDir,optional"`
+}
+
+func (r *LocalStateReferenceInputs) Annotate(a infer.Annotator) {
+	a.Describe(&r.Path, `The path to the tfstate file. This defaults to "terraform.tfstate" relative to the root module by default.`)
+	a.Describe(&r.WorkspaceDir, `The path to non-default workspaces.`)
 }
 
 func (r *LocalStateReference) Call(
 	ctx context.Context, args LocalStateReferenceInputs,
 ) (StateReferenceOutputs, error) {
 	results, err := shim.StateReferenceRead(ctx, "local", "", map[string]cty.Value{
-		"path": cty.StringVal(args.Path),
+		"path":          ctyStringOrNil(args.Path),
+		"workspace_dir": ctyStringOrNil(args.WorkspaceDir),
 	})
 
 	return StateReferenceOutputs{results}, err
