@@ -1,0 +1,10 @@
+name: hackathon-pulumi-terraform
+runtime: yaml
+description: An example demonstrating the Terraform Remote State resource in Go
+outputs:
+  state:
+    fn::invoke:
+      function: terraform:index:localStateReference
+      arguments:
+        path: ./terraform.0-12-24.tfstate
+      return: outputs
