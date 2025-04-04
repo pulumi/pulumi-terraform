@@ -2,11 +2,14 @@
 
   <PropertyGroup>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Authors>Pulumi Corp.</Authors>
-    <Company>Pulumi Corp.</Company>
-    <Description>A Pulumi package for interoperating with infrastructure created with Terraform.</Description>
+    <Authors>Pulumi</Authors>
+    <Company>Pulumi</Company>
+    <Description>The Terraform provider for Pulumi lets you consume the outputs
+contained in Terraform state files from your Pulumi programs.
+
+There is one function per kind of Terraform state backend to consume state from.</Description>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <PackageProjectUrl>https://pulumi.io</PackageProjectUrl>
+    <PackageProjectUrl>https://pulumi.com</PackageProjectUrl>
     <RepositoryUrl>https://github.com/pulumi/pulumi-terraform</RepositoryUrl>
     <PackageIcon>logo.png</PackageIcon>
 
@@ -19,13 +22,35 @@
     <NoWarn>1701;1702;1591</NoWarn>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+  </ItemGroup>
+
   <ItemGroup>
     <EmbeddedResource Include="version.txt" />
-    <Content Include="version.txt" />
+    <None Include="version.txt" Pack="True" PackagePath="content" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="pulumi-plugin.json" />
+    <None Include="pulumi-plugin.json" Pack="True" PackagePath="content" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Pulumi" Version="3.*" />
+  </ItemGroup>
+
+  <ItemGroup>
   </ItemGroup>
 
   <ItemGroup>

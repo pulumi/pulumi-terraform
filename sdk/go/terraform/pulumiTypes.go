@@ -13,62 +13,68 @@ import (
 
 var _ = internal.GetEnvOrDefault
 
-type Workspace struct {
-	Name   *string `pulumi:"name"`
+type Workspaces struct {
+	// The full name of one remote workspace. When configured, only the default workspace can be used. This option conflicts with prefix.
+	Name *string `pulumi:"name"`
+	// A prefix used in the names of one or more remote workspaces, all of which can be used with this configuration. The full workspace names are used in HCP Terraform, and the short names (minus the prefix) are used on the command line for Terraform CLI workspaces. If omitted, only the default workspace can be used. This option conflicts with name.
 	Prefix *string `pulumi:"prefix"`
 }
 
-// WorkspaceInput is an input type that accepts WorkspaceArgs and WorkspaceOutput values.
-// You can construct a concrete instance of `WorkspaceInput` via:
+// WorkspacesInput is an input type that accepts WorkspacesArgs and WorkspacesOutput values.
+// You can construct a concrete instance of `WorkspacesInput` via:
 //
-//	WorkspaceArgs{...}
-type WorkspaceInput interface {
+//	WorkspacesArgs{...}
+type WorkspacesInput interface {
 	pulumi.Input
 
-	ToWorkspaceOutput() WorkspaceOutput
-	ToWorkspaceOutputWithContext(context.Context) WorkspaceOutput
+	ToWorkspacesOutput() WorkspacesOutput
+	ToWorkspacesOutputWithContext(context.Context) WorkspacesOutput
 }
 
-type WorkspaceArgs struct {
-	Name   pulumi.StringPtrInput `pulumi:"name"`
+type WorkspacesArgs struct {
+	// The full name of one remote workspace. When configured, only the default workspace can be used. This option conflicts with prefix.
+	Name pulumi.StringPtrInput `pulumi:"name"`
+	// A prefix used in the names of one or more remote workspaces, all of which can be used with this configuration. The full workspace names are used in HCP Terraform, and the short names (minus the prefix) are used on the command line for Terraform CLI workspaces. If omitted, only the default workspace can be used. This option conflicts with name.
 	Prefix pulumi.StringPtrInput `pulumi:"prefix"`
 }
 
-func (WorkspaceArgs) ElementType() reflect.Type {
-	return reflect.TypeOf((*Workspace)(nil)).Elem()
+func (WorkspacesArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*Workspaces)(nil)).Elem()
 }
 
-func (i WorkspaceArgs) ToWorkspaceOutput() WorkspaceOutput {
-	return i.ToWorkspaceOutputWithContext(context.Background())
+func (i WorkspacesArgs) ToWorkspacesOutput() WorkspacesOutput {
+	return i.ToWorkspacesOutputWithContext(context.Background())
 }
 
-func (i WorkspaceArgs) ToWorkspaceOutputWithContext(ctx context.Context) WorkspaceOutput {
-	return pulumi.ToOutputWithContext(ctx, i).(WorkspaceOutput)
+func (i WorkspacesArgs) ToWorkspacesOutputWithContext(ctx context.Context) WorkspacesOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(WorkspacesOutput)
 }
 
-type WorkspaceOutput struct{ *pulumi.OutputState }
+type WorkspacesOutput struct{ *pulumi.OutputState }
 
-func (WorkspaceOutput) ElementType() reflect.Type {
-	return reflect.TypeOf((*Workspace)(nil)).Elem()
+func (WorkspacesOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*Workspaces)(nil)).Elem()
 }
 
-func (o WorkspaceOutput) ToWorkspaceOutput() WorkspaceOutput {
+func (o WorkspacesOutput) ToWorkspacesOutput() WorkspacesOutput {
 	return o
 }
 
-func (o WorkspaceOutput) ToWorkspaceOutputWithContext(ctx context.Context) WorkspaceOutput {
+func (o WorkspacesOutput) ToWorkspacesOutputWithContext(ctx context.Context) WorkspacesOutput {
 	return o
 }
 
-func (o WorkspaceOutput) Name() pulumi.StringPtrOutput {
-	return o.ApplyT(func(v Workspace) *string { return v.Name }).(pulumi.StringPtrOutput)
+// The full name of one remote workspace. When configured, only the default workspace can be used. This option conflicts with prefix.
+func (o WorkspacesOutput) Name() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v Workspaces) *string { return v.Name }).(pulumi.StringPtrOutput)
 }
 
-func (o WorkspaceOutput) Prefix() pulumi.StringPtrOutput {
-	return o.ApplyT(func(v Workspace) *string { return v.Prefix }).(pulumi.StringPtrOutput)
+// A prefix used in the names of one or more remote workspaces, all of which can be used with this configuration. The full workspace names are used in HCP Terraform, and the short names (minus the prefix) are used on the command line for Terraform CLI workspaces. If omitted, only the default workspace can be used. This option conflicts with name.
+func (o WorkspacesOutput) Prefix() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v Workspaces) *string { return v.Prefix }).(pulumi.StringPtrOutput)
 }
 
 func init() {
-	pulumi.RegisterInputType(reflect.TypeOf((*WorkspaceInput)(nil)).Elem(), WorkspaceArgs{})
-	pulumi.RegisterOutputType(WorkspaceOutput{})
+	pulumi.RegisterInputType(reflect.TypeOf((*WorkspacesInput)(nil)).Elem(), WorkspacesArgs{})
+	pulumi.RegisterOutputType(WorkspacesOutput{})
 }

@@ -11,10 +11,11 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
+// Access state from a remote backend.
 func RemoteStateReference(ctx *pulumi.Context, args *RemoteStateReferenceArgs, opts ...pulumi.InvokeOption) (*RemoteStateReferenceResult, error) {
 	opts = internal.PkgInvokeDefaultOpts(opts)
 	var rv RemoteStateReferenceResult
-	err := ctx.Invoke("terraform:index:remoteStateReference", args, &rv, opts...)
+	err := ctx.Invoke("terraform:index:remoteStateReference", args.Defaults(), &rv, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -22,13 +23,31 @@ func RemoteStateReference(ctx *pulumi.Context, args *RemoteStateReferenceArgs, o
 }
 
 type RemoteStateReferenceArgs struct {
-	Hostname     *string   `pulumi:"hostname"`
-	Organization string    `pulumi:"organization"`
-	Token        string    `pulumi:"token"`
-	Workspaces   Workspace `pulumi:"workspaces"`
+	// The remote backend hostname to connect to.
+	Hostname *string `pulumi:"hostname"`
+	// The name of the organization containing the targeted workspace(s).
+	Organization string `pulumi:"organization"`
+	// The token used to authenticate with the remote backend.
+	Token      *string    `pulumi:"token"`
+	Workspaces Workspaces `pulumi:"workspaces"`
 }
 
+// Defaults sets the appropriate defaults for RemoteStateReferenceArgs
+func (val *RemoteStateReferenceArgs) Defaults() *RemoteStateReferenceArgs {
+	if val == nil {
+		return nil
+	}
+	tmp := *val
+	if tmp.Hostname == nil {
+		hostname_ := "app.terraform.io"
+		tmp.Hostname = &hostname_
+	}
+	return &tmp
+}
+
+// The result of fetching from a Terraform state store.
 type RemoteStateReferenceResult struct {
+	// The outputs displayed from Terraform state.
 	Outputs map[string]interface{} `pulumi:"outputs"`
 }
 
@@ -37,21 +56,25 @@ func RemoteStateReferenceOutput(ctx *pulumi.Context, args RemoteStateReferenceOu
 		ApplyT(func(v interface{}) (RemoteStateReferenceResultOutput, error) {
 			args := v.(RemoteStateReferenceArgs)
 			options := pulumi.InvokeOutputOptions{InvokeOptions: internal.PkgInvokeDefaultOpts(opts)}
-			return ctx.InvokeOutput("terraform:index:remoteStateReference", args, RemoteStateReferenceResultOutput{}, options).(RemoteStateReferenceResultOutput), nil
+			return ctx.InvokeOutput("terraform:index:remoteStateReference", args.Defaults(), RemoteStateReferenceResultOutput{}, options).(RemoteStateReferenceResultOutput), nil
 		}).(RemoteStateReferenceResultOutput)
 }
 
 type RemoteStateReferenceOutputArgs struct {
-	Hostname     pulumi.StringPtrInput `pulumi:"hostname"`
-	Organization pulumi.StringInput    `pulumi:"organization"`
-	Token        pulumi.StringInput    `pulumi:"token"`
-	Workspaces   WorkspaceInput        `pulumi:"workspaces"`
+	// The remote backend hostname to connect to.
+	Hostname pulumi.StringPtrInput `pulumi:"hostname"`
+	// The name of the organization containing the targeted workspace(s).
+	Organization pulumi.StringInput `pulumi:"organization"`
+	// The token used to authenticate with the remote backend.
+	Token      pulumi.StringPtrInput `pulumi:"token"`
+	Workspaces WorkspacesInput       `pulumi:"workspaces"`
 }
 
 func (RemoteStateReferenceOutputArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*RemoteStateReferenceArgs)(nil)).Elem()
 }
 
+// The result of fetching from a Terraform state store.
 type RemoteStateReferenceResultOutput struct{ *pulumi.OutputState }
 
 func (RemoteStateReferenceResultOutput) ElementType() reflect.Type {
@@ -66,6 +89,7 @@ func (o RemoteStateReferenceResultOutput) ToRemoteStateReferenceResultOutputWith
 	return o
 }
 
+// The outputs displayed from Terraform state.
 func (o RemoteStateReferenceResultOutput) Outputs() pulumi.MapOutput {
 	return o.ApplyT(func(v RemoteStateReferenceResult) map[string]interface{} { return v.Outputs }).(pulumi.MapOutput)
 }

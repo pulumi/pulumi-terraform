@@ -66,6 +66,8 @@ func StateReferenceRead(
 		return nil, status.Error(codes.NotFound, "remote state not found")
 	}
 
+	// Convert back into the type that we expect.
+
 	outputs := map[string]any{}
 	for k, v := range state.RootModule().OutputValues {
 		jsonBytes, err := ctyjson.Marshal(v.Value, v.Value.Type())

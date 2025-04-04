@@ -11,6 +11,7 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
+// Access state from the local filesystem.
 func LocalStateReference(ctx *pulumi.Context, args *LocalStateReferenceArgs, opts ...pulumi.InvokeOption) (*LocalStateReferenceResult, error) {
 	opts = internal.PkgInvokeDefaultOpts(opts)
 	var rv LocalStateReferenceResult
@@ -22,10 +23,15 @@ func LocalStateReference(ctx *pulumi.Context, args *LocalStateReferenceArgs, opt
 }
 
 type LocalStateReferenceArgs struct {
-	Path string `pulumi:"path"`
+	// The path to the tfstate file. This defaults to "terraform.tfstate" relative to the root module by default.
+	Path *string `pulumi:"path"`
+	// The path to non-default workspaces.
+	WorkspaceDir *string `pulumi:"workspaceDir"`
 }
 
+// The result of fetching from a Terraform state store.
 type LocalStateReferenceResult struct {
+	// The outputs displayed from Terraform state.
 	Outputs map[string]interface{} `pulumi:"outputs"`
 }
 
@@ -39,13 +45,17 @@ func LocalStateReferenceOutput(ctx *pulumi.Context, args LocalStateReferenceOutp
 }
 
 type LocalStateReferenceOutputArgs struct {
-	Path pulumi.StringInput `pulumi:"path"`
+	// The path to the tfstate file. This defaults to "terraform.tfstate" relative to the root module by default.
+	Path pulumi.StringPtrInput `pulumi:"path"`
+	// The path to non-default workspaces.
+	WorkspaceDir pulumi.StringPtrInput `pulumi:"workspaceDir"`
 }
 
 func (LocalStateReferenceOutputArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*LocalStateReferenceArgs)(nil)).Elem()
 }
 
+// The result of fetching from a Terraform state store.
 type LocalStateReferenceResultOutput struct{ *pulumi.OutputState }
 
 func (LocalStateReferenceResultOutput) ElementType() reflect.Type {
@@ -60,6 +70,7 @@ func (o LocalStateReferenceResultOutput) ToLocalStateReferenceResultOutputWithCo
 	return o
 }
 
+// The outputs displayed from Terraform state.
 func (o LocalStateReferenceResultOutput) Outputs() pulumi.MapOutput {
 	return o.ApplyT(func(v LocalStateReferenceResult) map[string]interface{} { return v.Outputs }).(pulumi.MapOutput)
 }
