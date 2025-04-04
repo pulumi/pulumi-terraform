@@ -1,5 +1,0 @@
-name: localstate-go
-runtime: go
-description: An example demonstrating the Terraform Remote State resource in Go
-config:
-  localstate-go:statefile: ./terraform.0-13-0.tfstate
