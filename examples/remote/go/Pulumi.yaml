@@ -1,0 +1,7 @@
+name: hackathon-pulumi-terraform
+runtime: go
+description: An example demonstrating the Terraform Remote State resource in Go
+config:
+  hackathon-pulumi-terraform:tfeToken: <YOUR_TFE_TOKEN>
+  hackathon-pulumi-terraform:organization: stack72-testing
+  hackathon-pulumi-terraform:workspacesPrefix: dev
