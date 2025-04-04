@@ -38,16 +38,6 @@ func (r *RemoteStateReference) Annotate(a infer.Annotator) {
 }
 
 type RemoteStateReferenceInputs struct {
-	// TODO: what is this for? Is it always be pulumi.String("remote")?
-	BackendType string `pulumi:"backendType"`
-
-	BackendConfig BackendConfig `pulumi:"backendConfig"`
-
-	// Workspace is a struct specifying which remote workspace(s) to use.
-	Workspaces Workspace `pulumi:"workspaces"`
-}
-
-type BackendConfig struct {
 	// Organization is the name of the organization containing the targeted workspace(s).
 	Organization string `pulumi:"organization"`
 
@@ -56,6 +46,9 @@ type BackendConfig struct {
 
 	// Token is the token used to authenticate with the remote backend.
 	Token string `pulumi:"token"`
+
+	// Workspace is a struct specifying which remote workspace(s) to use.
+	Workspaces Workspace `pulumi:"workspaces"`
 }
 
 // Workspace specifies the configuration options for a workspace for use with the remote enhanced backend.
@@ -85,11 +78,9 @@ func (r *RemoteStateReference) Call(
 	// Implement the logic for the Call method here.
 	// Replace the following line with actual implementation.
 	results, err := shim.RemoteStateReferenceRead(ctx, shim.RemoteStateReferenceInputs{
-		BackendConfig: shim.BackendConfig{
-			Organization: inputs.BackendConfig.Organization,
-			Hostname:     inputs.BackendConfig.Hostname,
-			Token:        inputs.BackendConfig.Token,
-		},
+		Organization: inputs.Organization,
+		Hostname:     inputs.Hostname,
+		Token:        inputs.Token,
 		Workspaces: shim.WorkspaceStateArgs{
 			Name:   inputs.Workspaces.Name,
 			Prefix: inputs.Workspaces.Prefix,

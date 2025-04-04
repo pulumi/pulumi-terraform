@@ -16,10 +16,8 @@ func main() {
 		workspace := conf.Require("workspaceName")
 
 		output := terraform.RemoteStateReferenceOutput(ctx, terraform.RemoteStateReferenceOutputArgs{
-			BackendConfig: terraform.BackendConfigArgs{
-				Organization: pulumi.String(organization),
-				Token:        pulumi.StringInput(token),
-			},
+			Organization: pulumi.String(organization),
+			Token:        pulumi.StringInput(token),
 			Workspaces: terraform.WorkspaceArgs{
 				Name: pulumi.StringPtr(workspace),
 			},

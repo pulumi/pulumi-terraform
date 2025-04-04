@@ -8,13 +8,6 @@ import (
 )
 
 type RemoteStateReferenceInputs struct {
-	BackendConfig BackendConfig
-
-	// Workspace is a struct specifying which remote workspace(s) to use.
-	Workspaces WorkspaceStateArgs
-}
-
-type BackendConfig struct {
 	// Organization is the name of the organization containing the targeted workspace(s).
 	Organization string
 
@@ -23,6 +16,9 @@ type BackendConfig struct {
 
 	// Token is the token used to authenticate with the remote backend.
 	Token string
+
+	// Workspace is a struct specifying which remote workspace(s) to use.
+	Workspaces WorkspaceStateArgs
 }
 
 // WorkspaceStateArgs specifies the configuration options for a workspace for use with the remote enhanced backend.
@@ -44,9 +40,9 @@ func RemoteStateReferenceRead(ctx context.Context, args RemoteStateReferenceInpu
 	}
 
 	return StateReferenceRead(ctx, "remote", args.Workspaces.Name, map[string]cty.Value{
-		"token":        cty.StringVal(args.BackendConfig.Token),
-		"organization": cty.StringVal(args.BackendConfig.Organization),
-		"hostname":     cty.StringVal(args.BackendConfig.Hostname),
+		"token":        cty.StringVal(args.Token),
+		"organization": cty.StringVal(args.Organization),
+		"hostname":     cty.StringVal(args.Hostname),
 		"workspaces": cty.ObjectVal(map[string]cty.Value{
 			"name":   cty.StringVal(args.Workspaces.Name),
 			"prefix": cty.StringVal(args.Workspaces.Prefix),

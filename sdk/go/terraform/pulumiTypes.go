@@ -13,67 +13,6 @@ import (
 
 var _ = internal.GetEnvOrDefault
 
-type BackendConfig struct {
-	Hostname     *string `pulumi:"hostname"`
-	Organization string  `pulumi:"organization"`
-	Token        string  `pulumi:"token"`
-}
-
-// BackendConfigInput is an input type that accepts BackendConfigArgs and BackendConfigOutput values.
-// You can construct a concrete instance of `BackendConfigInput` via:
-//
-//	BackendConfigArgs{...}
-type BackendConfigInput interface {
-	pulumi.Input
-
-	ToBackendConfigOutput() BackendConfigOutput
-	ToBackendConfigOutputWithContext(context.Context) BackendConfigOutput
-}
-
-type BackendConfigArgs struct {
-	Hostname     pulumi.StringPtrInput `pulumi:"hostname"`
-	Organization pulumi.StringInput    `pulumi:"organization"`
-	Token        pulumi.StringInput    `pulumi:"token"`
-}
-
-func (BackendConfigArgs) ElementType() reflect.Type {
-	return reflect.TypeOf((*BackendConfig)(nil)).Elem()
-}
-
-func (i BackendConfigArgs) ToBackendConfigOutput() BackendConfigOutput {
-	return i.ToBackendConfigOutputWithContext(context.Background())
-}
-
-func (i BackendConfigArgs) ToBackendConfigOutputWithContext(ctx context.Context) BackendConfigOutput {
-	return pulumi.ToOutputWithContext(ctx, i).(BackendConfigOutput)
-}
-
-type BackendConfigOutput struct{ *pulumi.OutputState }
-
-func (BackendConfigOutput) ElementType() reflect.Type {
-	return reflect.TypeOf((*BackendConfig)(nil)).Elem()
-}
-
-func (o BackendConfigOutput) ToBackendConfigOutput() BackendConfigOutput {
-	return o
-}
-
-func (o BackendConfigOutput) ToBackendConfigOutputWithContext(ctx context.Context) BackendConfigOutput {
-	return o
-}
-
-func (o BackendConfigOutput) Hostname() pulumi.StringPtrOutput {
-	return o.ApplyT(func(v BackendConfig) *string { return v.Hostname }).(pulumi.StringPtrOutput)
-}
-
-func (o BackendConfigOutput) Organization() pulumi.StringOutput {
-	return o.ApplyT(func(v BackendConfig) string { return v.Organization }).(pulumi.StringOutput)
-}
-
-func (o BackendConfigOutput) Token() pulumi.StringOutput {
-	return o.ApplyT(func(v BackendConfig) string { return v.Token }).(pulumi.StringOutput)
-}
-
 type Workspace struct {
 	Name   *string `pulumi:"name"`
 	Prefix *string `pulumi:"prefix"`
@@ -130,8 +69,6 @@ func (o WorkspaceOutput) Prefix() pulumi.StringPtrOutput {
 }
 
 func init() {
-	pulumi.RegisterInputType(reflect.TypeOf((*BackendConfigInput)(nil)).Elem(), BackendConfigArgs{})
 	pulumi.RegisterInputType(reflect.TypeOf((*WorkspaceInput)(nil)).Elem(), WorkspaceArgs{})
-	pulumi.RegisterOutputType(BackendConfigOutput{})
 	pulumi.RegisterOutputType(WorkspaceOutput{})
 }
