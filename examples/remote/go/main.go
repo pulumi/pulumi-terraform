@@ -12,7 +12,7 @@ func main() {
 		conf := config.New(ctx, "")
 		token := conf.RequireSecret("remote_tf_token")
 		organization := conf.Require("remote_tf_org")
-		workspacesPrefiix := conf.Require("workspacesPrefix")
+		workspacesPrefiix := conf.Require("workspaces_prefix")
 
 		state := terraform.RemoteStateReferenceOutput(ctx, terraform.RemoteStateReferenceOutputArgs{
 			Organization: pulumi.String(organization),
