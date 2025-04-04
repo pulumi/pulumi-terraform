@@ -45,11 +45,17 @@ namespace Pulumi.Terraform
         [Input("organization", required: true)]
         public string Organization { get; set; } = null!;
 
+        [Input("token")]
+        private string? _token;
+
         /// <summary>
         /// The token used to authenticate with the remote backend.
         /// </summary>
-        [Input("token")]
-        public string? Token { get; set; }
+        public string? Token
+        {
+            get => _token;
+            set => _token = value;
+        }
 
         [Input("workspaces", required: true)]
         public Inputs.Workspaces Workspaces { get; set; } = null!;
@@ -75,11 +81,21 @@ namespace Pulumi.Terraform
         [Input("organization", required: true)]
         public Input<string> Organization { get; set; } = null!;
 
+        [Input("token")]
+        private Input<string>? _token;
+
         /// <summary>
         /// The token used to authenticate with the remote backend.
         /// </summary>
-        [Input("token")]
-        public Input<string>? Token { get; set; }
+        public Input<string>? Token
+        {
+            get => _token;
+            set
+            {
+                var emptySecret = Output.CreateSecret(0);
+                _token = Output.Tuple<Input<string>?, int>(value, emptySecret).Apply(t => t.Item1);
+            }
+        }
 
         [Input("workspaces", required: true)]
         public Input<Inputs.WorkspacesArgs> Workspaces { get; set; } = null!;

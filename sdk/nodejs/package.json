@@ -1,6 +1,6 @@
 {
     "name": "@pulumi/terraform",
-    "version": "${VERSION}",
+    "version": "6.0.0",
     "keywords": [
         "terraform",
         "kind/native",
@@ -21,6 +21,7 @@
     },
     "pulumi": {
         "resource": true,
-        "name": "terraform"
+        "name": "terraform",
+        "version": "6.0.0"
     }
 }
