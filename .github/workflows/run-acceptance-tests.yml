@@ -143,7 +143,7 @@ jobs:
     - name: Install Pulumi CLI
       uses: pulumi/actions@v5
     - name: Build tfgen & provider binaries
-      run: make provider
+      run: make bin/pulumi-resource-terraform
     - name: Tar provider binaries
       run: tar -zcf ${{ github.workspace }}/bin/provider.tar.gz -C ${{ github.workspace
         }}/bin/ pulumi-resource-${{ env.PROVIDER }}
@@ -158,7 +158,7 @@ jobs:
         dotnetversion:
         - 6.x
         goversion:
-        - 1.21.x
+        - 1.23.x
         nodeversion:
         - 18.x
         pythonversion:

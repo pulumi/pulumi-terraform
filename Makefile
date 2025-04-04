@@ -1,6 +1,9 @@
 MODULE          := github.com/pulumi/pulumi-terraform
 VERSION         := $(shell pulumictl get version)
 
+.PHONY: all
+all: schema.json build_sdks bin/pulumi-resource-terraform
+
 _ := $(shell mkdir -p bin)
 _ := $(shell mkdir -p .make/sdk)
 _ := $(shell go build -o bin/helpmakego github.com/iwahbe/helpmakego)
