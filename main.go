@@ -21,8 +21,8 @@ import (
 
 	p "github.com/pulumi/pulumi-go-provider"
 
-	terraform "github.com/pulumi/pulumi-terraform/provider/pkg"
-	"github.com/pulumi/pulumi-terraform/provider/pkg/version"
+	terraform "github.com/pulumi/pulumi-terraform/provider"
+	"github.com/pulumi/pulumi-terraform/provider/version"
 )
 
 // A provider is a program that listens for requests from the Pulumi engine

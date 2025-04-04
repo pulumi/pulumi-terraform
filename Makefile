@@ -8,8 +8,8 @@ _ := $(shell mkdir -p bin)
 _ := $(shell mkdir -p .make/sdk)
 _ := $(shell go build -o bin/helpmakego github.com/iwahbe/helpmakego)
 
-bin/pulumi-resource-terraform: $(shell bin/helpmakego provider/pulumi-resource-command)
-	go build -o $@ -ldflags "-X ${MODULE}/provider/pkg/version=${VERSION}" "${MODULE}/provider/pulumi-resource-command"
+bin/pulumi-resource-terraform: $(shell bin/helpmakego .)
+	go build -o $@ -ldflags "-X ${MODULE}/provider/version.Version=${VERSION}" "${MODULE}"
 
 schema.json: bin/pulumi-resource-terraform
 	pulumi package get-schema $< > $@

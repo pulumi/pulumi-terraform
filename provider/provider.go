@@ -20,7 +20,7 @@ import (
 	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
 	"github.com/pulumi/pulumi-go-provider/middleware/schema"
-	"github.com/pulumi/pulumi-terraform/provider/pkg/provider"
+	"github.com/pulumi/pulumi-terraform/provider/state_reference"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/tokens"
 )
 
@@ -85,7 +85,7 @@ There is one function per kind of Terraform state backend to consume state from.
 			infer.Function[*provider.RemoteStateReference](),
 		},
 		ModuleMap: map[tokens.ModuleName]tokens.ModuleName{
-			"provider": "index",
+			"state_reference": "index",
 		},
 	})
 
