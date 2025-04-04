@@ -9,23 +9,19 @@ import (
 
 func main() {
 	pulumi.Run(func(ctx *pulumi.Context) error {
-
 		conf := config.New(ctx, "")
-		token := conf.RequireSecret("tfeToken")
-		organization := conf.Require("organization")
+		token := conf.RequireSecret("remote_tf_token")
+		organization := conf.Require("remote_tf_org")
 		workspacesPrefiix := conf.Require("workspacesPrefix")
 
-		output := terraform.RemoteStateReferenceOutput(ctx, terraform.RemoteStateReferenceOutputArgs{
+		state := terraform.RemoteStateReferenceOutput(ctx, terraform.RemoteStateReferenceOutputArgs{
 			Organization: pulumi.String(organization),
 			Token:        pulumi.StringInput(token),
 			Workspaces: terraform.WorkspacesArgs{
 				Prefix: pulumi.StringPtr(workspacesPrefiix),
 			},
 		})
-		plainOutput := pulumi.Unsecret(output)
-
-		ctx.Export("test", plainOutput)
-
+		ctx.Export("state", state.Outputs())
 		return nil
 	})
 }

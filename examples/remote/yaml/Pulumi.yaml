@@ -1,7 +1,7 @@
 name: terraform-remote-state-with-yaml
 runtime: yaml
 outputs:
-  prefix:
+  state:
     fn::invoke:
       function: terraform:index:remoteStateReference
       arguments:
@@ -11,4 +11,3 @@ outputs:
         workspaces:
           prefix: dev
       return: outputs
-  name: {}

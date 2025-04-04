@@ -73,8 +73,7 @@ func LanguageTests(t *testing.T, language string) {
 			},
 		},
 		"remote": map[string]any{
-			"name": map[string]any{},
-			"prefix": map[string]any{
+			"state": map[string]any{
 				"4dabf18193072939515e22adb298388d": "1b47061264138c4ac30d75fd1eb44270",
 				"plaintext":                        "{\"password\":\"EOZcr9x4V@ep8T1gjmR4RJ39aT9vQDsDwZx\"}",
 			},
