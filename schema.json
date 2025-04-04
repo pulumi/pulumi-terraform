@@ -1,15 +1,16 @@
 {
   "name": "terraform",
   "displayName": "Terraform",
-  "description": "TODO",
+  "description": "The Terraform provider for Pulumi lets you consume the outputs\ncontained in Terraform state files from your Pulumi programs.\n\nThere is one function per kind of Terraform state backend to consume state from.",
   "keywords": [
-    "pulumi",
-    "terraform"
+    "terraform",
+    "kind/native",
+    "category/utility"
   ],
   "homepage": "https://pulumi.com",
   "license": "Apache-2.0",
   "repository": "https://github.com/pulumi/pulumi-terraform",
-  "logoUrl": "TODO",
+  "logoUrl": "https://raw.githubusercontent.com/pulumi/pulumi-terraform-provider/main/assets/logo.png",
   "publisher": "Pulumi",
   "meta": {
     "moduleFormat": "(.*)"
@@ -47,28 +48,7 @@
   },
   "config": {},
   "types": {
-    "terraform:index:BackendConfig": {
-      "properties": {
-        "hostname": {
-          "type": "string"
-        },
-        "organization": {
-          "type": "string"
-        },
-        "resourceName": {
-          "type": "string"
-        },
-        "token": {
-          "type": "string"
-        }
-      },
-      "type": "object",
-      "required": [
-        "organization",
-        "token"
-      ]
-    },
-    "terraform:index:Workspace": {
+    "terraform:index:Workspaces": {
       "properties": {
         "name": {
           "type": "string"
@@ -84,32 +64,67 @@
     "type": "object"
   },
   "functions": {
-    "terraform:index:remoteStateReference": {
+    "terraform:index:localStateReference": {
+      "description": "TODO",
       "inputs": {
         "properties": {
-          "backendConfig": {
-            "$ref": "#/types/terraform:index:BackendConfig"
-          },
-          "backendType": {
+          "path": {
             "type": "string"
-          },
-          "workspaces": {
-            "$ref": "#/types/terraform:index:Workspace"
           }
         },
         "type": "object",
         "required": [
-          "backendConfig",
-          "backendType",
-          "workspaces"
+          "path"
         ]
       },
       "outputs": {
+        "description": "The result of fetching from a Terraform state store.",
         "properties": {
           "outputs": {
             "additionalProperties": {
               "$ref": "pulumi.json#/Any"
             },
+            "description": "The outputs displayed from Terraform state.",
+            "type": "object"
+          }
+        },
+        "required": [
+          "outputs"
+        ],
+        "type": "object"
+      }
+    },
+    "terraform:index:remoteStateReference": {
+      "description": "TODO",
+      "inputs": {
+        "properties": {
+          "hostname": {
+            "type": "string"
+          },
+          "organization": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          },
+          "workspaces": {
+            "$ref": "#/types/terraform:index:Workspaces"
+          }
+        },
+        "type": "object",
+        "required": [
+          "organization",
+          "workspaces"
+        ]
+      },
+      "outputs": {
+        "description": "The result of fetching from a Terraform state store.",
+        "properties": {
+          "outputs": {
+            "additionalProperties": {
+              "$ref": "pulumi.json#/Any"
+            },
+            "description": "The outputs displayed from Terraform state.",
             "type": "object"
           }
         },

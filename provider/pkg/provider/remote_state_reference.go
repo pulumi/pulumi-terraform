@@ -1,4 +1,4 @@
-// Copyright 2016-2022, Pulumi Corporation.
+// Copyright 2016-2025, Pulumi Corporation.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,75 +19,42 @@ import (
 
 	"github.com/hashicorp/terraform/shim"
 	"github.com/pulumi/pulumi-go-provider/infer"
+	"github.com/zclconf/go-cty/cty"
 )
 
-// This is the type that implements the RemoteStateReference resource methods.
-// The methods are declared in the read_resource.go file.
 type RemoteStateReference struct{}
-
-// The following statement is not required. It is a type assertion to indicate to Go that RemoteStateReference
-// implements the following interfaces. If the function signature doesn't match or isn't implemented,
-// we get nice compile time errors at this location.
 
 var _ = (infer.Annotated)((*RemoteStateReference)(nil))
 
-// Implementing Annotate lets you provide descriptions and default values for resources and they will
-// be visible in the provider's schema and the generated SDKs.
 func (r *RemoteStateReference) Annotate(a infer.Annotator) {
-	a.Describe(&r, "")
+	a.Describe(&r, "TODO")
 }
 
+// Taken from https://developer.hashicorp.com/terraform/language/backend/remote#configuration-variables
 type RemoteStateReferenceInputs struct {
-	// Organization is the name of the organization containing the targeted workspace(s).
-	Organization string `pulumi:"organization"`
-
-	// Hostname is the remote backend hostname to which to connect. Defaults to `app.terraform.io`.
-	Hostname string `pulumi:"hostname,optional"`
-
-	// Token is the token used to authenticate with the remote backend.
-	Token string `pulumi:"token"`
-
-	// Workspace is a struct specifying which remote workspace(s) to use.
-	Workspaces Workspace `pulumi:"workspaces"`
+	Hostname     *string    `pulumi:"hostname,optional"`
+	Organization string     `pulumi:"organization"`
+	Token        *string    `pulumi:"token,optional"`
+	Workspaces   Workspaces `pulumi:"workspaces"`
 }
 
-// Workspace specifies the configuration options for a workspace for use with the remote enhanced backend.
-type Workspace struct {
-	// Name is the full name of one remote workspace. When configured, only the default workspace
-	// can be used. This option conflicts with prefix.
-	Name string `pulumi:"name,optional"`
-
-	// Prefix is the prefix used in the names of one or more remote workspaces, all of which can be used
-	// with this configuration. If unset, only the default workspace can be used. This option
-	// conflicts with name
-	Prefix string `pulumi:"prefix,optional"`
+type Workspaces struct {
+	Name   *string `pulumi:"name,optional"`
+	Prefix *string `pulumi:"prefix,optional"`
 }
 
-// These are the outputs (or properties) of a RemoteStateReference resource.
-type RemoteStateReferenceOutputs struct {
-	// Outputs is a map of the outputs from the Terraform state file
-	Outputs map[string]any `pulumi:"outputs"`
-}
-
-func InitTfBackend() { shim.InitTfBackend() }
-
-// Call implements the infer.Fn interface for RemoteStateReference.
 func (r *RemoteStateReference) Call(
-	ctx context.Context, inputs RemoteStateReferenceInputs,
-) (RemoteStateReferenceOutputs, error) {
-	// Implement the logic for the Call method here.
-	// Replace the following line with actual implementation.
-	results, err := shim.RemoteStateReferenceRead(ctx, shim.RemoteStateReferenceInputs{
-		Organization: inputs.Organization,
-		Hostname:     inputs.Hostname,
-		Token:        inputs.Token,
-		Workspaces: shim.WorkspaceStateArgs{
-			Name:   inputs.Workspaces.Name,
-			Prefix: inputs.Workspaces.Prefix,
-		},
+	ctx context.Context, args RemoteStateReferenceInputs,
+) (StateReferenceOutputs, error) {
+	results, err := shim.StateReferenceRead(ctx, "remote", "", map[string]cty.Value{
+		"hostname":     ctyStringOrNil(args.Hostname),
+		"organization": cty.StringVal(args.Organization),
+		"token":        ctyStringOrNil(args.Token),
+		"workspaces": cty.ObjectVal(map[string]cty.Value{
+			"name":   ctyStringOrNil(args.Workspaces.Name),
+			"prefix": ctyStringOrNil(args.Workspaces.Prefix),
+		}),
 	})
-	if err != nil {
-		return RemoteStateReferenceOutputs{}, err
-	}
-	return RemoteStateReferenceOutputs{results}, nil
+
+	return StateReferenceOutputs{results}, err
 }

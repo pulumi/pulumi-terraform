@@ -34,22 +34,21 @@ func NewProvider() p.Provider {
 		// This is the metadata for the provider
 		Metadata: schema.Metadata{
 			DisplayName: "Terraform",
-			Description: "TODO",
+			Description: `The Terraform provider for Pulumi lets you consume the outputs
+contained in Terraform state files from your Pulumi programs.
+
+There is one function per kind of Terraform state backend to consume state from.`,
 			Keywords: []string{
-				"pulumi",
 				"terraform",
-				// TODO: where to find the keywords/tags?
-				// "category/utility",
-				// "kind/native",
+				"kind/native",
+				"category/utility",
 			},
 			Homepage:   "https://pulumi.com",
 			License:    "Apache-2.0",
 			Repository: "https://github.com/pulumi/pulumi-terraform",
 			Publisher:  "Pulumi",
-			LogoURL:    "TODO",
-			// This contains language specific details for generating the provider's SDKs
+			LogoURL:    "https://raw.githubusercontent.com/pulumi/pulumi-terraform-provider/main/assets/logo.png",
 			LanguageMap: map[string]any{
-				// TODO: are these the same for all providers?
 				"csharp": map[string]any{
 					"respectSchemaVersion": true,
 					"packageReferences": map[string]string{
@@ -81,19 +80,9 @@ func NewProvider() p.Provider {
 				},
 			},
 		},
-		// Functions or invokes that are provided by the provider.
 		Functions: []infer.InferredFunction{
-			// The Read function is commented extensively for new pulumi-go-provider developers.
-			infer.Function[
-				*provider.LocalStateReference,
-				provider.LocalStateReferenceInputs,
-				provider.LocalStateReferenceOutputs,
-			](),
-			infer.Function[
-				*provider.RemoteStateReference,
-				provider.RemoteStateReferenceInputs,
-				provider.RemoteStateReferenceOutputs,
-			](),
+			infer.Function[*provider.LocalStateReference](),
+			infer.Function[*provider.RemoteStateReference](),
 		},
 		ModuleMap: map[tokens.ModuleName]tokens.ModuleName{
 			"provider": "index",
