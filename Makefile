@@ -56,3 +56,22 @@ test_integration: bin/pulumi-resource-terraform
 ci-mgmt: .ci-mgmt.yaml
 	go run github.com/pulumi/ci-mgmt/provider-ci@b6bfde4bf3d1f9e539671e20aad7801e4ba5d300 generate
 .PHONY: ci-mgmt
+
+# Targets for ci-mgmt (also includes the build_% category of commands)
+.PHONY: codegen generate_schema local_generate install_go_sdk install_nodejs_sdk install_python_sdk install_java_sdk install_dotnet_sdk provider test_provider
+
+codegen: schema.json build_sdks
+generate_schema: schema.json
+local_generate: # It's not clear what this should do
+install_go_sdk:
+	# "This is a no-op that satisfies ci-mgmt
+install_nodejs_sdk:
+	# "This is a no-op that satisfies ci-mgmt
+install_python_sdk:
+	# "This is a no-op that satisfies ci-mgmt
+install_java_sdk:
+	# "This is a no-op that satisfies ci-mgmt
+install_dotnet_sdk:
+	# "This is a no-op that satisfies ci-mgmt
+provider: bin/pulumi-resource-terraform
+test_provider: test
