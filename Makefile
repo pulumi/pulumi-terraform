@@ -24,6 +24,9 @@ build_sdks: build_go build_nodejs build_python build_java build_dotnet
 
 build_go:     .make/phony/sdk/go
 build_nodejs: .make/phony/sdk/nodejs
+	cd sdk/nodejs && yarn install && yarn run tsc
+	cp README.md LICENSE sdk/nodejs/package.json sdk/nodejs/yarn.lock sdk/nodejs/bin/
+
 build_python: .make/phony/sdk/python
 build_java:   .make/phony/sdk/java
 build_dotnet: .make/phony/sdk/dotnet
@@ -67,8 +70,9 @@ generate_schema: schema.json
 local_generate: # It's not clear what this should do
 install_go_sdk:
 	# "This is a no-op that satisfies ci-mgmt
-install_nodejs_sdk:
-	# "This is a no-op that satisfies ci-mgmt
+install_nodejs_sdk: build_nodejs
+	-yarn unlink --cwd sdk/nodejs/bin
+	yarn link --cwd sdk/nodejs/bin
 install_python_sdk:
 	# "This is a no-op that satisfies ci-mgmt
 install_java_sdk:

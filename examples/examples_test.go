@@ -51,9 +51,9 @@ func getwd(t *testing.T) string {
 func getDependencies(t *testing.T, language string) []string {
 	switch language {
 	case "go":
-		return []string{
-			"github.com/pulumi/pulumi-terraform/sdk/v6=" + getwd(t) + "/../sdk",
-		}
+		return []string{"github.com/pulumi/pulumi-terraform/sdk/v6=" + getwd(t) + "/../sdk"}
+	case "nodejs":
+		return []string{"@pulumi/terraform"}
 	default:
 		return nil
 	}
