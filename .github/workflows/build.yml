@@ -336,6 +336,7 @@ jobs:
         - dotnet
         - go
         - java
+        - yaml
     name: test
     permissions:
       contents: read
@@ -398,11 +399,13 @@ jobs:
       run: find ${{ github.workspace }} -name "pulumi-*-${{ env.PROVIDER }}" -print
         -exec chmod +x {} \;
     - name: Download SDK
+      if: ${{ matrix.language != 'yaml' }}
       uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
       with:
         name: ${{ matrix.language }}-sdk.tar.gz
         path: ${{ github.workspace}}/sdk/
     - name: UnTar SDK folder
+      if: ${{ matrix.language != 'yaml' }}
       run: tar -zxf ${{ github.workspace}}/sdk/${{ matrix.language}}.tar.gz -C ${{
         github.workspace}}/sdk/${{ matrix.language}}
     - name: Update path
@@ -415,6 +418,7 @@ jobs:
         pip3 install virtualenv==20.0.23
         pip3 install pipenv
     - name: Install dependencies
+      if: ${{ matrix.language != 'yaml' }}
       run: make install_${{ matrix.language}}_sdk
     - name: Install gotestfmt
       uses: GoTestTools/gotestfmt-action@v2
