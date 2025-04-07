@@ -47,3 +47,12 @@ test_unit:
 test_integration: TAGS ?= all
 test_integration: bin/pulumi-resource-terraform
 	go test $$(go list ./... | grep /examples) -tags ${TAGS} -count 1 -v
+
+# To make an immediately observable change to .ci-mgmt.yaml:
+#
+# - Edit .ci-mgmt.yaml
+# - Run make ci-mgmt to apply the change locally.
+#
+ci-mgmt: .ci-mgmt.yaml
+	go run github.com/pulumi/ci-mgmt/provider-ci@b6bfde4bf3d1f9e539671e20aad7801e4ba5d300 generate
+.PHONY: ci-mgmt
