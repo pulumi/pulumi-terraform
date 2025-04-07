@@ -5,7 +5,7 @@ VERSION         := 6.0.0 # $(shell pulumictl get version)
 all: schema.json build_sdks bin/pulumi-resource-terraform
 
 _ := $(shell mkdir -p bin)
-_ := $(shell mkdir -p .make/sdk)
+_ := $(shell mkdir -p .make)
 _ := $(shell go build -o bin/helpmakego github.com/iwahbe/helpmakego)
 
 bin/pulumi-resource-terraform: $(shell bin/helpmakego .)
@@ -14,22 +14,27 @@ bin/pulumi-resource-terraform: $(shell bin/helpmakego .)
 schema.json: bin/pulumi-resource-terraform
 	pulumi package get-schema $< > $@
 
-.PHONY: .make/phony/sdk/%
-.make/phony/sdk/%: bin/pulumi-resource-terraform
+.make/sdk-%: bin/pulumi-resource-terraform .pulumi.version
 	pulumi package gen-sdk $< --language $*
+	@touch $@
+
+generate_go:     .make/sdk-go
+generate_python: .make/sdk-python
+generate_java:   .make/sdk-java
+generate_dotnet: .make/sdk-dotnet
+generate_nodejs: .make/sdk-nodejs
 
 .PHONY: build_go build_nodejs build_python build_java build_dotnet build_sdks
 
 build_sdks: build_go build_nodejs build_python build_java build_dotnet
 
-build_go:     .make/phony/sdk/go
-build_nodejs: .make/phony/sdk/nodejs
+build_go:     generate_go
+build_python: generate_python
+build_java:   generate_java
+build_dotnet: generate_dotnet
+build_nodejs: generate_nodejs
 	cd sdk/nodejs && yarn install && yarn run tsc
 	cp README.md LICENSE sdk/nodejs/package.json sdk/nodejs/yarn.lock sdk/nodejs/bin/
-
-build_python: .make/phony/sdk/python
-build_java:   .make/phony/sdk/java
-build_dotnet: .make/phony/sdk/dotnet
 
 lint:
 	golangci-lint run --config ./.golangci.yml --build-tags all
@@ -68,21 +73,16 @@ ci-mgmt: .ci-mgmt.yaml
 codegen: schema.json build_sdks
 generate_schema: schema.json
 local_generate: # It's not clear what this should do
-install_go_sdk:
+install_go_sdk: build_go
 	# "This is a no-op that satisfies ci-mgmt
 install_nodejs_sdk: build_nodejs
 	-yarn unlink --cwd sdk/nodejs/bin
 	yarn link --cwd sdk/nodejs/bin
-install_python_sdk:
+install_python_sdk: build_python
 	# "This is a no-op that satisfies ci-mgmt
-install_java_sdk:
+install_java_sdk: build_java
 	# "This is a no-op that satisfies ci-mgmt
-install_dotnet_sdk:
+install_dotnet_sdk: build_dotnet
 	# "This is a no-op that satisfies ci-mgmt
-generate_go: build_go
-generate_nodejs: build_nodejs
-generate_python: build_python
-generate_java: build_java
-generate_dotnet: build_dotnet
 provider: bin/pulumi-resource-terraform
 test_provider: test_unit
