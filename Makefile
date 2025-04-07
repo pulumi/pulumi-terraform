@@ -58,7 +58,9 @@ ci-mgmt: .ci-mgmt.yaml
 .PHONY: ci-mgmt
 
 # Targets for ci-mgmt (also includes the build_% category of commands)
-.PHONY: codegen generate_schema local_generate install_go_sdk install_nodejs_sdk install_python_sdk install_java_sdk install_dotnet_sdk provider test_provider
+.PHONY: codegen generate_schema local_generate provider test_provider \
+	install_go_sdk install_nodejs_sdk install_python_sdk install_java_sdk install_dotnet_sdk \
+	generate_go generate_nodejs generate_python generate_java generate_dotnet
 
 codegen: schema.json build_sdks
 generate_schema: schema.json
@@ -73,5 +75,10 @@ install_java_sdk:
 	# "This is a no-op that satisfies ci-mgmt
 install_dotnet_sdk:
 	# "This is a no-op that satisfies ci-mgmt
+generate_go: build_go
+generate_nodejs: build_nodejs
+generate_python: build_python
+generate_java: build_java
+generate_dotnet: build_dotnet
 provider: bin/pulumi-resource-terraform
 test_provider: test_unit
