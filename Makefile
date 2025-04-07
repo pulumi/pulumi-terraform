@@ -74,4 +74,4 @@ install_java_sdk:
 install_dotnet_sdk:
 	# "This is a no-op that satisfies ci-mgmt
 provider: bin/pulumi-resource-terraform
-test_provider: test
+test_provider: test_unit
