@@ -37,6 +37,8 @@ env:
   DOTNETVERSION: 8.0.x
   JAVAVERSION: "11"
   PULUMI_API: https://api.pulumi-staging.io
+  TFE_ORGANIZATION: ${{ secrets.TFE_ORGANIZATION }}
+  TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
 jobs:
   prerequisites:
     runs-on: ubuntu-latest
