@@ -15,6 +15,7 @@
 package examples
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -64,7 +65,19 @@ func getDependencies(t *testing.T, language string) []string {
 }
 
 func TestMain(m *testing.M) {
-	if err := os.Setenv("PULUMI_LOCAL_NUGET", "../nuget"); err != nil {
+	set := func(envVar, path string) error {
+		abs, err := filepath.Abs(path)
+		if err != nil {
+			return err
+		}
+		return os.Setenv(envVar, abs)
+	}
+
+	err := errors.Join(
+		set("PULUMI_LOCAL_NUGET", "../nuget"),
+		set("PULUMI_LOCAL_MAVEN", "../maven"),
+	)
+	if err != nil {
 		panic(err)
 	}
 	os.Exit(m.Run())

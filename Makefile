@@ -118,7 +118,7 @@ install_python_sdk: build_python
 #      <repository>
 #        <id>com.pulumi</id>
 #        <name>terraform</name>
-#        <url>file:/Users/ianwahbe/go/src/github.com/pulumi/pulumi-terraform/maven</url>
+#        <url>file:${env.PULUMI_LOCAL_MAVEN}</url>
 #      </repository>
 #    </repositories>
 #
