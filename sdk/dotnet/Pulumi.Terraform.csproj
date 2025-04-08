@@ -4,10 +4,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Pulumi</Authors>
     <Company>Pulumi</Company>
-    <Description>The Terraform provider for Pulumi lets you consume the outputs
-contained in Terraform state files from your Pulumi programs.
-
-There is one function per kind of Terraform state backend to consume state from.</Description>
+    <Description>The Terraform provider for Pulumi lets you consume the outputs contained in Terraform state from your Pulumi programs.</Description>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageProjectUrl>https://pulumi.com</PackageProjectUrl>
     <RepositoryUrl>https://github.com/pulumi/pulumi-terraform</RepositoryUrl>

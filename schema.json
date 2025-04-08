@@ -2,7 +2,7 @@
   "name": "terraform",
   "displayName": "Terraform",
   "version": "6.0.0",
-  "description": "The Terraform provider for Pulumi lets you consume the outputs\ncontained in Terraform state files from your Pulumi programs.\n\nThere is one function per kind of Terraform state backend to consume state from.",
+  "description": "The Terraform provider for Pulumi lets you consume the outputs contained in Terraform state from your Pulumi programs.",
   "keywords": [
     "terraform",
     "kind/native",

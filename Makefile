@@ -95,6 +95,30 @@ install_nodejs_sdk: build_nodejs
 install_python_sdk: build_python
 	# "This is a no-op that satisfies ci-mgmt
 
+# Install the built java SDK into the local maven repository.
+#
+# Each test that references the locally installed SDK should specify the dependency in
+# their pom.xml file as normal:
+#
+#    <dependency>
+#      <groupId>com.pulumi</groupId>
+#      <artifactId>terraform</artifactId>
+#      <!-- Allow any version. We need to depend on our locally built sdk which only has a real version when tagged -->
+#      <!-- Pin to specific version if you are copying this pom.xml for a real application -->
+#      <version>[0.0.0,)</version>
+#    </dependency>
+#
+# They also need to reference the local repository in the pom.xml file:
+#
+#    <repositories>
+#      <repository>
+#        <id>com.pulumi</id>
+#        <name>terraform</name>
+#        <url>file:/Users/ianwahbe/go/src/github.com/pulumi/pulumi-terraform/maven</url>
+#      </repository>
+#    </repositories>
+#
+# For an example of what this looks like in practice, see examples/local/java/pom.xml.
 install_java_sdk: build_java
 	mkdir -p maven
 	mvn deploy:deploy-file -Durl=file://$$(pwd)/maven -Dfile=sdk/java/build/libs/com.pulumi.terraform.jar -DgroupId=com.pulumi -DartifactId=terraform -Dpackaging=jar -Dversion=0.1

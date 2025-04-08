@@ -1,6 +1,6 @@
 [project]
   name = "pulumi_terraform"
-  description = "The Terraform provider for Pulumi lets you consume the outputs"
+  description = "The Terraform provider for Pulumi lets you consume the outputs contained in Terraform state from your Pulumi programs."
   dependencies = ["parver>=0.2.1", "pulumi>=3.142.0,<4.0.0", "semver>=2.8.1", "typing-extensions>=4.11; python_version < \"3.11\""]
   keywords = ["terraform", "kind/native", "category/utility"]
   readme = "README.md"
