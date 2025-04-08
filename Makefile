@@ -18,15 +18,17 @@ schema.json: bin/pulumi-resource-terraform
 	pulumi package gen-sdk $< --language $*
 	@touch $@
 
+.PHONY: generate_sdks generate_go generate_python generate_java generate_dotnet generate_nodejs
+
 generate_go:     .make/sdk-go
 generate_python: .make/sdk-python
 generate_java:   .make/sdk-java
 generate_dotnet: .make/sdk-dotnet
 generate_nodejs: .make/sdk-nodejs
 
-.PHONY: build_go build_nodejs build_python build_java build_dotnet build_sdks
+generate_sdks: generate_go generate_python generate_java generate_dotnet generate_nodejs
 
-build_sdks: build_go build_nodejs build_python build_java build_dotnet
+.PHONY: build_sdks build_go build_nodejs build_python build_java build_dotnet
 
 build_go:     generate_go
 build_python: generate_python
@@ -42,6 +44,8 @@ build_dotnet: generate_dotnet
 build_nodejs: generate_nodejs
 	cd sdk/nodejs && yarn install && yarn run tsc
 	cp README.md LICENSE sdk/nodejs/package.json sdk/nodejs/yarn.lock sdk/nodejs/bin/
+
+build_sdks: build_go build_nodejs build_python build_java build_dotnet
 
 lint:
 	golangci-lint run --config ./.golangci.yml --build-tags all
@@ -81,7 +85,7 @@ ci-mgmt: .ci-mgmt.yaml
 	install_go_sdk install_nodejs_sdk install_python_sdk install_java_sdk install_dotnet_sdk \
 	generate_go generate_nodejs generate_python generate_java generate_dotnet
 
-codegen: schema.json build_sdks
+codegen: schema.json generate_sdks
 generate_schema: schema.json
 local_generate: # It's not clear what this should do
 
