@@ -57,8 +57,12 @@ test_unit:
 #
 # To run a specific integration test, you can override TAGS:
 #
-#     make test_integration TAGS=yaml
+#	make test_integration TAGS=yaml
 #
+# To run an integration test, the associated SDK should first be installed with `$(MAKE)
+# install_$(LANGUAGE)_sdk`. For example:
+#
+#	make install_java_sdk test_integration TAGS=java
 test_integration: TAGS ?= all
 test_integration: bin/pulumi-resource-terraform
 	go test $$(go list ./... | grep /examples) -tags ${TAGS} -count 1 -v
