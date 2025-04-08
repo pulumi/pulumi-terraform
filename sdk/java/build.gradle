@@ -94,10 +94,7 @@ publishing {
                 inceptionYear = "2022"
                 name = "pulumi-terraform"
                 packaging = "jar"
-                description = "The Terraform provider for Pulumi lets you consume the outputs
-contained in Terraform state files from your Pulumi programs.
-
-There is one function per kind of Terraform state backend to consume state from."
+                description = "The Terraform provider for Pulumi lets you consume the outputs contained in Terraform state from your Pulumi programs."
 
                 url = "https://github.com/pulumi/pulumi-terraform"
 

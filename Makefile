@@ -30,7 +30,9 @@ build_sdks: build_go build_nodejs build_python build_java build_dotnet
 
 build_go:     generate_go
 build_python: generate_python
+
 build_java:   generate_java
+	cd sdk/java && gradle --console=plain build
 
 build_dotnet: generate_dotnet
 	mkdir -p nuget
@@ -90,8 +92,14 @@ install_python_sdk: build_python
 	# "This is a no-op that satisfies ci-mgmt
 
 install_java_sdk: build_java
-	# "This is a no-op that satisfies ci-mgmt
+	mkdir -p maven
+	mvn deploy:deploy-file -Durl=file://$$(pwd)/maven -Dfile=sdk/java/build/libs/com.pulumi.terraform.jar -DgroupId=com.pulumi -DartifactId=terraform -Dpackaging=jar -Dversion=0.1
 
+# Install the built nupkg to ./nuget.
+#
+# To consume this package, you will need to run:
+#
+#	dotnet nuget add source ./nuget
 install_dotnet_sdk: build_dotnet
 	rm -rf ./nuget/Pulumi.Terraform.*.nupkg
 	mkdir -p ./nuget

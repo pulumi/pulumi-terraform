@@ -36,10 +36,8 @@ func NewProvider() p.Provider {
 		// This is the metadata for the provider
 		Metadata: schema.Metadata{
 			DisplayName: "Terraform",
-			Description: `The Terraform provider for Pulumi lets you consume the outputs
-contained in Terraform state files from your Pulumi programs.
-
-There is one function per kind of Terraform state backend to consume state from.`,
+			Description: "The Terraform provider for Pulumi lets you consume the outputs " +
+				"contained in Terraform state from your Pulumi programs.",
 			Keywords: []string{
 				"terraform",
 				"kind/native",
