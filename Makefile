@@ -31,7 +31,12 @@ build_sdks: build_go build_nodejs build_python build_java build_dotnet
 build_go:     generate_go
 build_python: generate_python
 build_java:   generate_java
+
 build_dotnet: generate_dotnet
+	mkdir -p nuget
+	echo "${VERSION}" > sdk/dotnet/version.txt
+	cd sdk/dotnet && dotnet build /p:Version=${VERSION}
+
 build_nodejs: generate_nodejs
 	cd sdk/nodejs && yarn install && yarn run tsc
 	cp README.md LICENSE sdk/nodejs/package.json sdk/nodejs/yarn.lock sdk/nodejs/bin/
@@ -73,16 +78,24 @@ ci-mgmt: .ci-mgmt.yaml
 codegen: schema.json build_sdks
 generate_schema: schema.json
 local_generate: # It's not clear what this should do
+
 install_go_sdk: build_go
 	# "This is a no-op that satisfies ci-mgmt
+
 install_nodejs_sdk: build_nodejs
 	-yarn unlink --cwd sdk/nodejs/bin
 	yarn link --cwd sdk/nodejs/bin
+
 install_python_sdk: build_python
 	# "This is a no-op that satisfies ci-mgmt
+
 install_java_sdk: build_java
 	# "This is a no-op that satisfies ci-mgmt
+
 install_dotnet_sdk: build_dotnet
-	# "This is a no-op that satisfies ci-mgmt
+	rm -rf ./nuget/Pulumi.Terraform.*.nupkg
+	mkdir -p ./nuget
+	find . -name '*.nupkg' -print -exec cp -p {} ./nuget \;
+
 provider: bin/pulumi-resource-terraform
 test_provider: test_unit

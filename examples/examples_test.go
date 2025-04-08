@@ -56,28 +56,47 @@ func getDependencies(t *testing.T, language string) []string {
 		return []string{"@pulumi/terraform"}
 	case "python":
 		return []string{"../sdk/python"}
+	case "dotnet":
+		return []string{"Pulumi.Terraform"}
 	default:
 		return nil
 	}
 }
 
+func TestMain(m *testing.M) {
+	if err := os.Setenv("PULUMI_LOCAL_NUGET", "../nuget"); err != nil {
+		panic(err)
+	}
+	os.Exit(m.Run())
+}
+
 func LanguageTests(t *testing.T, language string) {
-	expectedStackOutputs := map[string]any{
-		"local": map[string]any{
-			"state": map[string]any{
-				"bucket_arn": "arn:aws:s3:::hello-world-abc12345",
-				"public_subnet_ids": []any{
-					"subnet-023a5a6867d194162",
-					"subnet-0eea17cb6af21b5e5",
-					"subnet-02822dcd2e06634cf",
+
+	type languageTest struct {
+		doesNotNeedConfig    bool
+		expectedStackOutputs map[string]any
+	}
+	tests := map[string]languageTest{
+		"local": {
+			doesNotNeedConfig: true,
+			expectedStackOutputs: map[string]any{
+				"state": map[string]any{
+					"bucket_arn": "arn:aws:s3:::hello-world-abc12345",
+					"public_subnet_ids": []any{
+						"subnet-023a5a6867d194162",
+						"subnet-0eea17cb6af21b5e5",
+						"subnet-02822dcd2e06634cf",
+					},
+					"vpc_id": "vpc-0d9ff66ccda7c9765",
 				},
-				"vpc_id": "vpc-0d9ff66ccda7c9765",
 			},
 		},
-		"remote": map[string]any{
-			"state": map[string]any{
-				"4dabf18193072939515e22adb298388d": "1b47061264138c4ac30d75fd1eb44270",
-				"plaintext":                        "{\"password\":\"EOZcr9x4V@ep8T1gjmR4RJ39aT9vQDsDwZx\"}",
+		"remote": {
+			expectedStackOutputs: map[string]any{
+				"state": map[string]any{
+					"4dabf18193072939515e22adb298388d": "1b47061264138c4ac30d75fd1eb44270",
+					"plaintext":                        "{\"password\":\"EOZcr9x4V@ep8T1gjmR4RJ39aT9vQDsDwZx\"}",
+				},
 			},
 		},
 	}
@@ -100,20 +119,25 @@ func LanguageTests(t *testing.T, language string) {
 
 		// We have found a yaml example called dir.Name, so we should run it async.
 		t.Run(dir.Name(), func(t *testing.T) {
+			test := tests[dir.Name()]
+			var config map[string]string
+			if !test.doesNotNeedConfig {
+				config = map[string]string{
+					"remote_tf_token": getRemoteBackendToken(t),
+					"remote_tf_org":   getRemoteBackendOrganization(t),
+				}
+			}
 			opts := integration.ProgramTestOptions{
 				Dir:                    testDir,
 				DecryptSecretsInOutput: true,
-				Config: map[string]string{
-					"remote_tf_token": getRemoteBackendToken(t),
-					"remote_tf_org":   getRemoteBackendOrganization(t),
-				},
+				Config:                 config,
 				LocalProviders: []integration.LocalDependency{{
 					Package: "terraform",
 					Path:    "../bin",
 				}},
 				Dependencies: getDependencies(t, language),
 				ExtraRuntimeValidation: func(t *testing.T, stack integration.RuntimeValidationStackInfo) {
-					assert.Equal(t, expectedStackOutputs[dir.Name()], stack.Outputs)
+					assert.Equal(t, test.expectedStackOutputs, stack.Outputs)
 				},
 			}
 			integration.ProgramTest(t, &opts)
