@@ -49,7 +49,12 @@ func (r *RemoteStateReferenceInputs) Annotate(a infer.Annotator) {
 	a.SetDefault(&r.Hostname, "app.terraform.io")
 }
 
-// TODO: This doesn't seem to work correctly - investigate why not
+// WireDependencies lets us tell user's that our outputs shouldn't be secret, even when
+// the token (when provided) is always secret.
+//
+// TODO[https://github.com/pulumi/pulumi-go-provider/issues/323]: This doesn't currently
+// work; [infer.ExplicitDependencies] is not currently implemented for [infer] based
+// functions.
 func (r *RemoteStateReference) WireDependencies(
 	f infer.FieldSelector, _ *RemoteStateReferenceInputs, state *StateReferenceOutputs,
 ) {

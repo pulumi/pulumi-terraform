@@ -24,8 +24,6 @@ import (
 	"github.com/pulumi/pulumi-terraform/provider/version"
 )
 
-// A provider is a program that listens for requests from the Pulumi engine
-// to interact with cloud providers using a CRUD-based model.
 func main() {
 	// This method defines the provider implemented in this repository.
 	terraformProvider := terraform.NewProvider()

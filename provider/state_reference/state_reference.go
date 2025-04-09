@@ -22,13 +22,12 @@ import (
 
 func InitTfBackend() { shim.InitTfBackend() }
 
-// These are the outputs (or properties) of a LocalStateReference resource.
 type StateReferenceOutputs struct {
 	// Outputs is a map of the outputs from the Terraform state file
 	Outputs map[string]any `pulumi:"outputs"`
 }
 
-var _ = (infer.Annotated)((*LocalStateReference)(nil))
+var _ = (infer.Annotated)((*StateReferenceOutputs)(nil))
 
 // Implementing Annotate lets you provide descriptions and default values for resources and they will
 // be visible in the provider's schema and the generated SDKs.
