@@ -14,7 +14,6 @@ builds:
   - amd64
   - arm64
   ignore: &a1 []
-  main: ./cmd/pulumi-resource-terraform/
   ldflags: &a2
     - -s
     - -w
@@ -32,7 +31,6 @@ builds:
   - amd64
   - arm64
   ignore: *a1
-  main: ./cmd/pulumi-resource-terraform/
   ldflags: *a2
   binary: pulumi-resource-terraform
   hooks:
