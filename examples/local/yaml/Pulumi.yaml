@@ -3,7 +3,7 @@ runtime: yaml
 outputs:
   state:
     fn::invoke:
-      function: terraform:index:localStateReference
+      function: terraform:state:getLocalReference
       arguments:
         path: ./terraform.0-12-24.tfstate
       return: outputs

@@ -15,6 +15,7 @@ schema.json: bin/pulumi-resource-terraform
 	pulumi package get-schema $< > $@
 
 .make/sdk-%: bin/pulumi-resource-terraform .pulumi.version
+	rm -rf sdk/$* # Ensure that each in the SDK is marked as updated
 	pulumi package gen-sdk $< --language $*
 	@touch $@
 
