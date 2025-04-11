@@ -7,31 +7,31 @@ using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Pulumi.Serialization;
 
-namespace Pulumi.Terraform
+namespace Pulumi.Terraform.State
 {
-    public static class LocalStateReference
+    public static class GetLocalReference
     {
         /// <summary>
         /// Access state from the local filesystem.
         /// </summary>
-        public static Task<LocalStateReferenceResult> InvokeAsync(LocalStateReferenceArgs? args = null, InvokeOptions? options = null)
-            => global::Pulumi.Deployment.Instance.InvokeAsync<LocalStateReferenceResult>("terraform:index:localStateReference", args ?? new LocalStateReferenceArgs(), options.WithDefaults());
+        public static Task<GetLocalReferenceResult> InvokeAsync(GetLocalReferenceArgs? args = null, InvokeOptions? options = null)
+            => global::Pulumi.Deployment.Instance.InvokeAsync<GetLocalReferenceResult>("terraform:state:getLocalReference", args ?? new GetLocalReferenceArgs(), options.WithDefaults());
 
         /// <summary>
         /// Access state from the local filesystem.
         /// </summary>
-        public static Output<LocalStateReferenceResult> Invoke(LocalStateReferenceInvokeArgs? args = null, InvokeOptions? options = null)
-            => global::Pulumi.Deployment.Instance.Invoke<LocalStateReferenceResult>("terraform:index:localStateReference", args ?? new LocalStateReferenceInvokeArgs(), options.WithDefaults());
+        public static Output<GetLocalReferenceResult> Invoke(GetLocalReferenceInvokeArgs? args = null, InvokeOptions? options = null)
+            => global::Pulumi.Deployment.Instance.Invoke<GetLocalReferenceResult>("terraform:state:getLocalReference", args ?? new GetLocalReferenceInvokeArgs(), options.WithDefaults());
 
         /// <summary>
         /// Access state from the local filesystem.
         /// </summary>
-        public static Output<LocalStateReferenceResult> Invoke(LocalStateReferenceInvokeArgs args, InvokeOutputOptions options)
-            => global::Pulumi.Deployment.Instance.Invoke<LocalStateReferenceResult>("terraform:index:localStateReference", args ?? new LocalStateReferenceInvokeArgs(), options.WithDefaults());
+        public static Output<GetLocalReferenceResult> Invoke(GetLocalReferenceInvokeArgs args, InvokeOutputOptions options)
+            => global::Pulumi.Deployment.Instance.Invoke<GetLocalReferenceResult>("terraform:state:getLocalReference", args ?? new GetLocalReferenceInvokeArgs(), options.WithDefaults());
     }
 
 
-    public sealed class LocalStateReferenceArgs : global::Pulumi.InvokeArgs
+    public sealed class GetLocalReferenceArgs : global::Pulumi.InvokeArgs
     {
         /// <summary>
         /// The path to the tfstate file. This defaults to "terraform.tfstate" relative to the root module by default.
@@ -45,13 +45,13 @@ namespace Pulumi.Terraform
         [Input("workspaceDir")]
         public string? WorkspaceDir { get; set; }
 
-        public LocalStateReferenceArgs()
+        public GetLocalReferenceArgs()
         {
         }
-        public static new LocalStateReferenceArgs Empty => new LocalStateReferenceArgs();
+        public static new GetLocalReferenceArgs Empty => new GetLocalReferenceArgs();
     }
 
-    public sealed class LocalStateReferenceInvokeArgs : global::Pulumi.InvokeArgs
+    public sealed class GetLocalReferenceInvokeArgs : global::Pulumi.InvokeArgs
     {
         /// <summary>
         /// The path to the tfstate file. This defaults to "terraform.tfstate" relative to the root module by default.
@@ -65,15 +65,15 @@ namespace Pulumi.Terraform
         [Input("workspaceDir")]
         public Input<string>? WorkspaceDir { get; set; }
 
-        public LocalStateReferenceInvokeArgs()
+        public GetLocalReferenceInvokeArgs()
         {
         }
-        public static new LocalStateReferenceInvokeArgs Empty => new LocalStateReferenceInvokeArgs();
+        public static new GetLocalReferenceInvokeArgs Empty => new GetLocalReferenceInvokeArgs();
     }
 
 
     [OutputType]
-    public sealed class LocalStateReferenceResult
+    public sealed class GetLocalReferenceResult
     {
         /// <summary>
         /// The outputs displayed from Terraform state.
@@ -81,7 +81,7 @@ namespace Pulumi.Terraform
         public readonly ImmutableDictionary<string, object> Outputs;
 
         [OutputConstructor]
-        private LocalStateReferenceResult(ImmutableDictionary<string, object> outputs)
+        private GetLocalReferenceResult(ImmutableDictionary<string, object> outputs)
         {
             Outputs = outputs;
         }

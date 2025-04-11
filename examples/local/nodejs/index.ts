@@ -1,6 +1,6 @@
-import * as terraform from "@pulumi/terraform";
+import { state as tf_state } from "@pulumi/terraform";
 
-let outputs = terraform.localStateReferenceOutput({
+let outputs = tf_state.getLocalReferenceOutput({
   path: "./terraform.0-12-24.tfstate",
 });
 

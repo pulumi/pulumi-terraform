@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using Pulumi;
-using Pulumi.Terraform;
+using Pulumi.Terraform.State;
 
 return await Deployment.RunAsync(() =>
 {
-    var outputs = LocalStateReference.Invoke(new LocalStateReferenceInvokeArgs
+    var outputs = GetLocalReference.Invoke(new GetLocalReferenceInvokeArgs
     {
         Path = "./terraform.0-12-24.tfstate",
     });

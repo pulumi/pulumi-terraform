@@ -22,28 +22,28 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-type LocalStateReference struct{}
+type GetLocalReference struct{}
 
-var _ = (infer.Annotated)((*LocalStateReference)(nil))
+var _ = (infer.Annotated)((*GetLocalReference)(nil))
 
-func (r *LocalStateReference) Annotate(a infer.Annotator) {
+func (r *GetLocalReference) Annotate(a infer.Annotator) {
 	a.Describe(&r, "Access state from the local filesystem.")
 }
 
 // Taken from https://developer.hashicorp.com/terraform/language/backend/local#configuration-variables
-type LocalStateReferenceInputs struct {
+type GetLocalReferenceArgs struct {
 	Path         *string `pulumi:"path,optional"`
 	WorkspaceDir *string `pulumi:"workspaceDir,optional"`
 }
 
-func (r *LocalStateReferenceInputs) Annotate(a infer.Annotator) {
+func (r *GetLocalReferenceArgs) Annotate(a infer.Annotator) {
 	a.Describe(&r.Path, `The path to the tfstate file. This defaults to `+
 		`"terraform.tfstate" relative to the root module by default.`)
 	a.Describe(&r.WorkspaceDir, `The path to non-default workspaces.`)
 }
 
-func (r *LocalStateReference) Call(
-	ctx context.Context, args LocalStateReferenceInputs,
+func (r *GetLocalReference) Call(
+	ctx context.Context, args GetLocalReferenceArgs,
 ) (StateReferenceOutputs, error) {
 	results, err := shim.StateReferenceRead(ctx, "local", "", map[string]cty.Value{
 		"path":          ctyStringOrNil(args.Path),

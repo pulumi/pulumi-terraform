@@ -4,7 +4,7 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi/config"
 
-	"github.com/pulumi/pulumi-terraform/sdk/v6/go/terraform"
+	"github.com/pulumi/pulumi-terraform/sdk/v6/go/terraform/state"
 )
 
 func main() {
@@ -14,10 +14,10 @@ func main() {
 		organization := conf.Require("remote_tf_org")
 		workspacesPrefiix := conf.Require("workspaces_prefix")
 
-		state := terraform.RemoteStateReferenceOutput(ctx, terraform.RemoteStateReferenceOutputArgs{
+		state := state.GetRemoteReferenceOutput(ctx, state.GetRemoteReferenceOutputArgs{
 			Organization: pulumi.String(organization),
 			Token:        pulumi.StringInput(token),
-			Workspaces: terraform.WorkspacesArgs{
+			Workspaces: state.WorkspacesArgs{
 				Prefix: pulumi.StringPtr(workspacesPrefiix),
 			},
 		})

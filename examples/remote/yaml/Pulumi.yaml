@@ -3,7 +3,7 @@ runtime: yaml
 outputs:
   state:
     fn::invoke:
-      function: terraform:index:remoteStateReference
+      function: terraform:state:getRemoteReference
       arguments:
         organization: ${remote_tf_org} # A config value - sourced from TFE_ORGANIZATION in testing
         token:

@@ -7,31 +7,31 @@ using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Pulumi.Serialization;
 
-namespace Pulumi.Terraform
+namespace Pulumi.Terraform.State
 {
-    public static class RemoteStateReference
+    public static class GetRemoteReference
     {
         /// <summary>
         /// Access state from a remote backend.
         /// </summary>
-        public static Task<RemoteStateReferenceResult> InvokeAsync(RemoteStateReferenceArgs args, InvokeOptions? options = null)
-            => global::Pulumi.Deployment.Instance.InvokeAsync<RemoteStateReferenceResult>("terraform:index:remoteStateReference", args ?? new RemoteStateReferenceArgs(), options.WithDefaults());
+        public static Task<GetRemoteReferenceResult> InvokeAsync(GetRemoteReferenceArgs args, InvokeOptions? options = null)
+            => global::Pulumi.Deployment.Instance.InvokeAsync<GetRemoteReferenceResult>("terraform:state:getRemoteReference", args ?? new GetRemoteReferenceArgs(), options.WithDefaults());
 
         /// <summary>
         /// Access state from a remote backend.
         /// </summary>
-        public static Output<RemoteStateReferenceResult> Invoke(RemoteStateReferenceInvokeArgs args, InvokeOptions? options = null)
-            => global::Pulumi.Deployment.Instance.Invoke<RemoteStateReferenceResult>("terraform:index:remoteStateReference", args ?? new RemoteStateReferenceInvokeArgs(), options.WithDefaults());
+        public static Output<GetRemoteReferenceResult> Invoke(GetRemoteReferenceInvokeArgs args, InvokeOptions? options = null)
+            => global::Pulumi.Deployment.Instance.Invoke<GetRemoteReferenceResult>("terraform:state:getRemoteReference", args ?? new GetRemoteReferenceInvokeArgs(), options.WithDefaults());
 
         /// <summary>
         /// Access state from a remote backend.
         /// </summary>
-        public static Output<RemoteStateReferenceResult> Invoke(RemoteStateReferenceInvokeArgs args, InvokeOutputOptions options)
-            => global::Pulumi.Deployment.Instance.Invoke<RemoteStateReferenceResult>("terraform:index:remoteStateReference", args ?? new RemoteStateReferenceInvokeArgs(), options.WithDefaults());
+        public static Output<GetRemoteReferenceResult> Invoke(GetRemoteReferenceInvokeArgs args, InvokeOutputOptions options)
+            => global::Pulumi.Deployment.Instance.Invoke<GetRemoteReferenceResult>("terraform:state:getRemoteReference", args ?? new GetRemoteReferenceInvokeArgs(), options.WithDefaults());
     }
 
 
-    public sealed class RemoteStateReferenceArgs : global::Pulumi.InvokeArgs
+    public sealed class GetRemoteReferenceArgs : global::Pulumi.InvokeArgs
     {
         /// <summary>
         /// The remote backend hostname to connect to.
@@ -60,14 +60,14 @@ namespace Pulumi.Terraform
         [Input("workspaces", required: true)]
         public Inputs.Workspaces Workspaces { get; set; } = null!;
 
-        public RemoteStateReferenceArgs()
+        public GetRemoteReferenceArgs()
         {
             Hostname = "app.terraform.io";
         }
-        public static new RemoteStateReferenceArgs Empty => new RemoteStateReferenceArgs();
+        public static new GetRemoteReferenceArgs Empty => new GetRemoteReferenceArgs();
     }
 
-    public sealed class RemoteStateReferenceInvokeArgs : global::Pulumi.InvokeArgs
+    public sealed class GetRemoteReferenceInvokeArgs : global::Pulumi.InvokeArgs
     {
         /// <summary>
         /// The remote backend hostname to connect to.
@@ -100,16 +100,16 @@ namespace Pulumi.Terraform
         [Input("workspaces", required: true)]
         public Input<Inputs.WorkspacesArgs> Workspaces { get; set; } = null!;
 
-        public RemoteStateReferenceInvokeArgs()
+        public GetRemoteReferenceInvokeArgs()
         {
             Hostname = "app.terraform.io";
         }
-        public static new RemoteStateReferenceInvokeArgs Empty => new RemoteStateReferenceInvokeArgs();
+        public static new GetRemoteReferenceInvokeArgs Empty => new GetRemoteReferenceInvokeArgs();
     }
 
 
     [OutputType]
-    public sealed class RemoteStateReferenceResult
+    public sealed class GetRemoteReferenceResult
     {
         /// <summary>
         /// The outputs displayed from Terraform state.
@@ -117,7 +117,7 @@ namespace Pulumi.Terraform
         public readonly ImmutableDictionary<string, object> Outputs;
 
         [OutputConstructor]
-        private RemoteStateReferenceResult(ImmutableDictionary<string, object> outputs)
+        private GetRemoteReferenceResult(ImmutableDictionary<string, object> outputs)
         {
             Outputs = outputs;
         }
