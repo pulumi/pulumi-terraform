@@ -2,16 +2,16 @@
 // *** Do not edit by hand unless you're certain you know what you are doing! ***
 
 import * as pulumi from "@pulumi/pulumi";
-import * as inputs from "./types/input";
-import * as outputs from "./types/output";
-import * as utilities from "./utilities";
+import * as inputs from "../types/input";
+import * as outputs from "../types/output";
+import * as utilities from "../utilities";
 
 /**
  * Access state from a remote backend.
  */
-export function remoteStateReference(args: RemoteStateReferenceArgs, opts?: pulumi.InvokeOptions): Promise<RemoteStateReferenceResult> {
+export function getRemoteReference(args: GetRemoteReferenceArgs, opts?: pulumi.InvokeOptions): Promise<GetRemoteReferenceResult> {
     opts = pulumi.mergeOptions(utilities.resourceOptsDefaults(), opts || {});
-    return pulumi.runtime.invoke("terraform:index:remoteStateReference", {
+    return pulumi.runtime.invoke("terraform:state:getRemoteReference", {
         "hostname": args.hostname,
         "organization": args.organization,
         "token": args.token,
@@ -19,7 +19,7 @@ export function remoteStateReference(args: RemoteStateReferenceArgs, opts?: pulu
     }, opts);
 }
 
-export interface RemoteStateReferenceArgs {
+export interface GetRemoteReferenceArgs {
     /**
      * The remote backend hostname to connect to.
      */
@@ -32,13 +32,13 @@ export interface RemoteStateReferenceArgs {
      * The token used to authenticate with the remote backend.
      */
     token?: string;
-    workspaces: inputs.Workspaces;
+    workspaces: inputs.state.Workspaces;
 }
 
 /**
  * The result of fetching from a Terraform state store.
  */
-export interface RemoteStateReferenceResult {
+export interface GetRemoteReferenceResult {
     /**
      * The outputs displayed from Terraform state.
      */
@@ -47,9 +47,9 @@ export interface RemoteStateReferenceResult {
 /**
  * Access state from a remote backend.
  */
-export function remoteStateReferenceOutput(args: RemoteStateReferenceOutputArgs, opts?: pulumi.InvokeOutputOptions): pulumi.Output<RemoteStateReferenceResult> {
+export function getRemoteReferenceOutput(args: GetRemoteReferenceOutputArgs, opts?: pulumi.InvokeOutputOptions): pulumi.Output<GetRemoteReferenceResult> {
     opts = pulumi.mergeOptions(utilities.resourceOptsDefaults(), opts || {});
-    return pulumi.runtime.invokeOutput("terraform:index:remoteStateReference", {
+    return pulumi.runtime.invokeOutput("terraform:state:getRemoteReference", {
         "hostname": args.hostname,
         "organization": args.organization,
         "token": args.token,
@@ -57,7 +57,7 @@ export function remoteStateReferenceOutput(args: RemoteStateReferenceOutputArgs,
     }, opts);
 }
 
-export interface RemoteStateReferenceOutputArgs {
+export interface GetRemoteReferenceOutputArgs {
     /**
      * The remote backend hostname to connect to.
      */
@@ -70,5 +70,5 @@ export interface RemoteStateReferenceOutputArgs {
      * The token used to authenticate with the remote backend.
      */
     token?: pulumi.Input<string>;
-    workspaces: pulumi.Input<inputs.WorkspacesArgs>;
+    workspaces: pulumi.Input<inputs.state.WorkspacesArgs>;
 }

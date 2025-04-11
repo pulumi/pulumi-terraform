@@ -49,7 +49,7 @@
   },
   "config": {},
   "types": {
-    "terraform:index:Workspaces": {
+    "terraform:state:Workspaces": {
       "properties": {
         "name": {
           "type": "string",
@@ -67,7 +67,7 @@
     "type": "object"
   },
   "functions": {
-    "terraform:index:localStateReference": {
+    "terraform:state:getLocalReference": {
       "description": "Access state from the local filesystem.",
       "inputs": {
         "properties": {
@@ -99,7 +99,7 @@
         "type": "object"
       }
     },
-    "terraform:index:remoteStateReference": {
+    "terraform:state:getRemoteReference": {
       "description": "Access state from a remote backend.",
       "inputs": {
         "properties": {
@@ -118,7 +118,7 @@
             "secret": true
           },
           "workspaces": {
-            "$ref": "#/types/terraform:index:Workspaces"
+            "$ref": "#/types/terraform:state:Workspaces"
           }
         },
         "type": "object",

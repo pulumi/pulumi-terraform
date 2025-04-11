@@ -22,26 +22,26 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-type RemoteStateReference struct{}
+type GetRemoteReference struct{}
 
 var (
-	_ = (infer.Annotated)((*RemoteStateReference)(nil))
-	_ = (infer.ExplicitDependencies[RemoteStateReferenceInputs, StateReferenceOutputs])((*RemoteStateReference)(nil))
+	_ = (infer.Annotated)((*GetRemoteReference)(nil))
+	_ = (infer.ExplicitDependencies[GetRemoteReferenceArgs, StateReferenceOutputs])((*GetRemoteReference)(nil))
 )
 
-func (r *RemoteStateReference) Annotate(a infer.Annotator) {
+func (r *GetRemoteReference) Annotate(a infer.Annotator) {
 	a.Describe(&r, "Access state from a remote backend.")
 }
 
 // Taken from https://developer.hashicorp.com/terraform/language/backend/remote#configuration-variables
-type RemoteStateReferenceInputs struct {
+type GetRemoteReferenceArgs struct {
 	Hostname     *string    `pulumi:"hostname,optional"`
 	Organization string     `pulumi:"organization"`
 	Token        *string    `pulumi:"token,optional" provider:"secret"`
 	Workspaces   Workspaces `pulumi:"workspaces"`
 }
 
-func (r *RemoteStateReferenceInputs) Annotate(a infer.Annotator) {
+func (r *GetRemoteReferenceArgs) Annotate(a infer.Annotator) {
 	a.Describe(&r.Hostname, "The remote backend hostname to connect to.")
 	a.Describe(&r.Organization, "The name of the organization containing the targeted workspace(s).")
 	a.Describe(&r.Token, "The token used to authenticate with the remote backend.")
@@ -55,8 +55,8 @@ func (r *RemoteStateReferenceInputs) Annotate(a infer.Annotator) {
 // TODO[https://github.com/pulumi/pulumi-go-provider/issues/323]: This doesn't currently
 // work; [infer.ExplicitDependencies] is not currently implemented for [infer] based
 // functions.
-func (r *RemoteStateReference) WireDependencies(
-	f infer.FieldSelector, _ *RemoteStateReferenceInputs, state *StateReferenceOutputs,
+func (r *GetRemoteReference) WireDependencies(
+	f infer.FieldSelector, _ *GetRemoteReferenceArgs, state *StateReferenceOutputs,
 ) {
 	f.OutputField(&state).NeverSecret() // The output should never be secret by default
 }
@@ -75,8 +75,8 @@ func (r *Workspaces) Annotate(a infer.Annotator) {
 		"the default workspace can be used. This option conflicts with name.")
 }
 
-func (r *RemoteStateReference) Call(
-	ctx context.Context, args RemoteStateReferenceInputs,
+func (r *GetRemoteReference) Call(
+	ctx context.Context, args GetRemoteReferenceArgs,
 ) (StateReferenceOutputs, error) {
 	results, err := shim.StateReferenceRead(ctx, "remote", stringOrZero(args.Workspaces.Name), map[string]cty.Value{
 		"hostname":     ctyStringOrNil(args.Hostname),

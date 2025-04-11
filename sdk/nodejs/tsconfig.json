@@ -14,9 +14,10 @@
     },
     "files": [
         "index.ts",
-        "localStateReference.ts",
         "provider.ts",
-        "remoteStateReference.ts",
+        "state/getLocalReference.ts",
+        "state/getRemoteReference.ts",
+        "state/index.ts",
         "types/index.ts",
         "types/input.ts",
         "types/output.ts",

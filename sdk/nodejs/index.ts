@@ -5,26 +5,18 @@ import * as pulumi from "@pulumi/pulumi";
 import * as utilities from "./utilities";
 
 // Export members:
-export { LocalStateReferenceArgs, LocalStateReferenceResult, LocalStateReferenceOutputArgs } from "./localStateReference";
-export const localStateReference: typeof import("./localStateReference").localStateReference = null as any;
-export const localStateReferenceOutput: typeof import("./localStateReference").localStateReferenceOutput = null as any;
-utilities.lazyLoad(exports, ["localStateReference","localStateReferenceOutput"], () => require("./localStateReference"));
-
 export { ProviderArgs } from "./provider";
 export type Provider = import("./provider").Provider;
 export const Provider: typeof import("./provider").Provider = null as any;
 utilities.lazyLoad(exports, ["Provider"], () => require("./provider"));
 
-export { RemoteStateReferenceArgs, RemoteStateReferenceResult, RemoteStateReferenceOutputArgs } from "./remoteStateReference";
-export const remoteStateReference: typeof import("./remoteStateReference").remoteStateReference = null as any;
-export const remoteStateReferenceOutput: typeof import("./remoteStateReference").remoteStateReferenceOutput = null as any;
-utilities.lazyLoad(exports, ["remoteStateReference","remoteStateReferenceOutput"], () => require("./remoteStateReference"));
-
 
 // Export sub-modules:
+import * as state from "./state";
 import * as types from "./types";
 
 export {
+    state,
     types,
 };
 pulumi.runtime.registerResourcePackage("terraform", {
