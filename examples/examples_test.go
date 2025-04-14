@@ -101,6 +101,8 @@ func LanguageTests(t *testing.T, language string) {
 					},
 					"vpc_id": "vpc-0d9ff66ccda7c9765",
 				},
+				"bucketArn":     "arn:aws:s3:::hello-world-abc12345",
+				"firstSubnetId": "subnet-023a5a6867d194162",
 			},
 		},
 		"remote": {
