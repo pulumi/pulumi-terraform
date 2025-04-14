@@ -153,7 +153,7 @@ jobs:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     - if: failure() && github.event_name == 'push'
       name: Notify Slack
-      uses: 8398a7/action-slack@28ba43ae48961b90635b50953d216767a6bea486 # v3.16.2
+      uses: 8398a7/action-slack@1750b5085f3ec60384090fb7c52965ef822e869e # v3.18.0
       with:
         author_name: Failure in building provider prerequisites
         fields: repo,commit,author,action
@@ -195,7 +195,7 @@ jobs:
       with:
         pulumi-version-file: .pulumi.version
     - name: Setup Node
-      uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
+      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
       with:
         node-version: ${{ env.NODEVERSION }}
         registry-url: https://registry.npmjs.org
@@ -294,7 +294,7 @@ jobs:
         retention-days: 30
     - if: failure() && github.event_name == 'push'
       name: Notify Slack
-      uses: 8398a7/action-slack@28ba43ae48961b90635b50953d216767a6bea486 # v3.16.2
+      uses: 8398a7/action-slack@1750b5085f3ec60384090fb7c52965ef822e869e # v3.18.0
       with:
         author_name: Failure while building SDKs
         fields: repo,commit,author,action
@@ -341,7 +341,7 @@ jobs:
       with:
         pulumi-version-file: .pulumi.version
     - name: Setup Node
-      uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
+      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
       with:
         node-version: ${{ env.NODEVERSION }}
         registry-url: https://registry.npmjs.org
@@ -408,7 +408,7 @@ jobs:
         cd examples && go test -count=1 -cover -timeout 2h -tags=${{ matrix.language }} -parallel 4 .
     - if: failure() && github.event_name == 'push'
       name: Notify Slack
-      uses: 8398a7/action-slack@28ba43ae48961b90635b50953d216767a6bea486 # v3.16.2
+      uses: 8398a7/action-slack@1750b5085f3ec60384090fb7c52965ef822e869e # v3.18.0
       with:
         author_name: Failure in SDK tests
         fields: repo,commit,author,action
@@ -468,7 +468,7 @@ jobs:
         version: latest
     - if: failure() && github.event_name == 'push'
       name: Notify Slack
-      uses: 8398a7/action-slack@28ba43ae48961b90635b50953d216767a6bea486 # v3.16.2
+      uses: 8398a7/action-slack@1750b5085f3ec60384090fb7c52965ef822e869e # v3.18.0
       with:
         author_name: Failure in publishing binaries
         fields: repo,commit,author,action
@@ -505,7 +505,7 @@ jobs:
     - name: Install Pulumi CLI
       uses: pulumi/actions@9519177da243fd32cab35cdbf19cce1ab7472fcc # v6.2.0
     - name: Setup Node
-      uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
+      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
       with:
         node-version: ${{ env.NODEVERSION }}
         registry-url: https://registry.npmjs.org
@@ -550,7 +550,7 @@ jobs:
         PYPI_PUBLISH_ARTIFACTS: all
     - if: failure() && github.event_name == 'push'
       name: Notify Slack
-      uses: 8398a7/action-slack@28ba43ae48961b90635b50953d216767a6bea486 # v3.16.2
+      uses: 8398a7/action-slack@1750b5085f3ec60384090fb7c52965ef822e869e # v3.18.0
       with:
         author_name: Failure in publishing SDK
         fields: repo,commit,author,action

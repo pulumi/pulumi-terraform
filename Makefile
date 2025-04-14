@@ -72,15 +72,6 @@ test_integration: TAGS ?= all
 test_integration: bin/pulumi-resource-terraform
 	go test $$(go list ./... | grep /examples) -tags ${TAGS} -count 1 -v
 
-# To make an immediately observable change to .ci-mgmt.yaml:
-#
-# - Edit .ci-mgmt.yaml
-# - Run make ci-mgmt to apply the change locally.
-#
-ci-mgmt: .ci-mgmt.yaml
-	go run github.com/pulumi/ci-mgmt/provider-ci@b6bfde4bf3d1f9e539671e20aad7801e4ba5d300 generate
-.PHONY: ci-mgmt
-
 # Targets for ci-mgmt (also includes the build_% category of commands)
 .PHONY: codegen generate_schema local_generate provider test_provider \
 	install_go_sdk install_nodejs_sdk install_python_sdk install_java_sdk install_dotnet_sdk \
@@ -140,3 +131,12 @@ install_dotnet_sdk: build_dotnet
 
 provider: bin/pulumi-resource-terraform
 test_provider: test_unit
+
+# To make an immediately observable change to .ci-mgmt.yaml:
+#
+# - Edit .ci-mgmt.yaml
+# - Run make ci-mgmt to apply the change locally.
+#
+ci-mgmt: .ci-mgmt.yaml
+	go run github.com/pulumi/ci-mgmt/provider-ci@latest generate
+.PHONY: ci-mgmt
