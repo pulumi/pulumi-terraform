@@ -1,3 +1,0 @@
-name: s3state-dotnet
-runtime: dotnet
-description: An example demonstrating the Terraform Remote State resource

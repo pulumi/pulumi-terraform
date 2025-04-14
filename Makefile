@@ -1,77 +1,142 @@
-PACK             := terraform
-ORG              := pulumi
-PROJECT          := github.com/${ORG}/pulumi-${PACK}
-NODE_MODULE_NAME := @pulumi/${PACK}
-TF_NAME          := ${PACK}
-PROVIDER_PATH    := provider/v5
-VERSION_PATH     := ${PROVIDER_PATH}/pkg/version.Version
+MODULE          := github.com/pulumi/pulumi-terraform
+VERSION         := 6.0.0 # $(shell pulumictl get version)
 
-PROVIDER        := pulumi-resource-${PACK}
-VERSION         := $(shell pulumictl get version)
+.PHONY: all
+all: schema.json build_sdks bin/pulumi-resource-terraform
 
-WORKING_DIR     := $(shell pwd)
+_ := $(shell mkdir -p bin)
+_ := $(shell mkdir -p .make)
+_ := $(shell go build -o bin/helpmakego github.com/iwahbe/helpmakego)
 
-.PHONY: development provider build_sdks build_nodejs build_dotnet build_go build_python cleanup
+bin/pulumi-resource-terraform: $(shell bin/helpmakego .)
+	go build -o $@ -ldflags "-X ${MODULE}/provider/version.version=${VERSION}" "${MODULE}"
 
-development:: provider build_sdks install_sdks cleanup # Build the provider & SDKs for a development environment
+schema.json: bin/pulumi-resource-terraform
+	pulumi package get-schema $< > $@
 
-# Required for the codegen action that runs in pulumi/pulumi and pulumi/pulumi-terraform-bridge
-build:: provider build_sdks install_sdks
-only_build:: build
+.make/sdk-%: bin/pulumi-resource-terraform .pulumi.version
+	rm -rf sdk/$* # Ensure that each in the SDK is marked as updated
+	pulumi package gen-sdk $< --language $*
+	@touch $@
 
-provider:: # build the provider binary
-	(cd provider && go build -o $(WORKING_DIR)/bin/${PROVIDER} -ldflags "-X ${PROJECT}/${VERSION_PATH}=${VERSION}" ${PROJECT}/${PROVIDER_PATH}/cmd/${PROVIDER})
+.PHONY: generate_sdks generate_go generate_python generate_java generate_dotnet generate_nodejs
 
-build_sdks:: provider build_nodejs build_python build_go build_dotnet # build all the sdks
+generate_go:     .make/sdk-go
+generate_python: .make/sdk-python
+generate_java:   .make/sdk-java
+generate_dotnet: .make/sdk-dotnet
+generate_nodejs: .make/sdk-nodejs
 
-build_nodejs:: VERSION := $(shell pulumictl get version --language javascript)
-build_nodejs:: # build the node sdk
-	cd sdk/nodejs/ && \
-        yarn install && \
-        yarn run tsc && \
-        cp ../../README.md ../../LICENSE package.json yarn.lock ./bin/ && \
-    	sed -i.bak -e "s/\$${VERSION}/$(VERSION)/g" ./bin/package.json
+generate_sdks: generate_go generate_python generate_java generate_dotnet generate_nodejs
 
-build_python:: PYPI_VERSION := $(shell pulumictl get version --language python)
-build_python:: # build the python sdk
-	cd sdk/python/ && \
-        cp ../../README.md . && \
-        python3 setup.py clean --all 2>/dev/null && \
-        rm -rf ./bin/ ../python.bin/ && cp -R . ../python.bin && mv ../python.bin ./bin && \
-        sed -i.bak -e "s/\$${VERSION}/$(PYPI_VERSION)/g" -e "s/\$${PLUGIN_VERSION}/$(VERSION)/g" ./bin/setup.py && \
-        rm ./bin/setup.py.bak && \
-        cd ./bin && python3 setup.py build sdist
+.PHONY: build_sdks build_go build_nodejs build_python build_java build_dotnet
 
-build_go:: # build the go sdk
+build_go:     generate_go
+build_python: generate_python
 
-build_dotnet:: DOTNET_VERSION := $(shell pulumictl get version --language dotnet)
-build_dotnet:: # build the dotnet sdk
-	cd sdk/dotnet/ && \
-		echo "${DOTNET_VERSION}" >version.txt && \
-        dotnet build /p:Version=${DOTNET_VERSION}
+build_java:   generate_java
+	cd sdk/java && gradle --console=plain build
 
-lint_provider:: provider # lint the provider code
-	cd provider && golangci-lint run -c ../.golangci.yml
+build_dotnet: generate_dotnet
+	mkdir -p nuget
+	echo "${VERSION}" > sdk/dotnet/version.txt
+	cd sdk/dotnet && dotnet build /p:Version=${VERSION}
 
-cleanup:: # cleans up the temporary directory
-	rm -r $(WORKING_DIR)/bin
+build_nodejs: generate_nodejs
+	cd sdk/nodejs && yarn install && yarn run tsc
+	cp README.md LICENSE sdk/nodejs/package.json sdk/nodejs/yarn.lock sdk/nodejs/bin/
 
-help::
-	@grep '^[^.#]\+:\s\+.*#' Makefile | \
- 	sed "s/\(.\+\):\s*\(.*\) #\s*\(.*\)/`printf "\033[93m"`\1`printf "\033[0m"`	\3 [\2]/" | \
- 	expand -t20
+build_sdks: build_go build_nodejs build_python build_java build_dotnet
 
-clean::
+lint:
+	golangci-lint run --config ./.golangci.yml --build-tags all
 
-install_dotnet_sdk::
-	mkdir -p $(WORKING_DIR)/nuget
-	find . -name '*.nupkg' -print -exec cp -p {} ${WORKING_DIR}/nuget \;
+.PHONY: test test_unit test_integration
 
-install_python_sdk::
+test: test_unit test_integration
 
-install_go_sdk::
+test_unit:
+	go test $$(go list ./... | grep -v /examples)
 
-install_nodejs_sdk::
-	yarn link --cwd $(WORKING_DIR)/sdk/nodejs/bin
+# By default, `$(MAKE) test_integration` will run all integration tests.
+#
+# To run a specific integration test, you can override TAGS:
+#
+#	make test_integration TAGS=yaml
+#
+# To run an integration test, the associated SDK should first be installed with `$(MAKE)
+# install_$(LANGUAGE)_sdk`. For example:
+#
+#	make install_java_sdk test_integration TAGS=java
+test_integration: TAGS ?= all
+test_integration: bin/pulumi-resource-terraform
+	go test $$(go list ./... | grep /examples) -tags ${TAGS} -count 1 -v
 
-install_sdks:: install_dotnet_sdk install_python_sdk install_nodejs_sdk
+# Targets for ci-mgmt (also includes the build_% category of commands)
+.PHONY: codegen generate_schema local_generate provider test_provider \
+	install_go_sdk install_nodejs_sdk install_python_sdk install_java_sdk install_dotnet_sdk \
+	generate_go generate_nodejs generate_python generate_java generate_dotnet
+
+codegen: schema.json generate_sdks
+generate_schema: schema.json
+local_generate: # It's not clear what this should do
+
+install_go_sdk: build_go
+	# "This is a no-op that satisfies ci-mgmt
+
+install_nodejs_sdk: build_nodejs
+	-yarn unlink --cwd sdk/nodejs/bin
+	yarn link --cwd sdk/nodejs/bin
+
+install_python_sdk: build_python
+	# "This is a no-op that satisfies ci-mgmt
+
+# Install the built java SDK into the local maven repository.
+#
+# Each test that references the locally installed SDK should specify the dependency in
+# their pom.xml file as normal:
+#
+#    <dependency>
+#      <groupId>com.pulumi</groupId>
+#      <artifactId>terraform</artifactId>
+#      <!-- Allow any version. We need to depend on our locally built sdk which only has a real version when tagged -->
+#      <!-- Pin to specific version if you are copying this pom.xml for a real application -->
+#      <version>[0.0.0,)</version>
+#    </dependency>
+#
+# They also need to reference the local repository in the pom.xml file:
+#
+#    <repositories>
+#      <repository>
+#        <id>com.pulumi</id>
+#        <name>terraform</name>
+#        <url>file:${env.PULUMI_LOCAL_MAVEN}</url>
+#      </repository>
+#    </repositories>
+#
+# For an example of what this looks like in practice, see examples/local/java/pom.xml.
+install_java_sdk: build_java
+	mkdir -p maven
+	mvn deploy:deploy-file -Durl=file://$$(pwd)/maven -Dfile=sdk/java/build/libs/com.pulumi.terraform.jar -DgroupId=com.pulumi -DartifactId=terraform -Dpackaging=jar -Dversion=0.1
+
+# Install the built nupkg to ./nuget.
+#
+# To consume this package, you will need to run:
+#
+#	dotnet nuget add source ./nuget
+install_dotnet_sdk: build_dotnet
+	rm -rf ./nuget/Pulumi.Terraform.*.nupkg
+	mkdir -p ./nuget
+	find . -name '*.nupkg' -print -exec cp -p {} ./nuget \;
+
+provider: bin/pulumi-resource-terraform
+test_provider: test_unit
+
+# To make an immediately observable change to .ci-mgmt.yaml:
+#
+# - Edit .ci-mgmt.yaml
+# - Run make ci-mgmt to apply the change locally.
+#
+ci-mgmt: .ci-mgmt.yaml
+	go run github.com/pulumi/ci-mgmt/provider-ci@latest generate
+.PHONY: ci-mgmt

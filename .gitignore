@@ -20,4 +20,8 @@ ci-scripts
 **/schema.go
 **/version.txt
 **/nuget
+**/maven
 **/dist
+.make
+sdk/java/build
+sdk/java/.gradle

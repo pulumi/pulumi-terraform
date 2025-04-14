@@ -1,18 +1,26 @@
 {
-  "compilerOptions": {
-    "outDir": "bin",
-    "target": "es2016",
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "declaration": true,
-    "sourceMap": false,
-    "stripInternal": true,
-    "experimentalDecorators": true,
-    "pretty": true,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitAny": true,
-    "noImplicitReturns": true,
-    "forceConsistentCasingInFileNames": true,
-    "strictNullChecks": true
-  }
+    "compilerOptions": {
+        "outDir": "bin",
+        "target": "es2016",
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "declaration": true,
+        "sourceMap": true,
+        "stripInternal": true,
+        "experimentalDecorators": true,
+        "noFallthroughCasesInSwitch": true,
+        "forceConsistentCasingInFileNames": true,
+        "strict": true
+    },
+    "files": [
+        "index.ts",
+        "provider.ts",
+        "state/getLocalReference.ts",
+        "state/getRemoteReference.ts",
+        "state/index.ts",
+        "types/index.ts",
+        "types/input.ts",
+        "types/output.ts",
+        "utilities.ts"
+    ]
 }

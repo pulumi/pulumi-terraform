@@ -1,3 +1,0 @@
-name: localstate-dotnet
-runtime: dotnet
-description: An example demonstrating the Terraform Remote State resource
