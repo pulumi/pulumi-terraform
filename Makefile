@@ -1,5 +1,6 @@
 MODULE          := github.com/pulumi/pulumi-terraform/v6
 VERSION         := 6.0.0 # $(shell pulumictl get version)
+PULUMI          := .pulumi/bin/pulumi
 
 .PHONY: all
 all: schema.json build_sdks bin/pulumi-resource-terraform
@@ -11,18 +12,31 @@ _ := $(shell go build -o bin/helpmakego github.com/iwahbe/helpmakego)
 
 # We depend on a local version of Pulumi to prevent code generation from being effected by
 # the ambient version of Pulumi.
-bin/pulumi: go.mod
-	go build -o $@ github.com/pulumi/pulumi/pkg/v3/cmd/pulumi
+$(PULUMI): HOME := $(shell pwd)
+$(PULUMI): go.mod
+	@ PULUMI_VERSION="$$(cat .pulumi.version)"; \
+	if [ -x $(PULUMI) ]; then \
+		CURRENT_VERSION="$$($(PULUMI) version)"; \
+		if [ "$${CURRENT_VERSION}" != "$${PULUMI_VERSION}" ]; then \
+			echo "Upgrading $(PULUMI) from $${CURRENT_VERSION} to $${PULUMI_VERSION}"; \
+			rm $(PULUMI); \
+		fi; \
+	fi; \
+	if ! [ -x $(PULUMI) ]; then \
+		curl -fsSL https://get.pulumi.com | sh -s -- --version "$${PULUMI_VERSION#v}"; \
+	fi
 
 bin/pulumi-resource-terraform: $(shell bin/helpmakego .)
 	go build -o $@ -ldflags "-X ${MODULE}/provider/version.version=${VERSION}" "${MODULE}"
 
-schema.json: bin/pulumi-resource-terraform bin/pulumi
-	bin/pulumi package get-schema $< > $@
+schema.json: export PATH=$(shell echo .pulumi/bin:$$PATH)
+schema.json: bin/pulumi-resource-terraform $(PULUMI)
+	$(PULUMI) package get-schema $< > $@
 
-.make/sdk-%: bin/pulumi-resource-terraform .pulumi.version bin/pulumi
+.make/sdk-%: export PATH=$(shell echo .pulumi/bin:$$PATH)
+.make/sdk-%: bin/pulumi-resource-terraform .pulumi.version $(PULUMI)
 	rm -rf sdk/$* # Ensure that each in the SDK is marked as updated
-	bin/pulumi package gen-sdk $< --language $*
+	$(PULUMI) package gen-sdk $< --language $*
 	@touch $@
 
 .PHONY: generate_sdks generate_go generate_python generate_java generate_dotnet generate_nodejs
@@ -181,6 +195,7 @@ sign-goreleaser-exe-%: bin/jsign-6.0.jar
 			mv $${file}.unsigned $${file}; \
 			az logout; \
 		fi; \
+	fi
 
 # To make an immediately observable change to .ci-mgmt.yaml:
 #
