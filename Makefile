@@ -1,4 +1,4 @@
-MODULE          := github.com/pulumi/pulumi-terraform
+MODULE          := github.com/pulumi/pulumi-terraform/v6
 VERSION         := 6.0.0 # $(shell pulumictl get version)
 
 .PHONY: all
