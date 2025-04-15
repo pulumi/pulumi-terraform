@@ -17,7 +17,7 @@ builds:
     - -s
     - -w
     - -X
-      github.com/pulumi/pulumi-terraform/v6/provider/version.Version={{.Tag}}
+      github.com/pulumi/pulumi-terraform/v6/provider/version.version={{.Tag}}
   binary: pulumi-resource-terraform
 - id: build-provider-sign-windows
   env:
