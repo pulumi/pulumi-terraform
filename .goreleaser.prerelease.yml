@@ -3,7 +3,6 @@
 project_name: pulumi-terraform
 builds:
 - id: build-provider
-  dir: provider
   env:
   - CGO_ENABLED=0
   - GO111MODULE=on
@@ -18,10 +17,9 @@ builds:
     - -s
     - -w
     - -X
-      github.com/pulumi/pulumi-terraform/provider/v6/pkg/version.Version={{.Tag}}
+      github.com/pulumi/pulumi-terraform/v6/provider/version.Version={{.Tag}}
   binary: pulumi-resource-terraform
 - id: build-provider-sign-windows
-  dir: provider
   env:
   - CGO_ENABLED=0
   - GO111MODULE=on

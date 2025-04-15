@@ -20,8 +20,8 @@ import (
 
 	p "github.com/pulumi/pulumi-go-provider"
 
-	terraform "github.com/pulumi/pulumi-terraform/provider"
-	"github.com/pulumi/pulumi-terraform/provider/version"
+	terraform "github.com/pulumi/pulumi-terraform/v6/provider"
+	"github.com/pulumi/pulumi-terraform/v6/provider/version"
 )
 
 func main() {

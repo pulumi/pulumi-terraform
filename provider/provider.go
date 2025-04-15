@@ -21,8 +21,8 @@ import (
 	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
 	"github.com/pulumi/pulumi-go-provider/middleware/schema"
-	"github.com/pulumi/pulumi-terraform/provider/state_reference"
-	"github.com/pulumi/pulumi-terraform/provider/version"
+	"github.com/pulumi/pulumi-terraform/v6/provider/state_reference"
+	"github.com/pulumi/pulumi-terraform/v6/provider/version"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/tokens"
 )
 
