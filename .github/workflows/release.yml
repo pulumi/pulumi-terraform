@@ -642,8 +642,7 @@ jobs:
       with:
         repo: pulumi/pulumictl
     - name: Dispatch Event
-      run: pulumictl create docs-build pulumi-${{ env.PROVIDER }}
-        ${GITHUB_REF#refs/tags/}
+      run: pulumictl create docs-build --schema-path schema.json pulumi-${{ env.PROVIDER }} ${GITHUB_REF#refs/tags/}
       env:
         GITHUB_TOKEN: ${{ secrets.PULUMI_BOT_TOKEN }}
     name: dispatch_docs_build
