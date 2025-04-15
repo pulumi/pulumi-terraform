@@ -43,6 +43,7 @@ schema.json: bin/pulumi-resource-terraform $(PULUMI)
 
 generate_go:     .make/sdk-go
 generate_python: .make/sdk-python
+	cp README.md sdk/python/
 generate_java:   .make/sdk-java
 generate_dotnet: .make/sdk-dotnet
 generate_nodejs: .make/sdk-nodejs
@@ -53,6 +54,12 @@ generate_sdks: generate_go generate_python generate_java generate_dotnet generat
 
 build_go:     generate_go
 build_python: generate_python
+	cd sdk/python/ && \
+		rm -rf ./bin/ ../python.bin/ && cp -R . ../python.bin && mv ../python.bin ./bin && \
+		python3 -m venv venv && \
+		./venv/bin/python -m pip install build && \
+		cd ./bin && \
+		../venv/bin/python -m build .
 
 build_java:   generate_java
 	cd sdk/java && gradle --console=plain build
