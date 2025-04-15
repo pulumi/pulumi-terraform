@@ -6,17 +6,23 @@ all: schema.json build_sdks bin/pulumi-resource-terraform
 
 _ := $(shell mkdir -p bin)
 _ := $(shell mkdir -p .make)
+# This needs to run before target resolution since it's used to discover targets.
 _ := $(shell go build -o bin/helpmakego github.com/iwahbe/helpmakego)
+
+# We depend on a local version of Pulumi to prevent code generation from being effected by
+# the ambient version of Pulumi.
+bin/pulumi: go.mod
+	go build -o $@ github.com/pulumi/pulumi/pkg/v3/cmd/pulumi
 
 bin/pulumi-resource-terraform: $(shell bin/helpmakego .)
 	go build -o $@ -ldflags "-X ${MODULE}/provider/version.version=${VERSION}" "${MODULE}"
 
-schema.json: bin/pulumi-resource-terraform
-	pulumi package get-schema $< > $@
+schema.json: bin/pulumi-resource-terraform bin/pulumi
+	bin/pulumi package get-schema $< > $@
 
-.make/sdk-%: bin/pulumi-resource-terraform .pulumi.version
+.make/sdk-%: bin/pulumi-resource-terraform .pulumi.version bin/pulumi
 	rm -rf sdk/$* # Ensure that each in the SDK is marked as updated
-	pulumi package gen-sdk $< --language $*
+	bin/pulumi package gen-sdk $< --language $*
 	@touch $@
 
 .PHONY: generate_sdks generate_go generate_python generate_java generate_dotnet generate_nodejs
