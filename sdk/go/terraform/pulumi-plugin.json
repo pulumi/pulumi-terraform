@@ -1,5 +1,5 @@
 {
   "resource": true,
   "name": "terraform",
-  "version": "6.0.0"
+  "version": "6.0.0-alpha.0+dev"
 }

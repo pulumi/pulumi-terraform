@@ -15,10 +15,12 @@
 package version
 
 import (
+	"strings"
+
 	"github.com/blang/semver"
 )
 
-var Version semver.Version = semver.MustParse(version)
+var Version semver.Version = semver.MustParse(strings.TrimPrefix(version, "v"))
 
 // Version is initialized by the Go linker to contain the semver of this build.
 var version string

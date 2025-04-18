@@ -1,5 +1,7 @@
 MODULE          := github.com/pulumi/pulumi-terraform/v6
-VERSION         := 6.0.0 # $(shell pulumictl get version)
+PROVIDER_VERSION ?= 6.0.0-alpha.0+dev
+# Use this normalised version everywhere rather than the raw input to ensure consistency.
+VERSION_GENERIC = $(shell pulumictl convert-version --language generic --version "$(PROVIDER_VERSION)")
 PULUMI          := .pulumi/bin/pulumi
 
 .PHONY: all
@@ -27,16 +29,16 @@ $(PULUMI): go.mod
 	fi
 
 bin/pulumi-resource-terraform: $(shell bin/helpmakego .)
-	go build -o $@ -ldflags "-X ${MODULE}/provider/version.version=${VERSION}" "${MODULE}"
+	go build -o $@ -ldflags "-X ${MODULE}/provider/version.version=${VERSION_GENERIC}" "${MODULE}"
 
 schema.json: export PATH=$(shell echo .pulumi/bin:$$PATH)
 schema.json: bin/pulumi-resource-terraform $(PULUMI)
-	$(PULUMI) package get-schema $< > $@
+	$(PULUMI) package get-schema $< | jq 'del(.version)' > $@
 
 .make/sdk-%: export PATH=$(shell echo .pulumi/bin:$$PATH)
-.make/sdk-%: bin/pulumi-resource-terraform .pulumi.version $(PULUMI)
+.make/sdk-%: schema.json .pulumi.version $(PULUMI)
 	rm -rf sdk/$* # Ensure that each in the SDK is marked as updated
-	$(PULUMI) package gen-sdk $< --language $*
+	$(PULUMI) package gen-sdk $< --language $* --version "${VERSION_GENERIC}"
 	@touch $@
 
 .PHONY: generate_sdks generate_go generate_python generate_java generate_dotnet generate_nodejs
@@ -64,10 +66,11 @@ build_python: generate_python
 build_java:   generate_java
 	cd sdk/java && gradle --console=plain build
 
+build_dotnet: DOTNET_VERSION = $(shell pulumictl convert-version --language dotnet --version "$(PROVIDER_VERSION)")
 build_dotnet: generate_dotnet
 	mkdir -p nuget
-	echo "${VERSION}" > sdk/dotnet/version.txt
-	cd sdk/dotnet && dotnet build /p:Version=${VERSION}
+	echo "${DOTNET_VERSION}" > sdk/dotnet/version.txt
+	cd sdk/dotnet && dotnet build /p:Version=${DOTNET_VERSION}
 
 build_nodejs: generate_nodejs
 	cd sdk/nodejs && yarn install && yarn run tsc

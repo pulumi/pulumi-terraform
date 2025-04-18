@@ -25,4 +25,5 @@ ci-scripts
 .make
 sdk/java/build
 sdk/java/.gradle
+sdk/java/build.gradle
 sdk/python/venv
