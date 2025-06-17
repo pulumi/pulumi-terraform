@@ -88,7 +88,7 @@ jobs:
           sdk/go/**/pulumiUtilities.go
           sdk/nodejs/package.json
           sdk/python/pyproject.toml
-    - name: Commit ${{ matrix.language }} SDK changes for Renovate
+    - name: Commit SDK changes for Renovate
       if: failure() && steps.worktreeClean.outcome == 'failure' &&
         contains(github.actor, 'renovate') && github.event_name ==
         'pull_request'
@@ -126,7 +126,7 @@ jobs:
             sdk/go/*/internal/pulumiUtilities.go \
             sdk/nodejs/package.json
 
-        git commit -m 'Commit ${{ matrix.language }} SDK for Renovate'
+        git commit -m 'Commit SDK for Renovate'
 
 
         # Push with pulumi-bot credentials to trigger a re-run of the
@@ -392,7 +392,7 @@ jobs:
       run: tar -zxf ${{ github.workspace}}/sdk/${{ matrix.language}}.tar.gz -C ${{
         github.workspace}}/sdk/${{ matrix.language}}
     - name: Update path
-      run: echo "${{ github.workspace }}/bin" >> $GITHUB_PATH
+      run: echo "${{ github.workspace }}/bin" >> "$GITHUB_PATH"
     - name: Install Node dependencies
       run: yarn global add typescript
     - run: dotnet nuget add source ${{ github.workspace }}/nuget
