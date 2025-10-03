@@ -6,6 +6,6 @@ providerDefaultBranch: master
 parallel: 3
 modulePath: .
 envOverride:
-  PULUMI_API: https://api.pulumi-staging.io
-  TFE_ORGANIZATION: ${{ secrets.TFE_ORGANIZATION }}
-  TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
+    PULUMI_API: https://api.pulumi-staging.io
+    TFE_ORGANIZATION: ${{ secrets.TFE_ORGANIZATION }}
+    TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
