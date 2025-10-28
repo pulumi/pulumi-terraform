@@ -530,8 +530,7 @@ jobs:
       uses: golangci/golangci-lint-action@55c2c1448f86e01eaae002a5a3a9624417608d84 # v6.5.2
       with:
         version: ${{ env.GOLANGCI_LINT_VERSION }}
-        args: -c ../.golangci.yml
-        working-directory: provider
+        working-directory: .
     name: lint
     if: github.event_name == 'repository_dispatch' ||
       github.event.pull_request.head.repo.full_name == github.repository
