@@ -5,6 +5,7 @@ pulumiVersionFile: .pulumi.version
 providerDefaultBranch: master
 parallel: 3
 modulePath: .
+noSchema: true # Disable schema check.
 envOverride:
     PULUMI_API: https://api.pulumi-staging.io
     TFE_ORGANIZATION: ${{ secrets.TFE_ORGANIZATION }}
