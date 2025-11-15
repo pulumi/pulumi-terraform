@@ -5,7 +5,10 @@ inputs:
   cache:
     description: Enable caching
     required: false
-    default: 'false'
+    default: "false"
+  github_token:
+    description: GitHub token
+    required: true
 
 runs:
   using: "composite"
@@ -15,9 +18,9 @@ runs:
       with:
         # Latest working version. See https://github.com/jdx/mise/discussions/6781
         version: 2025.10.16
-        github_token: ${{ github.token }}
         cache_key: "mise-{{platform}}-{{file_hash}}"
         cache_save: ${{ inputs.cache }}
+        github_token: ${{ inputs.github_token }}
 
     - name: Setup Go Cache
       uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
