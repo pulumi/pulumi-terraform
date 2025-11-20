@@ -16,7 +16,9 @@ on:
   workflow_dispatch: {}
 env:
   PROVIDER: terraform
+  PULUMI_LOCAL_NUGET: ${{ github.workspace }}/nuget
   TRAVIS_OS_NAME: linux
+  PULUMI_GO_DEP_ROOT: ${{ github.workspace }}/..
   GOVERSION: "1.21.x"
   NODEVERSION: "20.x"
   PYTHONVERSION: "3.11.8"
