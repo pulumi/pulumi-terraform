@@ -29,7 +29,7 @@ jobs:
     - id: esc-secrets
       name: Map environment to ESC outputs
       uses: ./.github/actions/esc-action
-    - uses: peter-evans/slash-command-dispatch@13bc09769d122a64f75aa5037256f6f2d78be8c4 # v4
+    - uses: peter-evans/slash-command-dispatch@e1b4e266bc781656359bb7e462e228daf68c04f6 # v5
       with:
         commands: |
           run-acceptance-tests
