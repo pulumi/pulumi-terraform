@@ -52,7 +52,7 @@ jobs:
       pull-requests: write # For schema check comment.
     steps:
     - name: Checkout Repo
-      uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
       with:
         lfs: true    
     - id: esc-secrets
@@ -60,7 +60,7 @@ jobs:
       uses: ./.github/actions/esc-action
     - id: version
       name: Set Provider Version
-      uses: pulumi/provider-version-action@f96d032a2758fdda7939e5728eff6c0d980ae894 # v1.6.0
+      uses: pulumi/provider-version-action@3a647064cf4697c7c6352b9a1d9e554450cbe957 # v1.6.1
       with:
         set-env: PROVIDER_VERSION
       env:
@@ -185,7 +185,7 @@ jobs:
       id-token: write # For ESC secrets.
     steps:
     - name: Checkout Repo
-      uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
       with:
         lfs: true    
     - id: esc-secrets
@@ -193,7 +193,7 @@ jobs:
       uses: ./.github/actions/esc-action
     - id: version
       name: Set Provider Version
-      uses: pulumi/provider-version-action@f96d032a2758fdda7939e5728eff6c0d980ae894 # v1.6.0
+      uses: pulumi/provider-version-action@3a647064cf4697c7c6352b9a1d9e554450cbe957 # v1.6.1
       with:
         set-env: PROVIDER_VERSION
       env:
@@ -296,7 +296,7 @@ jobs:
       id-token: write # For ESC secrets.
     steps:
     - name: Checkout Repo
-      uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
       with:
         lfs: true    
     - id: esc-secrets
@@ -335,7 +335,7 @@ jobs:
       id-token: write # For ESC secrets and Pulumi access token OIDC.
     steps:
     - name: Checkout Repo
-      uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
       with:
         lfs: true    
     - id: esc-secrets
@@ -343,7 +343,7 @@ jobs:
       uses: ./.github/actions/esc-action
     - id: version
       name: Set Provider Version
-      uses: pulumi/provider-version-action@f96d032a2758fdda7939e5728eff6c0d980ae894 # v1.6.0
+      uses: pulumi/provider-version-action@3a647064cf4697c7c6352b9a1d9e554450cbe957 # v1.6.1
       with:
         set-env: PROVIDER_VERSION
       env:
@@ -401,7 +401,7 @@ jobs:
       id-token: write # For ESC secrets.
     steps:
     - name: Checkout Repo
-      uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
       with:
         lfs: true    
     - id: esc-secrets
@@ -409,7 +409,7 @@ jobs:
       uses: ./.github/actions/esc-action
     - id: version
       name: Set Provider Version
-      uses: pulumi/provider-version-action@f96d032a2758fdda7939e5728eff6c0d980ae894 # v1.6.0
+      uses: pulumi/provider-version-action@3a647064cf4697c7c6352b9a1d9e554450cbe957 # v1.6.1
       with:
         set-env: PROVIDER_VERSION
       env:
@@ -468,7 +468,7 @@ jobs:
       id-token: write # For ESC secrets.
     steps:
     - name: Checkout Repo
-      uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
       with:
         lfs: true    
     - id: esc-secrets
@@ -476,13 +476,13 @@ jobs:
       uses: ./.github/actions/esc-action
     - id: version
       name: Set Provider Version
-      uses: pulumi/provider-version-action@f96d032a2758fdda7939e5728eff6c0d980ae894 # v1.6.0
+      uses: pulumi/provider-version-action@3a647064cf4697c7c6352b9a1d9e554450cbe957 # v1.6.1
       with:
         set-env: PROVIDER_VERSION
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Checkout Scripts Repo
-      uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
       with:
         path: ci-scripts
         repository: pulumi/scripts
@@ -543,7 +543,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Repo
-      uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
       with:
         lfs: true
         persist-credentials: false
