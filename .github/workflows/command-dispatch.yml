@@ -7,6 +7,7 @@ env:
   PULUMI_API: https://api.pulumi-staging.io
   PULUMI_BOT_TOKEN: ${{ secrets.PULUMI_BOT_TOKEN }}
   PULUMI_PROVIDER_AUTOMATION_TOKEN: ${{ secrets.PULUMI_PROVIDER_AUTOMATION_TOKEN }}
+  PULUMI_PULUMI_ENABLE_JOURNALING: "true"
   RELEASE_BOT_ENDPOINT: ${{ secrets.RELEASE_BOT_ENDPOINT }}
   RELEASE_BOT_KEY: ${{ secrets.RELEASE_BOT_KEY }}
   S3_COVERAGE_BUCKET_NAME: ${{ secrets.S3_COVERAGE_BUCKET_NAME }}
@@ -29,7 +30,7 @@ jobs:
     - id: esc-secrets
       name: Map environment to ESC outputs
       uses: ./.github/actions/esc-action
-    - uses: peter-evans/slash-command-dispatch@e1b4e266bc781656359bb7e462e228daf68c04f6 # v5
+    - uses: peter-evans/slash-command-dispatch@5c11dc7efead556e3bdabf664302212f79eb26fa # v5
       with:
         commands: |
           run-acceptance-tests
