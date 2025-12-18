@@ -119,8 +119,6 @@ jobs:
         'pull_request'
       shell: bash
       run: >
-        git diff --quiet -- sdk && echo "no changes to sdk" && exit
-
         git config --global user.email "bot@pulumi.com"
 
         git config --global user.name "pulumi-bot"
@@ -135,7 +133,6 @@ jobs:
 
 
         # Apply and add our changes, but don't commit any files we expect to
-
         # always change due to versioning.
 
         git stash pop
@@ -153,9 +150,7 @@ jobs:
 
         git commit -m 'Commit SDK for Renovate'
 
-
         # Push with pulumi-bot credentials to trigger a re-run of the
-
         # workflow. https://github.com/orgs/community/discussions/25702
 
         git push https://pulumi-bot:${{ steps.esc-secrets.outputs.PULUMI_BOT_TOKEN }}@github.com/${{ github.repository }}     "HEAD:$HEAD_REF"
@@ -274,8 +269,6 @@ jobs:
         'pull_request'
       shell: bash
       run: >
-        git diff --quiet -- sdk && echo "no changes to sdk" && exit
-
         git config --global user.email "bot@pulumi.com"
 
         git config --global user.name "pulumi-bot"
@@ -288,9 +281,7 @@ jobs:
 
         git checkout "origin/$HEAD_REF"
 
-
         # Apply and add our changes, but don't commit any files we expect to
-
         # always change due to versioning.
 
         git stash pop
@@ -309,7 +300,6 @@ jobs:
         git commit -m 'Commit SDK for Renovate'
 
         # Push with pulumi-bot credentials to trigger a re-run of the
-
         # workflow. https://github.com/orgs/community/discussions/25702
 
         git push https://pulumi-bot:${{ steps.esc-secrets.outputs.PULUMI_BOT_TOKEN }}@github.com/${{ github.repository }}     "HEAD:$HEAD_REF"
