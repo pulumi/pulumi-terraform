@@ -75,9 +75,10 @@ func (r *Workspaces) Annotate(a infer.Annotator) {
 		"the default workspace can be used. This option conflicts with name.")
 }
 
-func (r *GetRemoteReference) Call(
-	ctx context.Context, args GetRemoteReferenceArgs,
-) (StateReferenceOutputs, error) {
+func (r *GetRemoteReference) Invoke(
+	ctx context.Context, req infer.FunctionRequest[GetRemoteReferenceArgs],
+) (infer.FunctionResponse[StateReferenceOutputs], error) {
+	args := req.Input
 	results, err := shim.StateReferenceRead(ctx, "remote", stringOrZero(args.Workspaces.Name), map[string]cty.Value{
 		"hostname":     ctyStringOrNil(args.Hostname),
 		"organization": cty.StringVal(args.Organization),
@@ -88,5 +89,5 @@ func (r *GetRemoteReference) Call(
 		}),
 	})
 
-	return StateReferenceOutputs{results}, err
+	return infer.FunctionResponse[StateReferenceOutputs]{Output: StateReferenceOutputs{results}}, err
 }

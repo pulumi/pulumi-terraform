@@ -15,6 +15,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -29,7 +30,7 @@ func main() {
 	terraformProvider := terraform.NewProvider()
 
 	// This method starts serving requests using the Terraform provider.
-	err := p.RunProvider("terraform", version.Version.String(), terraformProvider)
+	err := p.RunProvider(context.Background(), "terraform", version.Version.String(), terraformProvider)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %s", err.Error())
 		os.Exit(1)

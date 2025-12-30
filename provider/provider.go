@@ -82,8 +82,8 @@ func NewProvider() p.Provider {
 			},
 		},
 		Functions: []infer.InferredFunction{
-			infer.Function[*provider.GetLocalReference](),
-			infer.Function[*provider.GetRemoteReference](),
+			infer.Function(&provider.GetLocalReference{}),
+			infer.Function(&provider.GetRemoteReference{}),
 		},
 		ModuleMap: map[tokens.ModuleName]tokens.ModuleName{
 			"state_reference": "state",
