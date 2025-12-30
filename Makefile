@@ -33,7 +33,7 @@ bin/pulumi-resource-terraform: $(shell bin/helpmakego .)
 
 schema.json: export PATH=$(shell echo .pulumi/bin:$$PATH)
 schema.json: bin/pulumi-resource-terraform $(PULUMI)
-	$(PULUMI) package get-schema $< | jq 'del(.version)' > $@
+	$(PULUMI) package get-schema ./$< | jq 'del(.version)' > $@
 
 .make/sdk-%: export PATH=$(shell echo .pulumi/bin:$$PATH)
 .make/sdk-%: schema.json .pulumi.version $(PULUMI)
