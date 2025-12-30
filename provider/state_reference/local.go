@@ -42,13 +42,14 @@ func (r *GetLocalReferenceArgs) Annotate(a infer.Annotator) {
 	a.Describe(&r.WorkspaceDir, `The path to non-default workspaces.`)
 }
 
-func (r *GetLocalReference) Call(
-	ctx context.Context, args GetLocalReferenceArgs,
-) (StateReferenceOutputs, error) {
+func (r *GetLocalReference) Invoke(
+	ctx context.Context,
+	req infer.FunctionRequest[GetLocalReferenceArgs],
+) (infer.FunctionResponse[StateReferenceOutputs], error) {
 	results, err := shim.StateReferenceRead(ctx, "local", "", map[string]cty.Value{
-		"path":          ctyStringOrNil(args.Path),
-		"workspace_dir": ctyStringOrNil(args.WorkspaceDir),
+		"path":          ctyStringOrNil(req.Input.Path),
+		"workspace_dir": ctyStringOrNil(req.Input.WorkspaceDir),
 	})
 
-	return StateReferenceOutputs{results}, err
+	return infer.FunctionResponse[StateReferenceOutputs]{Output: StateReferenceOutputs{results}}, err
 }
