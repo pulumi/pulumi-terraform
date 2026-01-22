@@ -11,8 +11,8 @@ require (
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/hashicorp/terraform/shim v0.0.0-00010101000000-000000000000
 	github.com/pulumi/pulumi-go-provider v1.2.0
-	github.com/pulumi/pulumi/pkg/v3 v3.214.0
-	github.com/pulumi/pulumi/sdk/v3 v3.214.0
+	github.com/pulumi/pulumi/pkg/v3 v3.216.0
+	github.com/pulumi/pulumi/sdk/v3 v3.216.0
 	github.com/stretchr/testify v1.10.0
 	github.com/zclconf/go-cty v1.13.2
 )
@@ -152,7 +152,7 @@ require (
 	github.com/huandu/xstrings v1.4.0 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/iwahbe/helpmakego v0.4.0 // indirect
+	github.com/iwahbe/helpmakego v0.4.1 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
