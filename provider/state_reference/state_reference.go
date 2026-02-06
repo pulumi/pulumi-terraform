@@ -16,8 +16,9 @@ package provider
 
 import (
 	"github.com/hashicorp/terraform/shim"
-	"github.com/pulumi/pulumi-go-provider/infer"
 	"github.com/zclconf/go-cty/cty"
+
+	"github.com/pulumi/pulumi-go-provider/infer"
 )
 
 func InitTfBackend() { shim.InitTfBackend() }
