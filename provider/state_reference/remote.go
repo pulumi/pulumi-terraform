@@ -18,8 +18,9 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform/shim"
-	"github.com/pulumi/pulumi-go-provider/infer"
 	"github.com/zclconf/go-cty/cty"
+
+	"github.com/pulumi/pulumi-go-provider/infer"
 )
 
 type GetRemoteReference struct{}
