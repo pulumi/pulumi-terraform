@@ -8,15 +8,16 @@ on:
     - "!v*.*.*-**"
 env:
   PROVIDER: terraform
-  PULUMI_LOCAL_NUGET: ${{ github.workspace }}/nuget
   TRAVIS_OS_NAME: linux
-  PULUMI_GO_DEP_ROOT: ${{ github.workspace }}/..
   GOVERSION: "1.21.x"
   NODEVERSION: "20.x"
   PYTHONVERSION: "3.11.8"
   DOTNETVERSION: "8.0.x"
   JAVAVERSION: "11"
   PULUMI_API: https://api.pulumi-staging.io
+  PULUMI_GO_DEP_ROOT: ${{ github.workspace }}/..
+  PULUMI_LOCAL_NUGET: ${{ github.workspace }}/nuget
+  TF_APPEND_USER_AGENT: pulumi
 
 jobs:
   prerequisites:
