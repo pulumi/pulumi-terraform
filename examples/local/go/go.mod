@@ -7,7 +7,7 @@ toolchain go1.24.12
 replace github.com/pulumi/pulumi-terraform/sdk/v6 => ../../../sdk
 
 require (
-	github.com/pulumi/pulumi-terraform/sdk/v6 v6.0.0-00010101000000-000000000000
+	github.com/pulumi/pulumi-terraform/sdk/v6 v6.0.1
 	github.com/pulumi/pulumi/sdk/v3 v3.209.0
 )
 
