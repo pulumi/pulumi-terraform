@@ -1,4 +1,4 @@
 [tools]
-golangci-lint = "2.5.0"
+golangci-lint = "2.7.0"
 go = "1.25.1"
 pulumi = "3.214.0"
