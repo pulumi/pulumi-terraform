@@ -67,6 +67,18 @@ type Workspaces struct {
 	Prefix *string `pulumi:"prefix,optional"`
 }
 
+// stateMgrName returns the workspace name to pass to the remote backend's
+// StateMgr method. When workspaces.name is set, the backend expects "default"
+// as the sentinel — it reads the actual workspace name from its own config.
+// Passing the real name triggers ErrWorkspacesNotSupported because the backend
+// interprets it as multi-workspace mode (which requires prefix instead).
+func (r Workspaces) stateMgrName() string {
+	if r.Name != nil {
+		return "default"
+	}
+	return stringOrZero(r.Prefix)
+}
+
 func (r *Workspaces) Annotate(a infer.Annotator) {
 	a.Describe(&r.Name, "The full name of one remote workspace. When configured, only the default workspace can be "+
 		"used. This option conflicts with prefix.")
@@ -80,7 +92,8 @@ func (r *GetRemoteReference) Invoke(
 	ctx context.Context, req infer.FunctionRequest[GetRemoteReferenceArgs],
 ) (infer.FunctionResponse[StateReferenceOutputs], error) {
 	args := req.Input
-	results, err := shim.StateReferenceRead(ctx, "remote", stringOrZero(args.Workspaces.Name), map[string]cty.Value{
+
+	results, err := shim.StateReferenceRead(ctx, "remote", args.Workspaces.stateMgrName(), map[string]cty.Value{
 		"hostname":     ctyStringOrNil(args.Hostname),
 		"organization": cty.StringVal(args.Organization),
 		"token":        ctyStringOrNil(args.Token),

@@ -1,0 +1,3 @@
+name: terraform-remote-state-name-with-go
+runtime: go
+description: An example demonstrating getRemoteReference with workspaces.name

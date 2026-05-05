@@ -9,6 +9,7 @@ replace (
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
+	github.com/hashicorp/go-tfe v1.26.0
 	github.com/hashicorp/terraform/shim v0.0.0-00010101000000-000000000000
 	github.com/pulumi/pulumi-go-provider v1.3.0
 	github.com/pulumi/pulumi/pkg/v3 v3.224.0
@@ -145,7 +146,6 @@ require (
 	github.com/hashicorp/go-secure-stdlib/strutil v0.1.2 // indirect
 	github.com/hashicorp/go-slug v0.16.3 // indirect
 	github.com/hashicorp/go-sockaddr v1.0.6 // indirect
-	github.com/hashicorp/go-tfe v1.26.0 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
 	github.com/hashicorp/go-version v1.8.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
