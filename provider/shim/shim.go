@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-svchost/disco"
+	"github.com/hashicorp/terraform/internal/backend"
 	backendInit "github.com/hashicorp/terraform/internal/backend/init"
 	"github.com/zclconf/go-cty/cty"
 	ctyjson "github.com/zclconf/go-cty/cty/json"
@@ -14,6 +15,17 @@ import (
 )
 
 func InitTfBackend() { backendInit.Init(disco.New()) }
+
+// VersionConflictIgnorer is implemented by backends that can skip the check
+// requiring the local Terraform version to match the remote workspace's version.
+type VersionConflictIgnorer interface {
+	IgnoreVersionConflict()
+}
+
+// BackendFactory returns the factory function for the given backend type, or nil if unknown.
+func BackendFactory(backendType string) func() backend.Backend {
+	return backendInit.Backend(backendType)
+}
 
 func StateReferenceRead(
 	ctx context.Context,
@@ -47,6 +59,13 @@ func StateReferenceRead(
 	if diagnostics.HasErrors() {
 		return nil, status.Errorf(codes.InvalidArgument, "error in backend configuration: %s",
 			diagnostics.ErrWithWarnings())
+	}
+
+	// Since we only read state, skip the version conflict check that requires
+	// the local Terraform version to match the remote workspace's version.
+	// Fixes https://github.com/pulumi/pulumi-terraform/issues/627
+	if b, ok := backend.(VersionConflictIgnorer); ok {
+		b.IgnoreVersionConflict()
 	}
 
 	// Get the state manager from the backend for the appropriate workspace

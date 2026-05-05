@@ -1,0 +1,13 @@
+name: terraform-remote-state-name-with-yaml
+runtime: yaml
+outputs:
+  state:
+    fn::invoke:
+      function: terraform:state:getRemoteReference
+      arguments:
+        organization: ${remote_tf_org}
+        token:
+          fn::secret: ${remote_tf_token}
+        workspaces:
+          name: ${workspace_name}
+      return: outputs
