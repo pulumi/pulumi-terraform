@@ -1,3 +1,0 @@
-name: terraform-local-state-with-go
-description: Show how to use Pulumi's Terraform provider to read Terraform state in Go.
-runtime: go
