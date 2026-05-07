@@ -52,9 +52,9 @@ export interface GetLocalReferenceOutputArgs {
     /**
      * The path to the tfstate file. This defaults to "terraform.tfstate" relative to the root module by default.
      */
-    path?: pulumi.Input<string>;
+    path?: pulumi.Input<string | undefined>;
     /**
      * The path to non-default workspaces.
      */
-    workspaceDir?: pulumi.Input<string>;
+    workspaceDir?: pulumi.Input<string | undefined>;
 }
