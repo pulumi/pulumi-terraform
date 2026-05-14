@@ -61,7 +61,7 @@ export interface GetRemoteReferenceOutputArgs {
     /**
      * The remote backend hostname to connect to.
      */
-    hostname?: pulumi.Input<string>;
+    hostname?: pulumi.Input<string | undefined>;
     /**
      * The name of the organization containing the targeted workspace(s).
      */
@@ -69,6 +69,6 @@ export interface GetRemoteReferenceOutputArgs {
     /**
      * The token used to authenticate with the remote backend.
      */
-    token?: pulumi.Input<string>;
+    token?: pulumi.Input<string | undefined>;
     workspaces: pulumi.Input<inputs.state.WorkspacesArgs>;
 }
