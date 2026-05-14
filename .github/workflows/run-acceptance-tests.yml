@@ -453,7 +453,7 @@ jobs:
       name: Fetch secrets from ESC
       uses: pulumi/esc-action@9eb774255b1a4afb7855678ae8d4a77359da0d9b
     - name: Mark workflow as successful
-      uses: guibranco/github-status-action-v2@3f704867b3ec00272a5f1b550c207789736bbee9 # v1.2.0
+      uses: guibranco/github-status-action-v2@e8a8fa568b768f554cfe1d34e27e917aed4c6127 # v1.2.1
       with:
         authToken: ${{ secrets.GITHUB_TOKEN }}
         context: Sentinel
