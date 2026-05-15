@@ -7,7 +7,7 @@ toolchain go1.24.12
 replace github.com/pulumi/pulumi-terraform/sdk/v6 => ../../../sdk
 
 require (
-	github.com/pulumi/pulumi-terraform/sdk/v6 v6.0.1
+	github.com/pulumi/pulumi-terraform/sdk/v6 v6.0.2
 	github.com/pulumi/pulumi/sdk/v3 v3.209.0
 )
 
@@ -48,7 +48,7 @@ require (
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-localereader v0.0.1 // indirect
-	github.com/mattn/go-runewidth v0.0.15 // indirect
+	github.com/mattn/go-runewidth v0.0.16 // indirect
 	github.com/mitchellh/go-ps v1.0.0 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/muesli/ansi v0.0.0-20230316100256-276c6243b2f6 // indirect
@@ -63,8 +63,8 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pkg/term v1.1.0 // indirect
 	github.com/pulumi/appdash v0.0.0-20231130102222-75f619a67231 // indirect
-	github.com/pulumi/esc v0.22.0 // indirect
-	github.com/rivo/uniseg v0.4.4 // indirect
+	github.com/pulumi/esc v0.24.0 // indirect
+	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/santhosh-tekuri/jsonschema/v5 v5.0.0 // indirect
 	github.com/sergi/go-diff v1.4.0 // indirect
