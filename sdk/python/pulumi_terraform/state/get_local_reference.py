@@ -67,8 +67,8 @@ def get_local_reference(path: Optional[_builtins.str] = None,
 
     return AwaitableGetLocalReferenceResult(
         outputs=pulumi.get(__ret__, 'outputs'))
-def get_local_reference_output(path: Optional[pulumi.Input[Optional[_builtins.str]]] = None,
-                               workspace_dir: Optional[pulumi.Input[Optional[_builtins.str]]] = None,
+def get_local_reference_output(path: pulumi.Input[Optional[Optional[_builtins.str]]] = None,
+                               workspace_dir: pulumi.Input[Optional[Optional[_builtins.str]]] = None,
                                opts: Optional[Union[pulumi.InvokeOptions, pulumi.InvokeOutputOptions]] = None) -> pulumi.Output[GetLocalReferenceResult]:
     """
     Access state from the local filesystem.
