@@ -17,6 +17,7 @@
         "provider.ts",
         "state/getLocalReference.ts",
         "state/getRemoteReference.ts",
+        "state/getS3Reference.ts",
         "state/index.ts",
         "types/index.ts",
         "types/input.ts",

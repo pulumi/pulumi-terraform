@@ -14,3 +14,8 @@ export const getRemoteReference: typeof import("./getRemoteReference").getRemote
 export const getRemoteReferenceOutput: typeof import("./getRemoteReference").getRemoteReferenceOutput = null as any;
 utilities.lazyLoad(exports, ["getRemoteReference","getRemoteReferenceOutput"], () => require("./getRemoteReference"));
 
+export { GetS3ReferenceArgs, GetS3ReferenceResult, GetS3ReferenceOutputArgs } from "./getS3Reference";
+export const getS3Reference: typeof import("./getS3Reference").getS3Reference = null as any;
+export const getS3ReferenceOutput: typeof import("./getS3Reference").getS3ReferenceOutput = null as any;
+utilities.lazyLoad(exports, ["getS3Reference","getS3ReferenceOutput"], () => require("./getS3Reference"));
+

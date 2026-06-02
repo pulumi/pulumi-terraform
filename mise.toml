@@ -1,0 +1,3 @@
+[tools]
+# OpenTofu is used to seed S3-compatible state stores in the provider tests.
+opentofu = "1.12.1"

@@ -24,7 +24,7 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-func ptr(s string) *string { return &s }
+func ptr[T any](v T) *T { return &v }
 
 func TestWorkspacesStateMgrName(t *testing.T) {
 	tests := []struct {

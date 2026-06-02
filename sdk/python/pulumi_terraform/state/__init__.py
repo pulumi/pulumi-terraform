@@ -8,4 +8,5 @@ import typing
 # Export this package's modules as members:
 from .get_local_reference import *
 from .get_remote_reference import *
+from .get_s3_reference import *
 from ._inputs import *
