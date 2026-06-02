@@ -33,22 +33,19 @@ import (
 	"github.com/pulumi/pulumi/pkg/v3/testing/integration"
 )
 
-func getRemoteBackendOrganization(t *testing.T) string {
-	org, found := os.LookupEnv("TFE_ORGANIZATION")
+func getRemoteBackendOrganization(t *testing.T) string { return getEnv(t, "TFE_ORGANIZATION") }
+
+func getRemoteBackendToken(t *testing.T) string { return getEnv(t, "TFE_TOKEN") }
+
+func getEnv(t *testing.T, env string) string {
+	value, found := os.LookupEnv(env)
 	if !found {
-		t.Skipf("Skipping... cannot find TFE_ORGANIZATION")
+		if os.Getenv("CI") != "" {
+			t.Fatalf("Failing... cannot find %s", env)
+		}
+		t.Skipf("Skipping... cannot find %s", env)
 	}
-
-	return org
-}
-
-func getRemoteBackendToken(t *testing.T) string {
-	token, found := os.LookupEnv("TFE_TOKEN")
-	if !found {
-		t.Skipf("Skipping... cannot find TFE_TOKEN")
-	}
-
-	return token
+	return value
 }
 
 func getwd(t *testing.T) string {
