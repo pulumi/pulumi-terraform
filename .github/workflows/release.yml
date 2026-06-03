@@ -270,9 +270,7 @@ jobs:
 
         cd examples && go test -count=1 -cover -timeout 2h -tags=${{ matrix.language }} -parallel 4 .
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        TFE_ORGANIZATION: ${{ steps.esc-secrets.outputs.TFE_ORGANIZATION }}
-        TFE_TOKEN: ${{ steps.esc-secrets.outputs.TFE_TOKEN }}
+        GTIHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - if: failure() && github.event_name == 'push'
       name: Notify Slack
       uses: 8398a7/action-slack@77eaa4f1c608a7d68b38af4e3f739dcd8cba273e # v3.19.0
@@ -330,7 +328,7 @@ jobs:
         swap-storage: true
         large-packages: false
     - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@d979d5b3a71173a29b74b5b88418bfda9437d885 # v6.1.1
+      uses: aws-actions/configure-aws-credentials@acca2b1b2070338fb9fd1ca27ecee81d687e58e5 # v6.1.2
       with:
         aws-access-key-id: ${{ steps.esc-secrets.outputs.AWS_ACCESS_KEY_ID }}
         aws-region: us-east-2
