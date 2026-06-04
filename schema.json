@@ -137,6 +137,123 @@
         ],
         "type": "object"
       }
+    },
+    "terraform:state:getS3Reference": {
+      "description": "Access state from an AWS S3 bucket.",
+      "inputs": {
+        "properties": {
+          "accessKey": {
+            "type": "string",
+            "description": "AWS access key.",
+            "secret": true
+          },
+          "bucket": {
+            "type": "string",
+            "description": "The name of the S3 bucket."
+          },
+          "encrypt": {
+            "type": "boolean",
+            "description": "Whether to enable server side encryption of the state file."
+          },
+          "endpoint": {
+            "type": "string",
+            "description": "A custom endpoint for the S3 API."
+          },
+          "forcePathStyle": {
+            "type": "boolean",
+            "description": "Force s3 to use path-style addressing instead of virtual hosted-bucket addressing. Required by most S3-compatible stores."
+          },
+          "iamEndpoint": {
+            "type": "string",
+            "description": "A custom endpoint for the IAM API."
+          },
+          "key": {
+            "type": "string",
+            "description": "The path to the state file inside the bucket. When using a non-default workspace, the state path is /workspace_key_prefix/workspace_name/key."
+          },
+          "kmsKeyId": {
+            "type": "string",
+            "description": "The ARN of a KMS Key to use for encrypting the state."
+          },
+          "maxRetries": {
+            "type": "integer",
+            "description": "The maximum number of times an AWS API request is retried on retryable failure."
+          },
+          "profile": {
+            "type": "string",
+            "description": "AWS profile name as set in the shared credentials file."
+          },
+          "region": {
+            "type": "string",
+            "description": "AWS region of the S3 bucket. Falls back to the AWS_REGION or AWS_DEFAULT_REGION environment variables when unset."
+          },
+          "secretKey": {
+            "type": "string",
+            "description": "AWS secret key.",
+            "secret": true
+          },
+          "sharedCredentialsFile": {
+            "type": "string",
+            "description": "Path to a shared credentials file."
+          },
+          "skipCredentialsValidation": {
+            "type": "boolean",
+            "description": "Skip the credentials validation via the STS API."
+          },
+          "skipMetadataApiCheck": {
+            "type": "boolean",
+            "description": "Skip the AWS Metadata API check."
+          },
+          "skipRegionValidation": {
+            "type": "boolean",
+            "description": "Skip static validation of region name."
+          },
+          "sseCustomerKey": {
+            "type": "string",
+            "description": "The base64-encoded encryption key to use for server-side encryption with customer-provided keys (SSE-C).",
+            "secret": true
+          },
+          "stsEndpoint": {
+            "type": "string",
+            "description": "A custom endpoint for the STS API."
+          },
+          "token": {
+            "type": "string",
+            "description": "AWS session token.",
+            "secret": true
+          },
+          "workspace": {
+            "type": "string",
+            "description": "The Terraform workspace to read state from.",
+            "default": "default"
+          },
+          "workspaceKeyPrefix": {
+            "type": "string",
+            "description": "The prefix applied to the non-default state path inside the bucket."
+          }
+        },
+        "type": "object",
+        "required": [
+          "bucket",
+          "key"
+        ]
+      },
+      "outputs": {
+        "description": "The result of fetching from a Terraform state store.",
+        "properties": {
+          "outputs": {
+            "additionalProperties": {
+              "$ref": "pulumi.json#/Any"
+            },
+            "description": "The outputs displayed from Terraform state.",
+            "type": "object"
+          }
+        },
+        "required": [
+          "outputs"
+        ],
+        "type": "object"
+      }
     }
   }
 }

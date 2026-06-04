@@ -13,8 +13,11 @@ import com.pulumi.terraform.state.inputs.GetLocalReferenceArgs;
 import com.pulumi.terraform.state.inputs.GetLocalReferencePlainArgs;
 import com.pulumi.terraform.state.inputs.GetRemoteReferenceArgs;
 import com.pulumi.terraform.state.inputs.GetRemoteReferencePlainArgs;
+import com.pulumi.terraform.state.inputs.GetS3ReferenceArgs;
+import com.pulumi.terraform.state.inputs.GetS3ReferencePlainArgs;
 import com.pulumi.terraform.state.outputs.GetLocalReferenceResult;
 import com.pulumi.terraform.state.outputs.GetRemoteReferenceResult;
+import com.pulumi.terraform.state.outputs.GetS3ReferenceResult;
 import java.util.concurrent.CompletableFuture;
 
 public final class StateFunctions {
@@ -101,5 +104,40 @@ public final class StateFunctions {
      */
     public static CompletableFuture<GetRemoteReferenceResult> getRemoteReferencePlain(GetRemoteReferencePlainArgs args, InvokeOptions options) {
         return Deployment.getInstance().invokeAsync("terraform:state:getRemoteReference", TypeShape.of(GetRemoteReferenceResult.class), args, Utilities.withVersion(options));
+    }
+    /**
+     * Access state from an AWS S3 bucket.
+     * 
+     */
+    public static Output<GetS3ReferenceResult> getS3Reference(GetS3ReferenceArgs args) {
+        return getS3Reference(args, InvokeOptions.Empty);
+    }
+    /**
+     * Access state from an AWS S3 bucket.
+     * 
+     */
+    public static CompletableFuture<GetS3ReferenceResult> getS3ReferencePlain(GetS3ReferencePlainArgs args) {
+        return getS3ReferencePlain(args, InvokeOptions.Empty);
+    }
+    /**
+     * Access state from an AWS S3 bucket.
+     * 
+     */
+    public static Output<GetS3ReferenceResult> getS3Reference(GetS3ReferenceArgs args, InvokeOptions options) {
+        return Deployment.getInstance().invoke("terraform:state:getS3Reference", TypeShape.of(GetS3ReferenceResult.class), args, Utilities.withVersion(options));
+    }
+    /**
+     * Access state from an AWS S3 bucket.
+     * 
+     */
+    public static Output<GetS3ReferenceResult> getS3Reference(GetS3ReferenceArgs args, InvokeOutputOptions options) {
+        return Deployment.getInstance().invoke("terraform:state:getS3Reference", TypeShape.of(GetS3ReferenceResult.class), args, Utilities.withVersion(options));
+    }
+    /**
+     * Access state from an AWS S3 bucket.
+     * 
+     */
+    public static CompletableFuture<GetS3ReferenceResult> getS3ReferencePlain(GetS3ReferencePlainArgs args, InvokeOptions options) {
+        return Deployment.getInstance().invokeAsync("terraform:state:getS3Reference", TypeShape.of(GetS3ReferenceResult.class), args, Utilities.withVersion(options));
     }
 }

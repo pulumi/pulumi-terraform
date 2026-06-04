@@ -44,6 +44,20 @@ func ctyStringOrNil(v *string) cty.Value {
 	return cty.StringVal(*v)
 }
 
+func ctyBoolOrNil(v *bool) cty.Value {
+	if v == nil {
+		return cty.NullVal(cty.Bool)
+	}
+	return cty.BoolVal(*v)
+}
+
+func ctyIntOrNil(v *int) cty.Value {
+	if v == nil {
+		return cty.NullVal(cty.Number)
+	}
+	return cty.NumberIntVal(int64(*v))
+}
+
 func stringOrZero(v *string) string {
 	if v == nil {
 		return ""
