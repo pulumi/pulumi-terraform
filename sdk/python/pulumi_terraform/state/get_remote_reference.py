@@ -73,10 +73,10 @@ def get_remote_reference(hostname: Optional[_builtins.str] = None,
 
     return AwaitableGetRemoteReferenceResult(
         outputs=pulumi.get(__ret__, 'outputs'))
-def get_remote_reference_output(hostname: Optional[pulumi.Input[Optional[_builtins.str]]] = None,
-                                organization: Optional[pulumi.Input[_builtins.str]] = None,
-                                token: Optional[pulumi.Input[Optional[_builtins.str]]] = None,
-                                workspaces: Optional[pulumi.Input[Union['Workspaces', 'WorkspacesDict']]] = None,
+def get_remote_reference_output(hostname: pulumi.Input[Optional[Optional[_builtins.str]]] = None,
+                                organization: pulumi.Input[Optional[_builtins.str]] = None,
+                                token: pulumi.Input[Optional[Optional[_builtins.str]]] = None,
+                                workspaces: pulumi.Input[Optional[Union['Workspaces', 'WorkspacesDict']]] = None,
                                 opts: Optional[Union[pulumi.InvokeOptions, pulumi.InvokeOutputOptions]] = None) -> pulumi.Output[GetRemoteReferenceResult]:
     """
     Access state from a remote backend.
