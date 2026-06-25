@@ -74,7 +74,6 @@ def get_s3_reference(access_key: Optional[_builtins.str] = None,
     """
     Access state from an AWS S3 bucket.
 
-
     :param _builtins.str access_key: AWS access key.
     :param _builtins.str bucket: The name of the S3 bucket.
     :param _builtins.bool encrypt: Whether to enable server side encryption of the state file.
@@ -124,31 +123,30 @@ def get_s3_reference(access_key: Optional[_builtins.str] = None,
 
     return AwaitableGetS3ReferenceResult(
         outputs=pulumi.get(__ret__, 'outputs'))
-def get_s3_reference_output(access_key: Optional[pulumi.Input[Optional[_builtins.str]]] = None,
-                            bucket: Optional[pulumi.Input[_builtins.str]] = None,
-                            encrypt: Optional[pulumi.Input[Optional[_builtins.bool]]] = None,
-                            endpoint: Optional[pulumi.Input[Optional[_builtins.str]]] = None,
-                            force_path_style: Optional[pulumi.Input[Optional[_builtins.bool]]] = None,
-                            iam_endpoint: Optional[pulumi.Input[Optional[_builtins.str]]] = None,
-                            key: Optional[pulumi.Input[_builtins.str]] = None,
-                            kms_key_id: Optional[pulumi.Input[Optional[_builtins.str]]] = None,
-                            max_retries: Optional[pulumi.Input[Optional[_builtins.int]]] = None,
-                            profile: Optional[pulumi.Input[Optional[_builtins.str]]] = None,
-                            region: Optional[pulumi.Input[Optional[_builtins.str]]] = None,
-                            secret_key: Optional[pulumi.Input[Optional[_builtins.str]]] = None,
-                            shared_credentials_file: Optional[pulumi.Input[Optional[_builtins.str]]] = None,
-                            skip_credentials_validation: Optional[pulumi.Input[Optional[_builtins.bool]]] = None,
-                            skip_metadata_api_check: Optional[pulumi.Input[Optional[_builtins.bool]]] = None,
-                            skip_region_validation: Optional[pulumi.Input[Optional[_builtins.bool]]] = None,
-                            sse_customer_key: Optional[pulumi.Input[Optional[_builtins.str]]] = None,
-                            sts_endpoint: Optional[pulumi.Input[Optional[_builtins.str]]] = None,
-                            token: Optional[pulumi.Input[Optional[_builtins.str]]] = None,
-                            workspace: Optional[pulumi.Input[Optional[_builtins.str]]] = None,
-                            workspace_key_prefix: Optional[pulumi.Input[Optional[_builtins.str]]] = None,
+def get_s3_reference_output(access_key: pulumi.Input[Optional[Optional[_builtins.str]]] = None,
+                            bucket: pulumi.Input[Optional[_builtins.str]] = None,
+                            encrypt: pulumi.Input[Optional[Optional[_builtins.bool]]] = None,
+                            endpoint: pulumi.Input[Optional[Optional[_builtins.str]]] = None,
+                            force_path_style: pulumi.Input[Optional[Optional[_builtins.bool]]] = None,
+                            iam_endpoint: pulumi.Input[Optional[Optional[_builtins.str]]] = None,
+                            key: pulumi.Input[Optional[_builtins.str]] = None,
+                            kms_key_id: pulumi.Input[Optional[Optional[_builtins.str]]] = None,
+                            max_retries: pulumi.Input[Optional[Optional[_builtins.int]]] = None,
+                            profile: pulumi.Input[Optional[Optional[_builtins.str]]] = None,
+                            region: pulumi.Input[Optional[Optional[_builtins.str]]] = None,
+                            secret_key: pulumi.Input[Optional[Optional[_builtins.str]]] = None,
+                            shared_credentials_file: pulumi.Input[Optional[Optional[_builtins.str]]] = None,
+                            skip_credentials_validation: pulumi.Input[Optional[Optional[_builtins.bool]]] = None,
+                            skip_metadata_api_check: pulumi.Input[Optional[Optional[_builtins.bool]]] = None,
+                            skip_region_validation: pulumi.Input[Optional[Optional[_builtins.bool]]] = None,
+                            sse_customer_key: pulumi.Input[Optional[Optional[_builtins.str]]] = None,
+                            sts_endpoint: pulumi.Input[Optional[Optional[_builtins.str]]] = None,
+                            token: pulumi.Input[Optional[Optional[_builtins.str]]] = None,
+                            workspace: pulumi.Input[Optional[Optional[_builtins.str]]] = None,
+                            workspace_key_prefix: pulumi.Input[Optional[Optional[_builtins.str]]] = None,
                             opts: Optional[Union[pulumi.InvokeOptions, pulumi.InvokeOutputOptions]] = None) -> pulumi.Output[GetS3ReferenceResult]:
     """
     Access state from an AWS S3 bucket.
-
 
     :param _builtins.str access_key: AWS access key.
     :param _builtins.str bucket: The name of the S3 bucket.
