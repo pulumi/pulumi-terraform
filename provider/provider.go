@@ -29,6 +29,10 @@ import (
 
 const (
 	Name = "terraform"
+
+	// respectSchemaVersionKey is the per-language overlay key that opts the
+	// generated SDK into schema-version-aware packaging.
+	respectSchemaVersionKey = "respectSchemaVersion"
 )
 
 // This provider uses the `pulumi-go-provider` library to produce a code-first provider definition.
@@ -51,22 +55,22 @@ func NewProvider() p.Provider {
 			LogoURL:    "https://raw.githubusercontent.com/pulumi/pulumi-terraform-provider/main/assets/logo.png",
 			LanguageMap: map[string]any{
 				"csharp": map[string]any{
-					"respectSchemaVersion": true,
+					respectSchemaVersionKey: true,
 					"packageReferences": map[string]string{
 						"Pulumi": "3.*",
 					},
 				},
 				"go": map[string]any{
-					"respectSchemaVersion":           true,
+					respectSchemaVersionKey:          true,
 					"generateResourceContainerTypes": true,
 					"importBasePath": fmt.Sprintf(
 						"github.com/pulumi/pulumi-terraform/sdk/v%d/go/terraform", version.Version.Major),
 				},
 				"nodejs": map[string]any{
-					"respectSchemaVersion": true,
+					respectSchemaVersionKey: true,
 				},
 				"python": map[string]any{
-					"respectSchemaVersion": true,
+					respectSchemaVersionKey: true,
 					"pyproject": map[string]bool{
 						"enabled": true,
 					},

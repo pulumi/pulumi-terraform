@@ -35,7 +35,7 @@ func TestWorkspacesStateMgrName(t *testing.T) {
 		{
 			name:     "name set passes default to StateMgr",
 			ws:       Workspaces{Name: ptr("my-workspace")},
-			expected: "default",
+			expected: defaultWorkspace,
 		},
 		{
 			name:     "prefix set passes prefix to StateMgr",
@@ -50,7 +50,7 @@ func TestWorkspacesStateMgrName(t *testing.T) {
 		{
 			name:     "name takes precedence over prefix",
 			ws:       Workspaces{Name: ptr("my-workspace"), Prefix: ptr("app-")},
-			expected: "default",
+			expected: defaultWorkspace,
 		},
 	}
 
@@ -65,7 +65,7 @@ func TestStateReferenceReadLocal(t *testing.T) {
 	InitTfBackend()
 
 	outputs, err := shim.StateReferenceRead(
-		context.Background(), "local", "default", map[string]cty.Value{
+		context.Background(), "local", defaultWorkspace, map[string]cty.Value{
 			"path": cty.StringVal("testdata/test.tfstate"),
 		},
 	)
@@ -79,7 +79,7 @@ func TestStateReferenceReadUnsupportedBackend(t *testing.T) {
 	InitTfBackend()
 
 	_, err := shim.StateReferenceRead(
-		context.Background(), "nonexistent", "default", map[string]cty.Value{},
+		context.Background(), "nonexistent", defaultWorkspace, map[string]cty.Value{},
 	)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "unsupported backend type")

@@ -101,7 +101,7 @@ func (r *GetS3ReferenceArgs) Annotate(a infer.Annotator) {
 	a.Describe(&r.SkipRegionValidation, "Skip static validation of region name.")
 	a.Describe(&r.SkipMetadataAPICheck, "Skip the AWS Metadata API check.")
 
-	a.SetDefault(&r.Workspace, "default")
+	a.SetDefault(&r.Workspace, defaultWorkspace)
 }
 
 // WireDependencies lets us tell users that our outputs shouldn't be secret, even when
