@@ -59,7 +59,7 @@ func TestStateReferenceReadS3(t *testing.T) {
 	InitTfBackend()
 	resp, err := (&GetS3Reference{}).Invoke(ctx, infer.FunctionRequest[GetS3ReferenceArgs]{
 		Input: GetS3ReferenceArgs{
-			Workspace:                 ptr("default"),
+			Workspace:                 ptr(defaultWorkspace),
 			Bucket:                    bucket,
 			Key:                       key,
 			Region:                    ptr("us-east-1"),

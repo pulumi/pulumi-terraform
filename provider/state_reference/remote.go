@@ -74,7 +74,7 @@ type Workspaces struct {
 // interprets it as multi-workspace mode (which requires prefix instead).
 func (r Workspaces) stateMgrName() string {
 	if r.Name != nil {
-		return "default"
+		return defaultWorkspace
 	}
 	return stringOrZero(r.Prefix)
 }

@@ -33,6 +33,9 @@ import (
 	"github.com/pulumi/pulumi/pkg/v3/testing/integration"
 )
 
+// stateKey is the stack output key holding the fetched Terraform state outputs.
+const stateKey = "state"
+
 func getRemoteBackendOrganization(t *testing.T) string { return getEnv(t, "TFE_ORGANIZATION") }
 
 func getRemoteBackendToken(t *testing.T) string { return getEnv(t, "TFE_TOKEN") }
@@ -168,7 +171,7 @@ func LanguageTests(t *testing.T, language string) {
 		"local": {
 			doesNotNeedConfig: true,
 			expectedStackOutputs: map[string]any{
-				"state": map[string]any{
+				stateKey: map[string]any{
 					"bucket_arn": "arn:aws:s3:::hello-world-abc12345",
 					"public_subnet_ids": []any{
 						"subnet-023a5a6867d194162",
@@ -183,7 +186,7 @@ func LanguageTests(t *testing.T, language string) {
 		},
 		"remote": {
 			expectedStackOutputs: map[string]any{
-				"state": map[string]any{
+				stateKey: map[string]any{
 					"4dabf18193072939515e22adb298388d": "1b47061264138c4ac30d75fd1eb44270",
 					"plaintext":                        "{\"password\":\"EOZcr9x4V@ep8T1gjmR4RJ39aT9vQDsDwZx\"}",
 				},
@@ -200,7 +203,7 @@ func LanguageTests(t *testing.T, language string) {
 			//   "1b47061264138c4ac30d75fd1eb44270" = secret signature value
 			//   "plaintext" = the actual outputs serialized as a JSON string
 			expectedStackOutputs: map[string]any{
-				"state": map[string]any{
+				stateKey: map[string]any{
 					"4dabf18193072939515e22adb298388d": "1b47061264138c4ac30d75fd1eb44270",
 					"plaintext":                        `{"test_output":"hello-from-integration-test"}`,
 				},

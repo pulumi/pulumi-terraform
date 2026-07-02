@@ -21,6 +21,10 @@ import (
 	"github.com/pulumi/pulumi-go-provider/infer"
 )
 
+// defaultWorkspace is the sentinel name Terraform backends use for the
+// implicit, always-present workspace.
+const defaultWorkspace = "default"
+
 func InitTfBackend() { shim.InitTfBackend() }
 
 type StateReferenceOutputs struct {
