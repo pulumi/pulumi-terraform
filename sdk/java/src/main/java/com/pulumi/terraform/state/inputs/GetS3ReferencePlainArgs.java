@@ -9,6 +9,8 @@ import com.pulumi.exceptions.MissingRequiredPropertyException;
 import java.lang.Boolean;
 import java.lang.Integer;
 import java.lang.String;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -31,6 +33,81 @@ public final class GetS3ReferencePlainArgs extends com.pulumi.resources.InvokeAr
      */
     public Optional<String> accessKey() {
         return Optional.ofNullable(this.accessKey);
+    }
+
+    /**
+     * The duration, in seconds, of the assume role session.
+     * 
+     */
+    @Import(name="assumeRoleDurationSeconds")
+    private @Nullable Integer assumeRoleDurationSeconds;
+
+    /**
+     * @return The duration, in seconds, of the assume role session.
+     * 
+     */
+    public Optional<Integer> assumeRoleDurationSeconds() {
+        return Optional.ofNullable(this.assumeRoleDurationSeconds);
+    }
+
+    /**
+     * IAM Policy JSON describing further restricting permissions for the IAM Role being assumed.
+     * 
+     */
+    @Import(name="assumeRolePolicy")
+    private @Nullable String assumeRolePolicy;
+
+    /**
+     * @return IAM Policy JSON describing further restricting permissions for the IAM Role being assumed.
+     * 
+     */
+    public Optional<String> assumeRolePolicy() {
+        return Optional.ofNullable(this.assumeRolePolicy);
+    }
+
+    /**
+     * Amazon Resource Names (ARNs) of IAM Policies describing further restricting permissions for the IAM Role being assumed.
+     * 
+     */
+    @Import(name="assumeRolePolicyArns")
+    private @Nullable List<String> assumeRolePolicyArns;
+
+    /**
+     * @return Amazon Resource Names (ARNs) of IAM Policies describing further restricting permissions for the IAM Role being assumed.
+     * 
+     */
+    public Optional<List<String>> assumeRolePolicyArns() {
+        return Optional.ofNullable(this.assumeRolePolicyArns);
+    }
+
+    /**
+     * Assume role session tags.
+     * 
+     */
+    @Import(name="assumeRoleTags")
+    private @Nullable Map<String,String> assumeRoleTags;
+
+    /**
+     * @return Assume role session tags.
+     * 
+     */
+    public Optional<Map<String,String>> assumeRoleTags() {
+        return Optional.ofNullable(this.assumeRoleTags);
+    }
+
+    /**
+     * Assume role session tag keys to pass to any subsequent sessions.
+     * 
+     */
+    @Import(name="assumeRoleTransitiveTagKeys")
+    private @Nullable List<String> assumeRoleTransitiveTagKeys;
+
+    /**
+     * @return Assume role session tag keys to pass to any subsequent sessions.
+     * 
+     */
+    public Optional<List<String>> assumeRoleTransitiveTagKeys() {
+        return Optional.ofNullable(this.assumeRoleTransitiveTagKeys);
     }
 
     /**
@@ -76,6 +153,21 @@ public final class GetS3ReferencePlainArgs extends com.pulumi.resources.InvokeAr
      */
     public Optional<String> endpoint() {
         return Optional.ofNullable(this.endpoint);
+    }
+
+    /**
+     * The external ID to use when assuming the role.
+     * 
+     */
+    @Import(name="externalId")
+    private @Nullable String externalId;
+
+    /**
+     * @return The external ID to use when assuming the role.
+     * 
+     */
+    public Optional<String> externalId() {
+        return Optional.ofNullable(this.externalId);
     }
 
     /**
@@ -184,6 +276,21 @@ public final class GetS3ReferencePlainArgs extends com.pulumi.resources.InvokeAr
     }
 
     /**
+     * The ARN of an IAM Role to be assumed in order to read the state.
+     * 
+     */
+    @Import(name="roleArn")
+    private @Nullable String roleArn;
+
+    /**
+     * @return The ARN of an IAM Role to be assumed in order to read the state.
+     * 
+     */
+    public Optional<String> roleArn() {
+        return Optional.ofNullable(this.roleArn);
+    }
+
+    /**
      * AWS secret key.
      * 
      */
@@ -196,6 +303,21 @@ public final class GetS3ReferencePlainArgs extends com.pulumi.resources.InvokeAr
      */
     public Optional<String> secretKey() {
         return Optional.ofNullable(this.secretKey);
+    }
+
+    /**
+     * The session name to use when assuming the role.
+     * 
+     */
+    @Import(name="sessionName")
+    private @Nullable String sessionName;
+
+    /**
+     * @return The session name to use when assuming the role.
+     * 
+     */
+    public Optional<String> sessionName() {
+        return Optional.ofNullable(this.sessionName);
     }
 
     /**
@@ -337,9 +459,15 @@ public final class GetS3ReferencePlainArgs extends com.pulumi.resources.InvokeAr
 
     private GetS3ReferencePlainArgs(GetS3ReferencePlainArgs $) {
         this.accessKey = $.accessKey;
+        this.assumeRoleDurationSeconds = $.assumeRoleDurationSeconds;
+        this.assumeRolePolicy = $.assumeRolePolicy;
+        this.assumeRolePolicyArns = $.assumeRolePolicyArns;
+        this.assumeRoleTags = $.assumeRoleTags;
+        this.assumeRoleTransitiveTagKeys = $.assumeRoleTransitiveTagKeys;
         this.bucket = $.bucket;
         this.encrypt = $.encrypt;
         this.endpoint = $.endpoint;
+        this.externalId = $.externalId;
         this.forcePathStyle = $.forcePathStyle;
         this.iamEndpoint = $.iamEndpoint;
         this.key = $.key;
@@ -347,7 +475,9 @@ public final class GetS3ReferencePlainArgs extends com.pulumi.resources.InvokeAr
         this.maxRetries = $.maxRetries;
         this.profile = $.profile;
         this.region = $.region;
+        this.roleArn = $.roleArn;
         this.secretKey = $.secretKey;
+        this.sessionName = $.sessionName;
         this.sharedCredentialsFile = $.sharedCredentialsFile;
         this.skipCredentialsValidation = $.skipCredentialsValidation;
         this.skipMetadataApiCheck = $.skipMetadataApiCheck;
@@ -389,6 +519,81 @@ public final class GetS3ReferencePlainArgs extends com.pulumi.resources.InvokeAr
         }
 
         /**
+         * @param assumeRoleDurationSeconds The duration, in seconds, of the assume role session.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder assumeRoleDurationSeconds(@Nullable Integer assumeRoleDurationSeconds) {
+            $.assumeRoleDurationSeconds = assumeRoleDurationSeconds;
+            return this;
+        }
+
+        /**
+         * @param assumeRolePolicy IAM Policy JSON describing further restricting permissions for the IAM Role being assumed.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder assumeRolePolicy(@Nullable String assumeRolePolicy) {
+            $.assumeRolePolicy = assumeRolePolicy;
+            return this;
+        }
+
+        /**
+         * @param assumeRolePolicyArns Amazon Resource Names (ARNs) of IAM Policies describing further restricting permissions for the IAM Role being assumed.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder assumeRolePolicyArns(@Nullable List<String> assumeRolePolicyArns) {
+            $.assumeRolePolicyArns = assumeRolePolicyArns;
+            return this;
+        }
+
+        /**
+         * @param assumeRolePolicyArns Amazon Resource Names (ARNs) of IAM Policies describing further restricting permissions for the IAM Role being assumed.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder assumeRolePolicyArns(String... assumeRolePolicyArns) {
+            return assumeRolePolicyArns(List.of(assumeRolePolicyArns));
+        }
+
+        /**
+         * @param assumeRoleTags Assume role session tags.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder assumeRoleTags(@Nullable Map<String,String> assumeRoleTags) {
+            $.assumeRoleTags = assumeRoleTags;
+            return this;
+        }
+
+        /**
+         * @param assumeRoleTransitiveTagKeys Assume role session tag keys to pass to any subsequent sessions.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder assumeRoleTransitiveTagKeys(@Nullable List<String> assumeRoleTransitiveTagKeys) {
+            $.assumeRoleTransitiveTagKeys = assumeRoleTransitiveTagKeys;
+            return this;
+        }
+
+        /**
+         * @param assumeRoleTransitiveTagKeys Assume role session tag keys to pass to any subsequent sessions.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder assumeRoleTransitiveTagKeys(String... assumeRoleTransitiveTagKeys) {
+            return assumeRoleTransitiveTagKeys(List.of(assumeRoleTransitiveTagKeys));
+        }
+
+        /**
          * @param bucket The name of the S3 bucket.
          * 
          * @return builder
@@ -418,6 +623,17 @@ public final class GetS3ReferencePlainArgs extends com.pulumi.resources.InvokeAr
          */
         public Builder endpoint(@Nullable String endpoint) {
             $.endpoint = endpoint;
+            return this;
+        }
+
+        /**
+         * @param externalId The external ID to use when assuming the role.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder externalId(@Nullable String externalId) {
+            $.externalId = externalId;
             return this;
         }
 
@@ -499,6 +715,17 @@ public final class GetS3ReferencePlainArgs extends com.pulumi.resources.InvokeAr
         }
 
         /**
+         * @param roleArn The ARN of an IAM Role to be assumed in order to read the state.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder roleArn(@Nullable String roleArn) {
+            $.roleArn = roleArn;
+            return this;
+        }
+
+        /**
          * @param secretKey AWS secret key.
          * 
          * @return builder
@@ -506,6 +733,17 @@ public final class GetS3ReferencePlainArgs extends com.pulumi.resources.InvokeAr
          */
         public Builder secretKey(@Nullable String secretKey) {
             $.secretKey = secretKey;
+            return this;
+        }
+
+        /**
+         * @param sessionName The session name to use when assuming the role.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder sessionName(@Nullable String sessionName) {
+            $.sessionName = sessionName;
             return this;
         }
 

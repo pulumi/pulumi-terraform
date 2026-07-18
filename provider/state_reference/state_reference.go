@@ -62,6 +62,28 @@ func ctyIntOrNil(v *int) cty.Value {
 	return cty.NumberIntVal(int64(*v))
 }
 
+func ctyStringSetOrNil(v []string) cty.Value {
+	if len(v) == 0 {
+		return cty.NullVal(cty.Set(cty.String))
+	}
+	elems := make([]cty.Value, len(v))
+	for i, s := range v {
+		elems[i] = cty.StringVal(s)
+	}
+	return cty.SetVal(elems)
+}
+
+func ctyStringMapOrNil(v map[string]string) cty.Value {
+	if len(v) == 0 {
+		return cty.NullVal(cty.Map(cty.String))
+	}
+	elems := make(map[string]cty.Value, len(v))
+	for k, s := range v {
+		elems[k] = cty.StringVal(s)
+	}
+	return cty.MapVal(elems)
+}
+
 func stringOrZero(v *string) string {
 	if v == nil {
 		return ""

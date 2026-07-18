@@ -39,22 +39,7 @@ import (
 // that state back through GetS3Reference and confirm the outputs round-trip.
 func TestStateReferenceReadS3(t *testing.T) {
 	ctx := t.Context()
-	const (
-		bucket   = "pulumi-terraform-test"
-		key      = "env/terraform.tfstate"
-		username = "minioadmin"
-		password = "minioadmin"
-	)
-
-	container, err := tcminio.Run(ctx, "minio/minio:RELEASE.2024-12-18T13-15-44Z",
-		tcminio.WithUsername(username), tcminio.WithPassword(password))
-	require.NoError(t, err)
-
-	hostPort, err := container.ConnectionString(ctx)
-	require.NoError(t, err)
-	endpoint := "http://" + hostPort
-
-	seedS3State(ctx, t, endpoint, bucket, key, username, password)
+	endpoint := startSeededMinio(ctx, t)
 
 	InitTfBackend()
 	resp, err := (&GetS3Reference{}).Invoke(ctx, infer.FunctionRequest[GetS3ReferenceArgs]{
@@ -78,6 +63,64 @@ func TestStateReferenceReadS3(t *testing.T) {
 		"greeting": "hello",
 		"number":   float64(42),
 	}, resp.Output.Outputs)
+}
+
+// TestStateReferenceReadS3AssumeRole reads state while authenticating through an
+// assumed role: role_arn makes the backend call STS AssumeRole (against MinIO's
+// STS API) and read the state with the returned temporary credentials.
+func TestStateReferenceReadS3AssumeRole(t *testing.T) {
+	ctx := t.Context()
+	endpoint := startSeededMinio(ctx, t)
+
+	InitTfBackend()
+	resp, err := (&GetS3Reference{}).Invoke(ctx, infer.FunctionRequest[GetS3ReferenceArgs]{
+		Input: GetS3ReferenceArgs{
+			Workspace:                 ptr(defaultWorkspace),
+			Bucket:                    bucket,
+			Key:                       key,
+			Region:                    ptr("us-east-1"),
+			Endpoint:                  ptr(endpoint),
+			StsEndpoint:               ptr(endpoint),
+			ForcePathStyle:            ptr(true),
+			AccessKey:                 ptr(username),
+			SecretKey:                 ptr(password),
+			RoleArn:                   ptr("arn:aws:iam::123456789012:role/terraform-state-reader"),
+			SessionName:               ptr("pulumi-terraform-test"),
+			SkipCredentialsValidation: ptr(true),
+			SkipRegionValidation:      ptr(true),
+			SkipMetadataAPICheck:      ptr(true),
+		},
+	})
+	require.NoError(t, err)
+
+	assert.Equal(t, map[string]any{
+		"greeting": "hello",
+		"number":   float64(42),
+	}, resp.Output.Outputs)
+}
+
+const (
+	bucket   = "pulumi-terraform-test"
+	key      = "env/terraform.tfstate"
+	username = "minioadmin"
+	password = "minioadmin"
+)
+
+// startSeededMinio runs a MinIO container holding a Terraform state file with
+// known outputs and returns its endpoint URL.
+func startSeededMinio(ctx context.Context, t *testing.T) string {
+	t.Helper()
+
+	container, err := tcminio.Run(ctx, "minio/minio:RELEASE.2024-12-18T13-15-44Z",
+		tcminio.WithUsername(username), tcminio.WithPassword(password))
+	require.NoError(t, err)
+
+	hostPort, err := container.ConnectionString(ctx)
+	require.NoError(t, err)
+	endpoint := "http://" + hostPort
+
+	seedS3State(ctx, t, endpoint, bucket, key, username, password)
+	return endpoint
 }
 
 // seedS3State creates the state bucket and runs tofu apply against it so the

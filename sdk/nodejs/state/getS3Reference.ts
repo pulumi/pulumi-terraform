@@ -11,9 +11,15 @@ export function getS3Reference(args: GetS3ReferenceArgs, opts?: pulumi.InvokeOpt
     opts = pulumi.mergeOptions(utilities.resourceOptsDefaults(), opts || {});
     return pulumi.runtime.invoke("terraform:state:getS3Reference", {
         "accessKey": args.accessKey,
+        "assumeRoleDurationSeconds": args.assumeRoleDurationSeconds,
+        "assumeRolePolicy": args.assumeRolePolicy,
+        "assumeRolePolicyArns": args.assumeRolePolicyArns,
+        "assumeRoleTags": args.assumeRoleTags,
+        "assumeRoleTransitiveTagKeys": args.assumeRoleTransitiveTagKeys,
         "bucket": args.bucket,
         "encrypt": args.encrypt,
         "endpoint": args.endpoint,
+        "externalId": args.externalId,
         "forcePathStyle": args.forcePathStyle,
         "iamEndpoint": args.iamEndpoint,
         "key": args.key,
@@ -21,7 +27,9 @@ export function getS3Reference(args: GetS3ReferenceArgs, opts?: pulumi.InvokeOpt
         "maxRetries": args.maxRetries,
         "profile": args.profile,
         "region": args.region,
+        "roleArn": args.roleArn,
         "secretKey": args.secretKey,
+        "sessionName": args.sessionName,
         "sharedCredentialsFile": args.sharedCredentialsFile,
         "skipCredentialsValidation": args.skipCredentialsValidation,
         "skipMetadataApiCheck": args.skipMetadataApiCheck,
@@ -40,6 +48,26 @@ export interface GetS3ReferenceArgs {
      */
     accessKey?: string;
     /**
+     * The duration, in seconds, of the assume role session.
+     */
+    assumeRoleDurationSeconds?: number;
+    /**
+     * IAM Policy JSON describing further restricting permissions for the IAM Role being assumed.
+     */
+    assumeRolePolicy?: string;
+    /**
+     * Amazon Resource Names (ARNs) of IAM Policies describing further restricting permissions for the IAM Role being assumed.
+     */
+    assumeRolePolicyArns?: string[];
+    /**
+     * Assume role session tags.
+     */
+    assumeRoleTags?: {[key: string]: string};
+    /**
+     * Assume role session tag keys to pass to any subsequent sessions.
+     */
+    assumeRoleTransitiveTagKeys?: string[];
+    /**
      * The name of the S3 bucket.
      */
     bucket: string;
@@ -51,6 +79,10 @@ export interface GetS3ReferenceArgs {
      * A custom endpoint for the S3 API.
      */
     endpoint?: string;
+    /**
+     * The external ID to use when assuming the role.
+     */
+    externalId?: string;
     /**
      * Force s3 to use path-style addressing instead of virtual hosted-bucket addressing. Required by most S3-compatible stores.
      */
@@ -80,9 +112,17 @@ export interface GetS3ReferenceArgs {
      */
     region?: string;
     /**
+     * The ARN of an IAM Role to be assumed in order to read the state.
+     */
+    roleArn?: string;
+    /**
      * AWS secret key.
      */
     secretKey?: string;
+    /**
+     * The session name to use when assuming the role.
+     */
+    sessionName?: string;
     /**
      * Path to a shared credentials file.
      */
@@ -137,9 +177,15 @@ export function getS3ReferenceOutput(args: GetS3ReferenceOutputArgs, opts?: pulu
     opts = pulumi.mergeOptions(utilities.resourceOptsDefaults(), opts || {});
     return pulumi.runtime.invokeOutput("terraform:state:getS3Reference", {
         "accessKey": args.accessKey,
+        "assumeRoleDurationSeconds": args.assumeRoleDurationSeconds,
+        "assumeRolePolicy": args.assumeRolePolicy,
+        "assumeRolePolicyArns": args.assumeRolePolicyArns,
+        "assumeRoleTags": args.assumeRoleTags,
+        "assumeRoleTransitiveTagKeys": args.assumeRoleTransitiveTagKeys,
         "bucket": args.bucket,
         "encrypt": args.encrypt,
         "endpoint": args.endpoint,
+        "externalId": args.externalId,
         "forcePathStyle": args.forcePathStyle,
         "iamEndpoint": args.iamEndpoint,
         "key": args.key,
@@ -147,7 +193,9 @@ export function getS3ReferenceOutput(args: GetS3ReferenceOutputArgs, opts?: pulu
         "maxRetries": args.maxRetries,
         "profile": args.profile,
         "region": args.region,
+        "roleArn": args.roleArn,
         "secretKey": args.secretKey,
+        "sessionName": args.sessionName,
         "sharedCredentialsFile": args.sharedCredentialsFile,
         "skipCredentialsValidation": args.skipCredentialsValidation,
         "skipMetadataApiCheck": args.skipMetadataApiCheck,
@@ -166,6 +214,26 @@ export interface GetS3ReferenceOutputArgs {
      */
     accessKey?: pulumi.Input<string | undefined>;
     /**
+     * The duration, in seconds, of the assume role session.
+     */
+    assumeRoleDurationSeconds?: pulumi.Input<number | undefined>;
+    /**
+     * IAM Policy JSON describing further restricting permissions for the IAM Role being assumed.
+     */
+    assumeRolePolicy?: pulumi.Input<string | undefined>;
+    /**
+     * Amazon Resource Names (ARNs) of IAM Policies describing further restricting permissions for the IAM Role being assumed.
+     */
+    assumeRolePolicyArns?: pulumi.Input<pulumi.Input<string>[] | undefined>;
+    /**
+     * Assume role session tags.
+     */
+    assumeRoleTags?: pulumi.Input<{[key: string]: pulumi.Input<string>} | undefined>;
+    /**
+     * Assume role session tag keys to pass to any subsequent sessions.
+     */
+    assumeRoleTransitiveTagKeys?: pulumi.Input<pulumi.Input<string>[] | undefined>;
+    /**
      * The name of the S3 bucket.
      */
     bucket: pulumi.Input<string>;
@@ -177,6 +245,10 @@ export interface GetS3ReferenceOutputArgs {
      * A custom endpoint for the S3 API.
      */
     endpoint?: pulumi.Input<string | undefined>;
+    /**
+     * The external ID to use when assuming the role.
+     */
+    externalId?: pulumi.Input<string | undefined>;
     /**
      * Force s3 to use path-style addressing instead of virtual hosted-bucket addressing. Required by most S3-compatible stores.
      */
@@ -206,9 +278,17 @@ export interface GetS3ReferenceOutputArgs {
      */
     region?: pulumi.Input<string | undefined>;
     /**
+     * The ARN of an IAM Role to be assumed in order to read the state.
+     */
+    roleArn?: pulumi.Input<string | undefined>;
+    /**
      * AWS secret key.
      */
     secretKey?: pulumi.Input<string | undefined>;
+    /**
+     * The session name to use when assuming the role.
+     */
+    sessionName?: pulumi.Input<string | undefined>;
     /**
      * Path to a shared credentials file.
      */

@@ -46,6 +46,54 @@ namespace Pulumi.Terraform.State
         }
 
         /// <summary>
+        /// The duration, in seconds, of the assume role session.
+        /// </summary>
+        [Input("assumeRoleDurationSeconds")]
+        public int? AssumeRoleDurationSeconds { get; set; }
+
+        /// <summary>
+        /// IAM Policy JSON describing further restricting permissions for the IAM Role being assumed.
+        /// </summary>
+        [Input("assumeRolePolicy")]
+        public string? AssumeRolePolicy { get; set; }
+
+        [Input("assumeRolePolicyArns")]
+        private List<string>? _assumeRolePolicyArns;
+
+        /// <summary>
+        /// Amazon Resource Names (ARNs) of IAM Policies describing further restricting permissions for the IAM Role being assumed.
+        /// </summary>
+        public List<string> AssumeRolePolicyArns
+        {
+            get => _assumeRolePolicyArns ?? (_assumeRolePolicyArns = new List<string>());
+            set => _assumeRolePolicyArns = value;
+        }
+
+        [Input("assumeRoleTags")]
+        private Dictionary<string, string>? _assumeRoleTags;
+
+        /// <summary>
+        /// Assume role session tags.
+        /// </summary>
+        public Dictionary<string, string> AssumeRoleTags
+        {
+            get => _assumeRoleTags ?? (_assumeRoleTags = new Dictionary<string, string>());
+            set => _assumeRoleTags = value;
+        }
+
+        [Input("assumeRoleTransitiveTagKeys")]
+        private List<string>? _assumeRoleTransitiveTagKeys;
+
+        /// <summary>
+        /// Assume role session tag keys to pass to any subsequent sessions.
+        /// </summary>
+        public List<string> AssumeRoleTransitiveTagKeys
+        {
+            get => _assumeRoleTransitiveTagKeys ?? (_assumeRoleTransitiveTagKeys = new List<string>());
+            set => _assumeRoleTransitiveTagKeys = value;
+        }
+
+        /// <summary>
         /// The name of the S3 bucket.
         /// </summary>
         [Input("bucket", required: true)]
@@ -62,6 +110,12 @@ namespace Pulumi.Terraform.State
         /// </summary>
         [Input("endpoint")]
         public string? Endpoint { get; set; }
+
+        /// <summary>
+        /// The external ID to use when assuming the role.
+        /// </summary>
+        [Input("externalId")]
+        public string? ExternalId { get; set; }
 
         /// <summary>
         /// Force s3 to use path-style addressing instead of virtual hosted-bucket addressing. Required by most S3-compatible stores.
@@ -105,6 +159,12 @@ namespace Pulumi.Terraform.State
         [Input("region")]
         public string? Region { get; set; }
 
+        /// <summary>
+        /// The ARN of an IAM Role to be assumed in order to read the state.
+        /// </summary>
+        [Input("roleArn")]
+        public string? RoleArn { get; set; }
+
         [Input("secretKey")]
         private string? _secretKey;
 
@@ -116,6 +176,12 @@ namespace Pulumi.Terraform.State
             get => _secretKey;
             set => _secretKey = value;
         }
+
+        /// <summary>
+        /// The session name to use when assuming the role.
+        /// </summary>
+        [Input("sessionName")]
+        public string? SessionName { get; set; }
 
         /// <summary>
         /// Path to a shared credentials file.
@@ -209,6 +275,54 @@ namespace Pulumi.Terraform.State
         }
 
         /// <summary>
+        /// The duration, in seconds, of the assume role session.
+        /// </summary>
+        [Input("assumeRoleDurationSeconds")]
+        public Input<int>? AssumeRoleDurationSeconds { get; set; }
+
+        /// <summary>
+        /// IAM Policy JSON describing further restricting permissions for the IAM Role being assumed.
+        /// </summary>
+        [Input("assumeRolePolicy")]
+        public Input<string>? AssumeRolePolicy { get; set; }
+
+        [Input("assumeRolePolicyArns")]
+        private InputList<string>? _assumeRolePolicyArns;
+
+        /// <summary>
+        /// Amazon Resource Names (ARNs) of IAM Policies describing further restricting permissions for the IAM Role being assumed.
+        /// </summary>
+        public InputList<string> AssumeRolePolicyArns
+        {
+            get => _assumeRolePolicyArns ?? (_assumeRolePolicyArns = new InputList<string>());
+            set => _assumeRolePolicyArns = value;
+        }
+
+        [Input("assumeRoleTags")]
+        private InputMap<string>? _assumeRoleTags;
+
+        /// <summary>
+        /// Assume role session tags.
+        /// </summary>
+        public InputMap<string> AssumeRoleTags
+        {
+            get => _assumeRoleTags ?? (_assumeRoleTags = new InputMap<string>());
+            set => _assumeRoleTags = value;
+        }
+
+        [Input("assumeRoleTransitiveTagKeys")]
+        private InputList<string>? _assumeRoleTransitiveTagKeys;
+
+        /// <summary>
+        /// Assume role session tag keys to pass to any subsequent sessions.
+        /// </summary>
+        public InputList<string> AssumeRoleTransitiveTagKeys
+        {
+            get => _assumeRoleTransitiveTagKeys ?? (_assumeRoleTransitiveTagKeys = new InputList<string>());
+            set => _assumeRoleTransitiveTagKeys = value;
+        }
+
+        /// <summary>
         /// The name of the S3 bucket.
         /// </summary>
         [Input("bucket", required: true)]
@@ -225,6 +339,12 @@ namespace Pulumi.Terraform.State
         /// </summary>
         [Input("endpoint")]
         public Input<string>? Endpoint { get; set; }
+
+        /// <summary>
+        /// The external ID to use when assuming the role.
+        /// </summary>
+        [Input("externalId")]
+        public Input<string>? ExternalId { get; set; }
 
         /// <summary>
         /// Force s3 to use path-style addressing instead of virtual hosted-bucket addressing. Required by most S3-compatible stores.
@@ -268,6 +388,12 @@ namespace Pulumi.Terraform.State
         [Input("region")]
         public Input<string>? Region { get; set; }
 
+        /// <summary>
+        /// The ARN of an IAM Role to be assumed in order to read the state.
+        /// </summary>
+        [Input("roleArn")]
+        public Input<string>? RoleArn { get; set; }
+
         [Input("secretKey")]
         private Input<string>? _secretKey;
 
@@ -283,6 +409,12 @@ namespace Pulumi.Terraform.State
                 _secretKey = Output.Tuple<Input<string>?, int>(value, emptySecret).Apply(t => t.Item1);
             }
         }
+
+        /// <summary>
+        /// The session name to use when assuming the role.
+        /// </summary>
+        [Input("sessionName")]
+        public Input<string>? SessionName { get; set; }
 
         /// <summary>
         /// Path to a shared credentials file.
