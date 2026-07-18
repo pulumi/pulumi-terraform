@@ -164,7 +164,7 @@ export interface GetS3ReferenceOutputArgs {
     /**
      * AWS access key.
      */
-    accessKey?: pulumi.Input<string>;
+    accessKey?: pulumi.Input<string | undefined>;
     /**
      * The name of the S3 bucket.
      */
@@ -172,19 +172,19 @@ export interface GetS3ReferenceOutputArgs {
     /**
      * Whether to enable server side encryption of the state file.
      */
-    encrypt?: pulumi.Input<boolean>;
+    encrypt?: pulumi.Input<boolean | undefined>;
     /**
      * A custom endpoint for the S3 API.
      */
-    endpoint?: pulumi.Input<string>;
+    endpoint?: pulumi.Input<string | undefined>;
     /**
      * Force s3 to use path-style addressing instead of virtual hosted-bucket addressing. Required by most S3-compatible stores.
      */
-    forcePathStyle?: pulumi.Input<boolean>;
+    forcePathStyle?: pulumi.Input<boolean | undefined>;
     /**
      * A custom endpoint for the IAM API.
      */
-    iamEndpoint?: pulumi.Input<string>;
+    iamEndpoint?: pulumi.Input<string | undefined>;
     /**
      * The path to the state file inside the bucket. When using a non-default workspace, the state path is /workspace_key_prefix/workspace_name/key.
      */
@@ -192,57 +192,57 @@ export interface GetS3ReferenceOutputArgs {
     /**
      * The ARN of a KMS Key to use for encrypting the state.
      */
-    kmsKeyId?: pulumi.Input<string>;
+    kmsKeyId?: pulumi.Input<string | undefined>;
     /**
      * The maximum number of times an AWS API request is retried on retryable failure.
      */
-    maxRetries?: pulumi.Input<number>;
+    maxRetries?: pulumi.Input<number | undefined>;
     /**
      * AWS profile name as set in the shared credentials file.
      */
-    profile?: pulumi.Input<string>;
+    profile?: pulumi.Input<string | undefined>;
     /**
      * AWS region of the S3 bucket. Falls back to the AWS_REGION or AWS_DEFAULT_REGION environment variables when unset.
      */
-    region?: pulumi.Input<string>;
+    region?: pulumi.Input<string | undefined>;
     /**
      * AWS secret key.
      */
-    secretKey?: pulumi.Input<string>;
+    secretKey?: pulumi.Input<string | undefined>;
     /**
      * Path to a shared credentials file.
      */
-    sharedCredentialsFile?: pulumi.Input<string>;
+    sharedCredentialsFile?: pulumi.Input<string | undefined>;
     /**
      * Skip the credentials validation via the STS API.
      */
-    skipCredentialsValidation?: pulumi.Input<boolean>;
+    skipCredentialsValidation?: pulumi.Input<boolean | undefined>;
     /**
      * Skip the AWS Metadata API check.
      */
-    skipMetadataApiCheck?: pulumi.Input<boolean>;
+    skipMetadataApiCheck?: pulumi.Input<boolean | undefined>;
     /**
      * Skip static validation of region name.
      */
-    skipRegionValidation?: pulumi.Input<boolean>;
+    skipRegionValidation?: pulumi.Input<boolean | undefined>;
     /**
      * The base64-encoded encryption key to use for server-side encryption with customer-provided keys (SSE-C).
      */
-    sseCustomerKey?: pulumi.Input<string>;
+    sseCustomerKey?: pulumi.Input<string | undefined>;
     /**
      * A custom endpoint for the STS API.
      */
-    stsEndpoint?: pulumi.Input<string>;
+    stsEndpoint?: pulumi.Input<string | undefined>;
     /**
      * AWS session token.
      */
-    token?: pulumi.Input<string>;
+    token?: pulumi.Input<string | undefined>;
     /**
      * The Terraform workspace to read state from.
      */
-    workspace?: pulumi.Input<string>;
+    workspace?: pulumi.Input<string | undefined>;
     /**
      * The prefix applied to the non-default state path inside the bucket.
      */
-    workspaceKeyPrefix?: pulumi.Input<string>;
+    workspaceKeyPrefix?: pulumi.Input<string | undefined>;
 }

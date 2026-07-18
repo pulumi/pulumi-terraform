@@ -59,7 +59,6 @@
       "type": "object"
     }
   },
-  "provider": {},
   "functions": {
     "terraform:state:getLocalReference": {
       "description": "Access state from the local filesystem.",
