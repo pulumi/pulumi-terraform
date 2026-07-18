@@ -9,18 +9,56 @@ import com.pulumi.deployment.Deployment;
 import com.pulumi.deployment.InvokeOptions;
 import com.pulumi.deployment.InvokeOutputOptions;
 import com.pulumi.terraform.Utilities;
+import com.pulumi.terraform.state.inputs.GetAzureRMReferenceArgs;
+import com.pulumi.terraform.state.inputs.GetAzureRMReferencePlainArgs;
 import com.pulumi.terraform.state.inputs.GetLocalReferenceArgs;
 import com.pulumi.terraform.state.inputs.GetLocalReferencePlainArgs;
 import com.pulumi.terraform.state.inputs.GetRemoteReferenceArgs;
 import com.pulumi.terraform.state.inputs.GetRemoteReferencePlainArgs;
 import com.pulumi.terraform.state.inputs.GetS3ReferenceArgs;
 import com.pulumi.terraform.state.inputs.GetS3ReferencePlainArgs;
+import com.pulumi.terraform.state.outputs.GetAzureRMReferenceResult;
 import com.pulumi.terraform.state.outputs.GetLocalReferenceResult;
 import com.pulumi.terraform.state.outputs.GetRemoteReferenceResult;
 import com.pulumi.terraform.state.outputs.GetS3ReferenceResult;
 import java.util.concurrent.CompletableFuture;
 
 public final class StateFunctions {
+    /**
+     * Access state stored in an Azure Blob Storage container.
+     * 
+     */
+    public static Output<GetAzureRMReferenceResult> getAzureRMReference(GetAzureRMReferenceArgs args) {
+        return getAzureRMReference(args, InvokeOptions.Empty);
+    }
+    /**
+     * Access state stored in an Azure Blob Storage container.
+     * 
+     */
+    public static CompletableFuture<GetAzureRMReferenceResult> getAzureRMReferencePlain(GetAzureRMReferencePlainArgs args) {
+        return getAzureRMReferencePlain(args, InvokeOptions.Empty);
+    }
+    /**
+     * Access state stored in an Azure Blob Storage container.
+     * 
+     */
+    public static Output<GetAzureRMReferenceResult> getAzureRMReference(GetAzureRMReferenceArgs args, InvokeOptions options) {
+        return Deployment.getInstance().invoke("terraform:state:getAzureRMReference", TypeShape.of(GetAzureRMReferenceResult.class), args, Utilities.withVersion(options));
+    }
+    /**
+     * Access state stored in an Azure Blob Storage container.
+     * 
+     */
+    public static Output<GetAzureRMReferenceResult> getAzureRMReference(GetAzureRMReferenceArgs args, InvokeOutputOptions options) {
+        return Deployment.getInstance().invoke("terraform:state:getAzureRMReference", TypeShape.of(GetAzureRMReferenceResult.class), args, Utilities.withVersion(options));
+    }
+    /**
+     * Access state stored in an Azure Blob Storage container.
+     * 
+     */
+    public static CompletableFuture<GetAzureRMReferenceResult> getAzureRMReferencePlain(GetAzureRMReferencePlainArgs args, InvokeOptions options) {
+        return Deployment.getInstance().invokeAsync("terraform:state:getAzureRMReference", TypeShape.of(GetAzureRMReferenceResult.class), args, Utilities.withVersion(options));
+    }
     /**
      * Access state from the local filesystem.
      * 
