@@ -23,6 +23,9 @@ import (
 	"github.com/pulumi/pulumi-go-provider/infer"
 )
 
+// localPathAttribute is the local backend's config attribute naming the state file.
+const localPathAttribute = "path"
+
 type GetLocalReference struct{}
 
 var _ = (infer.Annotated)((*GetLocalReference)(nil))
@@ -48,8 +51,8 @@ func (r *GetLocalReference) Invoke(
 	req infer.FunctionRequest[GetLocalReferenceArgs],
 ) (infer.FunctionResponse[StateReferenceOutputs], error) {
 	results, err := shim.StateReferenceRead(ctx, "local", "", map[string]cty.Value{
-		"path":          ctyStringOrNil(req.Input.Path),
-		"workspace_dir": ctyStringOrNil(req.Input.WorkspaceDir),
+		localPathAttribute: ctyStringOrNil(req.Input.Path),
+		"workspace_dir":    ctyStringOrNil(req.Input.WorkspaceDir),
 	})
 
 	return infer.FunctionResponse[StateReferenceOutputs]{Output: StateReferenceOutputs{results}}, err
