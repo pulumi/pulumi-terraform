@@ -66,7 +66,7 @@ func TestStateReferenceReadLocal(t *testing.T) {
 
 	outputs, err := shim.StateReferenceRead(
 		context.Background(), "local", defaultWorkspace, map[string]cty.Value{
-			"path": cty.StringVal("testdata/test.tfstate"),
+			localPathAttribute: cty.StringVal("testdata/test.tfstate"),
 		},
 	)
 	require.NoError(t, err)
