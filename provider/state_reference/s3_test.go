@@ -64,7 +64,7 @@ func TestStateReferenceReadS3(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, map[string]any{
-		"greeting": "hello",
+		"greeting": greeting,
 		"number":   float64(42),
 	}, resp.Output.Outputs)
 }
@@ -99,7 +99,7 @@ func TestStateReferenceReadS3AssumeRole(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, map[string]any{
-		"greeting": "hello",
+		"greeting": greeting,
 		"number":   float64(42),
 	}, resp.Output.Outputs)
 }
@@ -112,6 +112,8 @@ const (
 
 	assumeRoleUsername = "assume-role-user"
 	assumeRolePassword = "assume-role-password"
+
+	greeting = "hello"
 )
 
 // configureAssumeRoleUser creates a MinIO user whose policy allows reading the
