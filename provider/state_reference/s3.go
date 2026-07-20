@@ -56,6 +56,15 @@ type GetS3ReferenceArgs struct {
 	Profile               *string `pulumi:"profile,optional"`
 	SharedCredentialsFile *string `pulumi:"sharedCredentialsFile,optional"`
 
+	RoleArn                     *string           `pulumi:"roleArn,optional"`
+	SessionName                 *string           `pulumi:"sessionName,optional"`
+	ExternalID                  *string           `pulumi:"externalId,optional"`
+	AssumeRoleDurationSeconds   *int              `pulumi:"assumeRoleDurationSeconds,optional"`
+	AssumeRolePolicy            *string           `pulumi:"assumeRolePolicy,optional"`
+	AssumeRolePolicyArns        []string          `pulumi:"assumeRolePolicyArns,optional"`
+	AssumeRoleTags              map[string]string `pulumi:"assumeRoleTags,optional"`
+	AssumeRoleTransitiveTagKeys []string          `pulumi:"assumeRoleTransitiveTagKeys,optional"`
+
 	Encrypt        *bool   `pulumi:"encrypt,optional"`
 	KmsKeyID       *string `pulumi:"kmsKeyId,optional"`
 	SseCustomerKey *string `pulumi:"sseCustomerKey,optional" provider:"secret"`
@@ -88,6 +97,17 @@ func (r *GetS3ReferenceArgs) Annotate(a infer.Annotator) {
 	a.Describe(&r.Token, "AWS session token.")
 	a.Describe(&r.Profile, "AWS profile name as set in the shared credentials file.")
 	a.Describe(&r.SharedCredentialsFile, "Path to a shared credentials file.")
+
+	a.Describe(&r.RoleArn, "The ARN of an IAM Role to be assumed in order to read the state.")
+	a.Describe(&r.SessionName, "The session name to use when assuming the role.")
+	a.Describe(&r.ExternalID, "The external ID to use when assuming the role.")
+	a.Describe(&r.AssumeRoleDurationSeconds, "The duration, in seconds, of the assume role session.")
+	a.Describe(&r.AssumeRolePolicy, "IAM Policy JSON describing further restricting permissions for "+
+		"the IAM Role being assumed.")
+	a.Describe(&r.AssumeRolePolicyArns, "Amazon Resource Names (ARNs) of IAM Policies describing further "+
+		"restricting permissions for the IAM Role being assumed.")
+	a.Describe(&r.AssumeRoleTags, "Assume role session tags.")
+	a.Describe(&r.AssumeRoleTransitiveTagKeys, "Assume role session tag keys to pass to any subsequent sessions.")
 
 	a.Describe(&r.Encrypt, "Whether to enable server side encryption of the state file.")
 	a.Describe(&r.KmsKeyID, "The ARN of a KMS Key to use for encrypting the state.")
@@ -122,26 +142,34 @@ func (r *GetS3Reference) Invoke(
 	args := req.Input
 
 	results, err := shim.StateReferenceRead(ctx, "s3", *args.Workspace, map[string]cty.Value{
-		"bucket":                      cty.StringVal(args.Bucket),
-		"key":                         cty.StringVal(args.Key),
-		"region":                      ctyStringOrNil(args.Region),
-		"endpoint":                    ctyStringOrNil(args.Endpoint),
-		"sts_endpoint":                ctyStringOrNil(args.StsEndpoint),
-		"iam_endpoint":                ctyStringOrNil(args.IamEndpoint),
-		"force_path_style":            ctyBoolOrNil(args.ForcePathStyle),
-		"access_key":                  ctyStringOrNil(args.AccessKey),
-		"secret_key":                  ctyStringOrNil(args.SecretKey),
-		"token":                       ctyStringOrNil(args.Token),
-		"profile":                     ctyStringOrNil(args.Profile),
-		"shared_credentials_file":     ctyStringOrNil(args.SharedCredentialsFile),
-		"encrypt":                     ctyBoolOrNil(args.Encrypt),
-		"kms_key_id":                  ctyStringOrNil(args.KmsKeyID),
-		"sse_customer_key":            ctyStringOrNil(args.SseCustomerKey),
-		"workspace_key_prefix":        ctyStringOrNil(args.WorkspaceKeyPrefix),
-		"max_retries":                 ctyIntOrNil(args.MaxRetries),
-		"skip_credentials_validation": ctyBoolOrNil(args.SkipCredentialsValidation),
-		"skip_region_validation":      ctyBoolOrNil(args.SkipRegionValidation),
-		"skip_metadata_api_check":     ctyBoolOrNil(args.SkipMetadataAPICheck),
+		"bucket":                          cty.StringVal(args.Bucket),
+		"key":                             cty.StringVal(args.Key),
+		"region":                          ctyStringOrNil(args.Region),
+		"endpoint":                        ctyStringOrNil(args.Endpoint),
+		"sts_endpoint":                    ctyStringOrNil(args.StsEndpoint),
+		"iam_endpoint":                    ctyStringOrNil(args.IamEndpoint),
+		"force_path_style":                ctyBoolOrNil(args.ForcePathStyle),
+		"access_key":                      ctyStringOrNil(args.AccessKey),
+		"secret_key":                      ctyStringOrNil(args.SecretKey),
+		"token":                           ctyStringOrNil(args.Token),
+		"profile":                         ctyStringOrNil(args.Profile),
+		"shared_credentials_file":         ctyStringOrNil(args.SharedCredentialsFile),
+		"role_arn":                        ctyStringOrNil(args.RoleArn),
+		"session_name":                    ctyStringOrNil(args.SessionName),
+		"external_id":                     ctyStringOrNil(args.ExternalID),
+		"assume_role_duration_seconds":    ctyIntOrNil(args.AssumeRoleDurationSeconds),
+		"assume_role_policy":              ctyStringOrNil(args.AssumeRolePolicy),
+		"assume_role_policy_arns":         ctyStringSetOrNil(args.AssumeRolePolicyArns),
+		"assume_role_tags":                ctyStringMapOrNil(args.AssumeRoleTags),
+		"assume_role_transitive_tag_keys": ctyStringSetOrNil(args.AssumeRoleTransitiveTagKeys),
+		"encrypt":                         ctyBoolOrNil(args.Encrypt),
+		"kms_key_id":                      ctyStringOrNil(args.KmsKeyID),
+		"sse_customer_key":                ctyStringOrNil(args.SseCustomerKey),
+		"workspace_key_prefix":            ctyStringOrNil(args.WorkspaceKeyPrefix),
+		"max_retries":                     ctyIntOrNil(args.MaxRetries),
+		"skip_credentials_validation":     ctyBoolOrNil(args.SkipCredentialsValidation),
+		"skip_region_validation":          ctyBoolOrNil(args.SkipRegionValidation),
+		"skip_metadata_api_check":         ctyBoolOrNil(args.SkipMetadataAPICheck),
 	})
 
 	return infer.FunctionResponse[StateReferenceOutputs]{Output: StateReferenceOutputs{results}}, err

@@ -278,6 +278,35 @@
             "description": "AWS access key.",
             "secret": true
           },
+          "assumeRoleDurationSeconds": {
+            "type": "integer",
+            "description": "The duration, in seconds, of the assume role session."
+          },
+          "assumeRolePolicy": {
+            "type": "string",
+            "description": "IAM Policy JSON describing further restricting permissions for the IAM Role being assumed."
+          },
+          "assumeRolePolicyArns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Amazon Resource Names (ARNs) of IAM Policies describing further restricting permissions for the IAM Role being assumed."
+          },
+          "assumeRoleTags": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Assume role session tags."
+          },
+          "assumeRoleTransitiveTagKeys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Assume role session tag keys to pass to any subsequent sessions."
+          },
           "bucket": {
             "type": "string",
             "description": "The name of the S3 bucket."
@@ -289,6 +318,10 @@
           "endpoint": {
             "type": "string",
             "description": "A custom endpoint for the S3 API."
+          },
+          "externalId": {
+            "type": "string",
+            "description": "The external ID to use when assuming the role."
           },
           "forcePathStyle": {
             "type": "boolean",
@@ -318,10 +351,18 @@
             "type": "string",
             "description": "AWS region of the S3 bucket. Falls back to the AWS_REGION or AWS_DEFAULT_REGION environment variables when unset."
           },
+          "roleArn": {
+            "type": "string",
+            "description": "The ARN of an IAM Role to be assumed in order to read the state."
+          },
           "secretKey": {
             "type": "string",
             "description": "AWS secret key.",
             "secret": true
+          },
+          "sessionName": {
+            "type": "string",
+            "description": "The session name to use when assuming the role."
           },
           "sharedCredentialsFile": {
             "type": "string",

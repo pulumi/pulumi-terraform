@@ -25,12 +25,24 @@ func GetS3Reference(ctx *pulumi.Context, args *GetS3ReferenceArgs, opts ...pulum
 type GetS3ReferenceArgs struct {
 	// AWS access key.
 	AccessKey *string `pulumi:"accessKey"`
+	// The duration, in seconds, of the assume role session.
+	AssumeRoleDurationSeconds *int `pulumi:"assumeRoleDurationSeconds"`
+	// IAM Policy JSON describing further restricting permissions for the IAM Role being assumed.
+	AssumeRolePolicy *string `pulumi:"assumeRolePolicy"`
+	// Amazon Resource Names (ARNs) of IAM Policies describing further restricting permissions for the IAM Role being assumed.
+	AssumeRolePolicyArns []string `pulumi:"assumeRolePolicyArns"`
+	// Assume role session tags.
+	AssumeRoleTags map[string]string `pulumi:"assumeRoleTags"`
+	// Assume role session tag keys to pass to any subsequent sessions.
+	AssumeRoleTransitiveTagKeys []string `pulumi:"assumeRoleTransitiveTagKeys"`
 	// The name of the S3 bucket.
 	Bucket string `pulumi:"bucket"`
 	// Whether to enable server side encryption of the state file.
 	Encrypt *bool `pulumi:"encrypt"`
 	// A custom endpoint for the S3 API.
 	Endpoint *string `pulumi:"endpoint"`
+	// The external ID to use when assuming the role.
+	ExternalId *string `pulumi:"externalId"`
 	// Force s3 to use path-style addressing instead of virtual hosted-bucket addressing. Required by most S3-compatible stores.
 	ForcePathStyle *bool `pulumi:"forcePathStyle"`
 	// A custom endpoint for the IAM API.
@@ -45,8 +57,12 @@ type GetS3ReferenceArgs struct {
 	Profile *string `pulumi:"profile"`
 	// AWS region of the S3 bucket. Falls back to the AWS_REGION or AWS_DEFAULT_REGION environment variables when unset.
 	Region *string `pulumi:"region"`
+	// The ARN of an IAM Role to be assumed in order to read the state.
+	RoleArn *string `pulumi:"roleArn"`
 	// AWS secret key.
 	SecretKey *string `pulumi:"secretKey"`
+	// The session name to use when assuming the role.
+	SessionName *string `pulumi:"sessionName"`
 	// Path to a shared credentials file.
 	SharedCredentialsFile *string `pulumi:"sharedCredentialsFile"`
 	// Skip the credentials validation via the STS API.
@@ -98,12 +114,24 @@ func GetS3ReferenceOutput(ctx *pulumi.Context, args GetS3ReferenceOutputArgs, op
 type GetS3ReferenceOutputArgs struct {
 	// AWS access key.
 	AccessKey pulumi.StringPtrInput `pulumi:"accessKey"`
+	// The duration, in seconds, of the assume role session.
+	AssumeRoleDurationSeconds pulumi.IntPtrInput `pulumi:"assumeRoleDurationSeconds"`
+	// IAM Policy JSON describing further restricting permissions for the IAM Role being assumed.
+	AssumeRolePolicy pulumi.StringPtrInput `pulumi:"assumeRolePolicy"`
+	// Amazon Resource Names (ARNs) of IAM Policies describing further restricting permissions for the IAM Role being assumed.
+	AssumeRolePolicyArns pulumi.StringArrayInput `pulumi:"assumeRolePolicyArns"`
+	// Assume role session tags.
+	AssumeRoleTags pulumi.StringMapInput `pulumi:"assumeRoleTags"`
+	// Assume role session tag keys to pass to any subsequent sessions.
+	AssumeRoleTransitiveTagKeys pulumi.StringArrayInput `pulumi:"assumeRoleTransitiveTagKeys"`
 	// The name of the S3 bucket.
 	Bucket pulumi.StringInput `pulumi:"bucket"`
 	// Whether to enable server side encryption of the state file.
 	Encrypt pulumi.BoolPtrInput `pulumi:"encrypt"`
 	// A custom endpoint for the S3 API.
 	Endpoint pulumi.StringPtrInput `pulumi:"endpoint"`
+	// The external ID to use when assuming the role.
+	ExternalId pulumi.StringPtrInput `pulumi:"externalId"`
 	// Force s3 to use path-style addressing instead of virtual hosted-bucket addressing. Required by most S3-compatible stores.
 	ForcePathStyle pulumi.BoolPtrInput `pulumi:"forcePathStyle"`
 	// A custom endpoint for the IAM API.
@@ -118,8 +146,12 @@ type GetS3ReferenceOutputArgs struct {
 	Profile pulumi.StringPtrInput `pulumi:"profile"`
 	// AWS region of the S3 bucket. Falls back to the AWS_REGION or AWS_DEFAULT_REGION environment variables when unset.
 	Region pulumi.StringPtrInput `pulumi:"region"`
+	// The ARN of an IAM Role to be assumed in order to read the state.
+	RoleArn pulumi.StringPtrInput `pulumi:"roleArn"`
 	// AWS secret key.
 	SecretKey pulumi.StringPtrInput `pulumi:"secretKey"`
+	// The session name to use when assuming the role.
+	SessionName pulumi.StringPtrInput `pulumi:"sessionName"`
 	// Path to a shared credentials file.
 	SharedCredentialsFile pulumi.StringPtrInput `pulumi:"sharedCredentialsFile"`
 	// Skip the credentials validation via the STS API.

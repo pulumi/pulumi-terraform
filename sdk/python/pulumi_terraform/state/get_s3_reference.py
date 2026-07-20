@@ -50,9 +50,15 @@ class AwaitableGetS3ReferenceResult(GetS3ReferenceResult):
 
 
 def get_s3_reference(access_key: Optional[_builtins.str] = None,
+                     assume_role_duration_seconds: Optional[_builtins.int] = None,
+                     assume_role_policy: Optional[_builtins.str] = None,
+                     assume_role_policy_arns: Optional[Sequence[_builtins.str]] = None,
+                     assume_role_tags: Optional[Mapping[str, _builtins.str]] = None,
+                     assume_role_transitive_tag_keys: Optional[Sequence[_builtins.str]] = None,
                      bucket: Optional[_builtins.str] = None,
                      encrypt: Optional[_builtins.bool] = None,
                      endpoint: Optional[_builtins.str] = None,
+                     external_id: Optional[_builtins.str] = None,
                      force_path_style: Optional[_builtins.bool] = None,
                      iam_endpoint: Optional[_builtins.str] = None,
                      key: Optional[_builtins.str] = None,
@@ -60,7 +66,9 @@ def get_s3_reference(access_key: Optional[_builtins.str] = None,
                      max_retries: Optional[_builtins.int] = None,
                      profile: Optional[_builtins.str] = None,
                      region: Optional[_builtins.str] = None,
+                     role_arn: Optional[_builtins.str] = None,
                      secret_key: Optional[_builtins.str] = None,
+                     session_name: Optional[_builtins.str] = None,
                      shared_credentials_file: Optional[_builtins.str] = None,
                      skip_credentials_validation: Optional[_builtins.bool] = None,
                      skip_metadata_api_check: Optional[_builtins.bool] = None,
@@ -75,9 +83,15 @@ def get_s3_reference(access_key: Optional[_builtins.str] = None,
     Access state from an AWS S3 bucket.
 
     :param _builtins.str access_key: AWS access key.
+    :param _builtins.int assume_role_duration_seconds: The duration, in seconds, of the assume role session.
+    :param _builtins.str assume_role_policy: IAM Policy JSON describing further restricting permissions for the IAM Role being assumed.
+    :param Sequence[_builtins.str] assume_role_policy_arns: Amazon Resource Names (ARNs) of IAM Policies describing further restricting permissions for the IAM Role being assumed.
+    :param Mapping[str, _builtins.str] assume_role_tags: Assume role session tags.
+    :param Sequence[_builtins.str] assume_role_transitive_tag_keys: Assume role session tag keys to pass to any subsequent sessions.
     :param _builtins.str bucket: The name of the S3 bucket.
     :param _builtins.bool encrypt: Whether to enable server side encryption of the state file.
     :param _builtins.str endpoint: A custom endpoint for the S3 API.
+    :param _builtins.str external_id: The external ID to use when assuming the role.
     :param _builtins.bool force_path_style: Force s3 to use path-style addressing instead of virtual hosted-bucket addressing. Required by most S3-compatible stores.
     :param _builtins.str iam_endpoint: A custom endpoint for the IAM API.
     :param _builtins.str key: The path to the state file inside the bucket. When using a non-default workspace, the state path is /workspace_key_prefix/workspace_name/key.
@@ -85,7 +99,9 @@ def get_s3_reference(access_key: Optional[_builtins.str] = None,
     :param _builtins.int max_retries: The maximum number of times an AWS API request is retried on retryable failure.
     :param _builtins.str profile: AWS profile name as set in the shared credentials file.
     :param _builtins.str region: AWS region of the S3 bucket. Falls back to the AWS_REGION or AWS_DEFAULT_REGION environment variables when unset.
+    :param _builtins.str role_arn: The ARN of an IAM Role to be assumed in order to read the state.
     :param _builtins.str secret_key: AWS secret key.
+    :param _builtins.str session_name: The session name to use when assuming the role.
     :param _builtins.str shared_credentials_file: Path to a shared credentials file.
     :param _builtins.bool skip_credentials_validation: Skip the credentials validation via the STS API.
     :param _builtins.bool skip_metadata_api_check: Skip the AWS Metadata API check.
@@ -98,9 +114,15 @@ def get_s3_reference(access_key: Optional[_builtins.str] = None,
     """
     __args__ = dict()
     __args__['accessKey'] = access_key
+    __args__['assumeRoleDurationSeconds'] = assume_role_duration_seconds
+    __args__['assumeRolePolicy'] = assume_role_policy
+    __args__['assumeRolePolicyArns'] = assume_role_policy_arns
+    __args__['assumeRoleTags'] = assume_role_tags
+    __args__['assumeRoleTransitiveTagKeys'] = assume_role_transitive_tag_keys
     __args__['bucket'] = bucket
     __args__['encrypt'] = encrypt
     __args__['endpoint'] = endpoint
+    __args__['externalId'] = external_id
     __args__['forcePathStyle'] = force_path_style
     __args__['iamEndpoint'] = iam_endpoint
     __args__['key'] = key
@@ -108,7 +130,9 @@ def get_s3_reference(access_key: Optional[_builtins.str] = None,
     __args__['maxRetries'] = max_retries
     __args__['profile'] = profile
     __args__['region'] = region
+    __args__['roleArn'] = role_arn
     __args__['secretKey'] = secret_key
+    __args__['sessionName'] = session_name
     __args__['sharedCredentialsFile'] = shared_credentials_file
     __args__['skipCredentialsValidation'] = skip_credentials_validation
     __args__['skipMetadataApiCheck'] = skip_metadata_api_check
@@ -124,9 +148,15 @@ def get_s3_reference(access_key: Optional[_builtins.str] = None,
     return AwaitableGetS3ReferenceResult(
         outputs=pulumi.get(__ret__, 'outputs'))
 def get_s3_reference_output(access_key: pulumi.Input[Optional[Optional[_builtins.str]]] = None,
+                            assume_role_duration_seconds: pulumi.Input[Optional[Optional[_builtins.int]]] = None,
+                            assume_role_policy: pulumi.Input[Optional[Optional[_builtins.str]]] = None,
+                            assume_role_policy_arns: pulumi.Input[Optional[Optional[Sequence[_builtins.str]]]] = None,
+                            assume_role_tags: pulumi.Input[Optional[Optional[Mapping[str, _builtins.str]]]] = None,
+                            assume_role_transitive_tag_keys: pulumi.Input[Optional[Optional[Sequence[_builtins.str]]]] = None,
                             bucket: pulumi.Input[Optional[_builtins.str]] = None,
                             encrypt: pulumi.Input[Optional[Optional[_builtins.bool]]] = None,
                             endpoint: pulumi.Input[Optional[Optional[_builtins.str]]] = None,
+                            external_id: pulumi.Input[Optional[Optional[_builtins.str]]] = None,
                             force_path_style: pulumi.Input[Optional[Optional[_builtins.bool]]] = None,
                             iam_endpoint: pulumi.Input[Optional[Optional[_builtins.str]]] = None,
                             key: pulumi.Input[Optional[_builtins.str]] = None,
@@ -134,7 +164,9 @@ def get_s3_reference_output(access_key: pulumi.Input[Optional[Optional[_builtins
                             max_retries: pulumi.Input[Optional[Optional[_builtins.int]]] = None,
                             profile: pulumi.Input[Optional[Optional[_builtins.str]]] = None,
                             region: pulumi.Input[Optional[Optional[_builtins.str]]] = None,
+                            role_arn: pulumi.Input[Optional[Optional[_builtins.str]]] = None,
                             secret_key: pulumi.Input[Optional[Optional[_builtins.str]]] = None,
+                            session_name: pulumi.Input[Optional[Optional[_builtins.str]]] = None,
                             shared_credentials_file: pulumi.Input[Optional[Optional[_builtins.str]]] = None,
                             skip_credentials_validation: pulumi.Input[Optional[Optional[_builtins.bool]]] = None,
                             skip_metadata_api_check: pulumi.Input[Optional[Optional[_builtins.bool]]] = None,
@@ -149,9 +181,15 @@ def get_s3_reference_output(access_key: pulumi.Input[Optional[Optional[_builtins
     Access state from an AWS S3 bucket.
 
     :param _builtins.str access_key: AWS access key.
+    :param _builtins.int assume_role_duration_seconds: The duration, in seconds, of the assume role session.
+    :param _builtins.str assume_role_policy: IAM Policy JSON describing further restricting permissions for the IAM Role being assumed.
+    :param Sequence[_builtins.str] assume_role_policy_arns: Amazon Resource Names (ARNs) of IAM Policies describing further restricting permissions for the IAM Role being assumed.
+    :param Mapping[str, _builtins.str] assume_role_tags: Assume role session tags.
+    :param Sequence[_builtins.str] assume_role_transitive_tag_keys: Assume role session tag keys to pass to any subsequent sessions.
     :param _builtins.str bucket: The name of the S3 bucket.
     :param _builtins.bool encrypt: Whether to enable server side encryption of the state file.
     :param _builtins.str endpoint: A custom endpoint for the S3 API.
+    :param _builtins.str external_id: The external ID to use when assuming the role.
     :param _builtins.bool force_path_style: Force s3 to use path-style addressing instead of virtual hosted-bucket addressing. Required by most S3-compatible stores.
     :param _builtins.str iam_endpoint: A custom endpoint for the IAM API.
     :param _builtins.str key: The path to the state file inside the bucket. When using a non-default workspace, the state path is /workspace_key_prefix/workspace_name/key.
@@ -159,7 +197,9 @@ def get_s3_reference_output(access_key: pulumi.Input[Optional[Optional[_builtins
     :param _builtins.int max_retries: The maximum number of times an AWS API request is retried on retryable failure.
     :param _builtins.str profile: AWS profile name as set in the shared credentials file.
     :param _builtins.str region: AWS region of the S3 bucket. Falls back to the AWS_REGION or AWS_DEFAULT_REGION environment variables when unset.
+    :param _builtins.str role_arn: The ARN of an IAM Role to be assumed in order to read the state.
     :param _builtins.str secret_key: AWS secret key.
+    :param _builtins.str session_name: The session name to use when assuming the role.
     :param _builtins.str shared_credentials_file: Path to a shared credentials file.
     :param _builtins.bool skip_credentials_validation: Skip the credentials validation via the STS API.
     :param _builtins.bool skip_metadata_api_check: Skip the AWS Metadata API check.
@@ -172,9 +212,15 @@ def get_s3_reference_output(access_key: pulumi.Input[Optional[Optional[_builtins
     """
     __args__ = dict()
     __args__['accessKey'] = access_key
+    __args__['assumeRoleDurationSeconds'] = assume_role_duration_seconds
+    __args__['assumeRolePolicy'] = assume_role_policy
+    __args__['assumeRolePolicyArns'] = assume_role_policy_arns
+    __args__['assumeRoleTags'] = assume_role_tags
+    __args__['assumeRoleTransitiveTagKeys'] = assume_role_transitive_tag_keys
     __args__['bucket'] = bucket
     __args__['encrypt'] = encrypt
     __args__['endpoint'] = endpoint
+    __args__['externalId'] = external_id
     __args__['forcePathStyle'] = force_path_style
     __args__['iamEndpoint'] = iam_endpoint
     __args__['key'] = key
@@ -182,7 +228,9 @@ def get_s3_reference_output(access_key: pulumi.Input[Optional[Optional[_builtins
     __args__['maxRetries'] = max_retries
     __args__['profile'] = profile
     __args__['region'] = region
+    __args__['roleArn'] = role_arn
     __args__['secretKey'] = secret_key
+    __args__['sessionName'] = session_name
     __args__['sharedCredentialsFile'] = shared_credentials_file
     __args__['skipCredentialsValidation'] = skip_credentials_validation
     __args__['skipMetadataApiCheck'] = skip_metadata_api_check
