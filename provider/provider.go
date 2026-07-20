@@ -87,6 +87,7 @@ func NewProvider() p.Provider {
 			},
 		},
 		Functions: []infer.InferredFunction{
+			infer.Function(&provider.GetAzureRMReference{}),
 			infer.Function(&provider.GetLocalReference{}),
 			infer.Function(&provider.GetRemoteReference{}),
 			infer.Function(&provider.GetS3Reference{}),

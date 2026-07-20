@@ -21,6 +21,7 @@
     "files": [
         "index.ts",
         "provider.ts",
+        "state/getAzureRMReference.ts",
         "state/getLocalReference.ts",
         "state/getRemoteReference.ts",
         "state/getS3Reference.ts",

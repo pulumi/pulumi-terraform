@@ -4,6 +4,11 @@
 import * as utilities from "../utilities";
 
 // Export members:
+export { GetAzureRMReferenceArgs, GetAzureRMReferenceResult, GetAzureRMReferenceOutputArgs } from "./getAzureRMReference";
+export const getAzureRMReference: typeof import("./getAzureRMReference").getAzureRMReference = null as any;
+export const getAzureRMReferenceOutput: typeof import("./getAzureRMReference").getAzureRMReferenceOutput = null as any;
+utilities.lazyLoad(exports, ["getAzureRMReference","getAzureRMReferenceOutput"], () => require("./getAzureRMReference"));
+
 export { GetLocalReferenceArgs, GetLocalReferenceResult, GetLocalReferenceOutputArgs } from "./getLocalReference";
 export const getLocalReference: typeof import("./getLocalReference").getLocalReference = null as any;
 export const getLocalReferenceOutput: typeof import("./getLocalReference").getLocalReferenceOutput = null as any;

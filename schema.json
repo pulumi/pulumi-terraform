@@ -60,6 +60,138 @@
     }
   },
   "functions": {
+    "terraform:state:getAzureRMReference": {
+      "description": "Access state stored in an Azure Blob Storage container.",
+      "inputs": {
+        "properties": {
+          "accessKey": {
+            "type": "string",
+            "description": "The access key of the storage account. Falls back to the ARM_ACCESS_KEY environment variable when unset.",
+            "secret": true
+          },
+          "clientCertificatePassword": {
+            "type": "string",
+            "description": "The password for the client certificate specified in clientCertificatePath. Falls back to the ARM_CLIENT_CERTIFICATE_PASSWORD environment variable when unset.",
+            "secret": true
+          },
+          "clientCertificatePath": {
+            "type": "string",
+            "description": "The path to the PFX file used as the client certificate for service principal authentication. Falls back to the ARM_CLIENT_CERTIFICATE_PATH environment variable when unset."
+          },
+          "clientId": {
+            "type": "string",
+            "description": "The client ID to authenticate as. Falls back to the ARM_CLIENT_ID environment variable when unset."
+          },
+          "clientSecret": {
+            "type": "string",
+            "description": "The client secret used for service principal authentication. Falls back to the ARM_CLIENT_SECRET environment variable when unset.",
+            "secret": true
+          },
+          "containerName": {
+            "type": "string",
+            "description": "The name of the storage container within the storage account."
+          },
+          "endpoint": {
+            "type": "string",
+            "description": "A custom endpoint for the Azure Resource Manager API. Falls back to the ARM_ENDPOINT environment variable when unset."
+          },
+          "environment": {
+            "type": "string",
+            "description": "The Azure cloud environment to use: public (default), china, german, stack or usgovernment. Falls back to the ARM_ENVIRONMENT environment variable when unset."
+          },
+          "key": {
+            "type": "string",
+            "description": "The name of the blob holding the Terraform state file inside the storage container."
+          },
+          "metadataHost": {
+            "type": "string",
+            "description": "The hostname of the Azure metadata service used to obtain the cloud environment. Falls back to the ARM_METADATA_HOST environment variable when unset."
+          },
+          "msiEndpoint": {
+            "type": "string",
+            "description": "The endpoint of the Managed Service Identity. Falls back to the ARM_MSI_ENDPOINT environment variable when unset."
+          },
+          "oidcRequestToken": {
+            "type": "string",
+            "description": "The bearer token for requests to the oidcRequestUrl URL. Falls back to the ARM_OIDC_REQUEST_TOKEN or ACTIONS_ID_TOKEN_REQUEST_TOKEN environment variables when unset.",
+            "secret": true
+          },
+          "oidcRequestUrl": {
+            "type": "string",
+            "description": "The URL of the OIDC provider to request an ID token from, e.g. in GitHub Actions. Requires oidcRequestToken. Falls back to the ARM_OIDC_REQUEST_URL or ACTIONS_ID_TOKEN_REQUEST_URL environment variables when unset."
+          },
+          "oidcToken": {
+            "type": "string",
+            "description": "A JWT token for OIDC authentication. Conflicts with oidcRequestToken. Falls back to the ARM_OIDC_TOKEN environment variable when unset.",
+            "secret": true
+          },
+          "oidcTokenFilePath": {
+            "type": "string",
+            "description": "The path to a file containing a JWT token for OIDC authentication. Conflicts with oidcRequestToken. Falls back to the ARM_OIDC_TOKEN_FILE_PATH environment variable when unset."
+          },
+          "resourceGroupName": {
+            "type": "string",
+            "description": "The name of the resource group holding the storage account. Required when using AzureAD authentication against the Azure Resource Manager API to look up the storage access key."
+          },
+          "sasToken": {
+            "type": "string",
+            "description": "A SAS token for accessing the storage container. Falls back to the ARM_SAS_TOKEN environment variable when unset.",
+            "secret": true
+          },
+          "storageAccountName": {
+            "type": "string",
+            "description": "The name of the storage account."
+          },
+          "subscriptionId": {
+            "type": "string",
+            "description": "The subscription ID holding the storage account. Falls back to the ARM_SUBSCRIPTION_ID environment variable when unset."
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "The tenant ID to authenticate against. Falls back to the ARM_TENANT_ID environment variable when unset."
+          },
+          "useAzureadAuth": {
+            "type": "boolean",
+            "description": "Whether to authenticate against the storage container with AzureAD instead of an access key. Falls back to the ARM_USE_AZUREAD environment variable when unset."
+          },
+          "useMsi": {
+            "type": "boolean",
+            "description": "Whether to authenticate using Managed Service Identity. Falls back to the ARM_USE_MSI environment variable when unset."
+          },
+          "useOidc": {
+            "type": "boolean",
+            "description": "Whether to authenticate using OIDC. Falls back to the ARM_USE_OIDC environment variable when unset."
+          },
+          "workspace": {
+            "type": "string",
+            "description": "The Terraform workspace to read state from.",
+            "default": "default"
+          }
+        },
+        "type": "object",
+        "required": [
+          "storageAccountName",
+          "containerName",
+          "key"
+        ]
+      },
+      "outputs": {
+        "description": "The result of fetching from a Terraform state store.",
+        "properties": {
+          "outputs": {
+            "additionalProperties": {
+              "$ref": "pulumi.json#/Any"
+            },
+            "description": "The outputs displayed from Terraform state.",
+            "type": "object"
+          }
+        },
+        "required": [
+          "outputs"
+        ],
+        "type": "object"
+      }
+    },
     "terraform:state:getLocalReference": {
       "description": "Access state from the local filesystem.",
       "inputs": {

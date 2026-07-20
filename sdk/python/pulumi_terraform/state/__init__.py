@@ -6,6 +6,7 @@ import builtins as _builtins
 from .. import _utilities
 import typing
 # Export this package's modules as members:
+from .get_azure_rm_reference import *
 from .get_local_reference import *
 from .get_remote_reference import *
 from .get_s3_reference import *
