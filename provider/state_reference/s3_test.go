@@ -17,9 +17,12 @@ package provider
 import (
 	"context"
 	"fmt"
+	"io"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -27,6 +30,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/testcontainers/testcontainers-go"
 	tcminio "github.com/testcontainers/testcontainers-go/modules/minio"
 
 	"github.com/pulumi/pulumi-go-provider/infer"
@@ -71,6 +75,7 @@ func TestStateReferenceReadS3(t *testing.T) {
 func TestStateReferenceReadS3AssumeRole(t *testing.T) {
 	ctx := t.Context()
 	endpoint := startSeededMinio(ctx, t)
+	configureAssumeRoleUser(ctx, t, endpoint)
 
 	InitTfBackend()
 	resp, err := (&GetS3Reference{}).Invoke(ctx, infer.FunctionRequest[GetS3ReferenceArgs]{
@@ -82,8 +87,8 @@ func TestStateReferenceReadS3AssumeRole(t *testing.T) {
 			Endpoint:                  ptr(endpoint),
 			StsEndpoint:               ptr(endpoint),
 			ForcePathStyle:            ptr(true),
-			AccessKey:                 ptr(username),
-			SecretKey:                 ptr(password),
+			AccessKey:                 ptr(assumeRoleUsername),
+			SecretKey:                 ptr(assumeRolePassword),
 			RoleArn:                   ptr("arn:aws:iam::123456789012:role/terraform-state-reader"),
 			SessionName:               ptr("pulumi-terraform-test"),
 			SkipCredentialsValidation: ptr(true),
@@ -104,7 +109,68 @@ const (
 	key      = "env/terraform.tfstate"
 	username = "minioadmin"
 	password = "minioadmin"
+
+	assumeRoleUsername = "assume-role-user"
+	assumeRolePassword = "assume-role-password"
 )
+
+// configureAssumeRoleUser creates a MinIO user whose policy allows reading the
+// state only with STS credentials. MinIO sets aws:principaltype to "User" for
+// static credentials and "AssumedRole" for credentials returned by AssumeRole.
+func configureAssumeRoleUser(ctx context.Context, t *testing.T, endpoint string) {
+	t.Helper()
+
+	target, err := url.Parse(endpoint)
+	require.NoError(t, err)
+	port, err := strconv.Atoi(target.Port())
+	require.NoError(t, err)
+
+	mc, err := testcontainers.Run(ctx, "minio/mc:RELEASE.2024-11-21T17-21-54Z",
+		testcontainers.WithEntrypoint("tail", "-f", "/dev/null"),
+		testcontainers.WithHostPortAccess(port))
+	testcontainers.CleanupContainer(t, mc, testcontainers.StopTimeout(0))
+	require.NoError(t, err)
+
+	aliasEndpoint := fmt.Sprintf("http://%s:%d", testcontainers.HostInternal, port)
+	runMC := func(args ...string) {
+		t.Helper()
+		exitCode, output, err := mc.Exec(ctx, args)
+		require.NoError(t, err)
+		out, err := io.ReadAll(output)
+		require.NoError(t, err)
+		require.Equal(t, 0, exitCode, "%v failed:\n%s", args, out)
+	}
+
+	runMC("mc", "alias", "set", "test", aliasEndpoint, username, password)
+	runMC("mc", "admin", "user", "add", "test", assumeRoleUsername, assumeRolePassword)
+
+	policy := fmt.Sprintf(`{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Action": ["s3:GetObject", "s3:ListBucket"],
+    "Resource": ["arn:aws:s3:::%[1]s", "arn:aws:s3:::%[1]s/*"],
+    "Condition": {"StringEquals": {"aws:principaltype": "AssumedRole"}}
+  }]
+}`, bucket)
+	require.NoError(t, mc.CopyToContainer(ctx, []byte(policy), "/tmp/assume-role-policy.json", 0o600))
+	runMC("mc", "admin", "policy", "create", "test", "assume-role-only", "/tmp/assume-role-policy.json")
+	runMC("mc", "admin", "policy", "attach", "test", "assume-role-only", "--user", assumeRoleUsername)
+
+	// Prove that the source credentials cannot read the state directly. The
+	// GetS3Reference invocation can succeed only by using AssumeRole credentials.
+	directClient := s3.New(s3.Options{
+		Region:       "us-east-1",
+		BaseEndpoint: aws.String(endpoint),
+		UsePathStyle: true,
+		Credentials:  credentials.NewStaticCredentialsProvider(assumeRoleUsername, assumeRolePassword, ""),
+	})
+	_, err = directClient.HeadObject(ctx, &s3.HeadObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(key),
+	})
+	require.ErrorContains(t, err, "StatusCode: 403")
+}
 
 // startSeededMinio runs a MinIO container holding a Terraform state file with
 // known outputs and returns its endpoint URL.
@@ -113,6 +179,7 @@ func startSeededMinio(ctx context.Context, t *testing.T) string {
 
 	container, err := tcminio.Run(ctx, "minio/minio:RELEASE.2024-12-18T13-15-44Z",
 		tcminio.WithUsername(username), tcminio.WithPassword(password))
+	testcontainers.CleanupContainer(t, container, testcontainers.StopTimeout(0))
 	require.NoError(t, err)
 
 	hostPort, err := container.ConnectionString(ctx)
