@@ -12,7 +12,7 @@ require (
 	github.com/hashicorp/terraform v1.5.7
 	github.com/hashicorp/terraform-svchost v0.1.0
 	github.com/zclconf/go-cty v1.16.3
-	google.golang.org/grpc v1.82.0
+	google.golang.org/grpc v1.82.1
 )
 
 require (
@@ -122,7 +122,7 @@ require (
 	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/klauspost/compress v1.18.5 // indirect
+	github.com/klauspost/compress v1.18.7 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/lib/pq v1.12.0 // indirect
 	github.com/manicminer/hamilton v0.44.0 // indirect
