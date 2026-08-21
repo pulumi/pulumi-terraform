@@ -14,6 +14,8 @@ env:
   PYTHONVERSION: "3.11.15"
   DOTNETVERSION: "8.0.x"
   JAVAVERSION: "11"
+  MISE_ENV: test
+  GO_TEST_EXEC: "gotestsum --format github-actions --"
   PULUMI_API: https://api.pulumi-staging.io
   PULUMI_GO_DEP_ROOT: ${{ github.workspace }}/..
   PULUMI_LOCAL_NUGET: ${{ github.workspace }}/nuget
@@ -259,16 +261,11 @@ jobs:
     - name: Install dependencies
       if: ${{ matrix.language != 'yaml' }}
       run: make install_${{ matrix.language}}_sdk
-    - name: Install gotestfmt
-      uses: GoTestTools/gotestfmt-action@v2
-      with:
-        version: v2.5.0
-        token: ${{ secrets.GITHUB_TOKEN }}
     - name: Run tests
       run: >-
         set -euo pipefail
 
-        cd examples && go test -count=1 -cover -timeout 2h -tags=${{ matrix.language }} -parallel 4 .
+        cd examples && $GO_TEST_EXEC -count=1 -cover -timeout 2h -tags=${{ matrix.language }} -parallel 4 .
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         TFE_ORGANIZATION: ${{ steps.esc-secrets.outputs.TFE_ORGANIZATION }}
