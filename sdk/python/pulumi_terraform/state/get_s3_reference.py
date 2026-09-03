@@ -112,6 +112,8 @@ def get_s3_reference(access_key: Optional[_builtins.str] = None,
     :param _builtins.str workspace: The Terraform workspace to read state from.
     :param _builtins.str workspace_key_prefix: The prefix applied to the non-default state path inside the bucket.
     """
+    if workspace is None:
+        workspace = 'default'
     __args__ = dict()
     __args__['accessKey'] = access_key
     __args__['assumeRoleDurationSeconds'] = assume_role_duration_seconds
@@ -210,6 +212,8 @@ def get_s3_reference_output(access_key: pulumi.Input[Optional[Optional[_builtins
     :param _builtins.str workspace: The Terraform workspace to read state from.
     :param _builtins.str workspace_key_prefix: The prefix applied to the non-default state path inside the bucket.
     """
+    if workspace is None:
+        workspace = 'default'
     __args__ = dict()
     __args__['accessKey'] = access_key
     __args__['assumeRoleDurationSeconds'] = assume_role_duration_seconds
