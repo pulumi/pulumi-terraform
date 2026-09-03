@@ -33,7 +33,7 @@ export function getAzureRMReference(args: GetAzureRMReferenceArgs, opts?: pulumi
         "useAzureadAuth": args.useAzureadAuth,
         "useMsi": args.useMsi,
         "useOidc": args.useOidc,
-        "workspace": args.workspace,
+        "workspace": (args.workspace) ?? "default",
     }, opts);
 }
 
@@ -174,7 +174,7 @@ export function getAzureRMReferenceOutput(args: GetAzureRMReferenceOutputArgs, o
         "useAzureadAuth": args.useAzureadAuth,
         "useMsi": args.useMsi,
         "useOidc": args.useOidc,
-        "workspace": args.workspace,
+        "workspace": (args.workspace) ?? "default",
     }, opts);
 }
 
