@@ -49,7 +49,7 @@ jobs:
         ESC_ACTION_OIDC_REQUESTED_TOKEN_TYPE: urn:pulumi:token-type:access_token:organization
       id: esc-secrets
       name: Fetch secrets from ESC
-      uses: pulumi/esc-action@9eb774255b1a4afb7855678ae8d4a77359da0d9b
+      uses: pulumi/esc-action@57e332b6dfb0d7edcf6cb813ee9a98b9665f12c2
     - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
       id: app-auth
       with:
@@ -148,7 +148,7 @@ jobs:
         ESC_ACTION_OIDC_REQUESTED_TOKEN_TYPE: urn:pulumi:token-type:access_token:organization
       id: esc-secrets
       name: Fetch secrets from ESC
-      uses: pulumi/esc-action@9eb774255b1a4afb7855678ae8d4a77359da0d9b
+      uses: pulumi/esc-action@57e332b6dfb0d7edcf6cb813ee9a98b9665f12c2
     - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
       id: app-auth
       with:
@@ -223,7 +223,7 @@ jobs:
         ESC_ACTION_OIDC_REQUESTED_TOKEN_TYPE: urn:pulumi:token-type:access_token:organization
       id: esc-secrets
       name: Fetch secrets from ESC
-      uses: pulumi/esc-action@9eb774255b1a4afb7855678ae8d4a77359da0d9b
+      uses: pulumi/esc-action@57e332b6dfb0d7edcf6cb813ee9a98b9665f12c2
     - name: check if this commit needs release
       if: ${{ env.RELEASE_BOT_ENDPOINT != '' }}
       uses: pulumi/action-release-by-pr-label@main
@@ -268,7 +268,7 @@ jobs:
         ESC_ACTION_OIDC_REQUESTED_TOKEN_TYPE: urn:pulumi:token-type:access_token:organization
       id: esc-secrets
       name: Fetch secrets from ESC
-      uses: pulumi/esc-action@9eb774255b1a4afb7855678ae8d4a77359da0d9b
+      uses: pulumi/esc-action@57e332b6dfb0d7edcf6cb813ee9a98b9665f12c2
     - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
       id: app-auth
       with:
@@ -343,7 +343,7 @@ jobs:
         ESC_ACTION_OIDC_REQUESTED_TOKEN_TYPE: urn:pulumi:token-type:access_token:organization
       id: esc-secrets
       name: Fetch secrets from ESC
-      uses: pulumi/esc-action@9eb774255b1a4afb7855678ae8d4a77359da0d9b
+      uses: pulumi/esc-action@57e332b6dfb0d7edcf6cb813ee9a98b9665f12c2
     - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
       id: app-auth
       with:
@@ -424,7 +424,7 @@ jobs:
         ESC_ACTION_OIDC_REQUESTED_TOKEN_TYPE: urn:pulumi:token-type:access_token:organization
       id: esc-secrets
       name: Fetch secrets from ESC
-      uses: pulumi/esc-action@9eb774255b1a4afb7855678ae8d4a77359da0d9b
+      uses: pulumi/esc-action@57e332b6dfb0d7edcf6cb813ee9a98b9665f12c2
     - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
       id: app-auth
       with:
