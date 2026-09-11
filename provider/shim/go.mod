@@ -12,7 +12,7 @@ require (
 	github.com/hashicorp/terraform v1.5.7
 	github.com/hashicorp/terraform-svchost v0.1.0
 	github.com/zclconf/go-cty v1.16.3
-	google.golang.org/grpc v1.83.1
+	google.golang.org/grpc v1.83.2
 )
 
 require (
