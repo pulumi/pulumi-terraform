@@ -127,7 +127,10 @@ func configureAssumeRoleUser(ctx context.Context, t *testing.T, endpoint string)
 	port, err := strconv.Atoi(target.Port())
 	require.NoError(t, err)
 
-	mc, err := testcontainers.Run(ctx, "minio/mc:RELEASE.2024-11-21T17-21-54Z",
+	// MinIO images are pulled from quay.io: Docker Hub no longer hosts the
+	// minio/minio and minio/mc repositories following the archival of the
+	// MinIO project.
+	mc, err := testcontainers.Run(ctx, "quay.io/minio/mc:RELEASE.2024-11-21T17-21-54Z",
 		testcontainers.WithEntrypoint("tail", "-f", "/dev/null"),
 		testcontainers.WithHostPortAccess(port))
 	testcontainers.CleanupContainer(t, mc, testcontainers.StopTimeout(0))
@@ -179,7 +182,9 @@ func configureAssumeRoleUser(ctx context.Context, t *testing.T, endpoint string)
 func startSeededMinio(ctx context.Context, t *testing.T) string {
 	t.Helper()
 
-	container, err := tcminio.Run(ctx, "minio/minio:RELEASE.2024-12-18T13-15-44Z",
+	// See the comment in configureAssumeRoleUser about why this pulls from
+	// quay.io rather than Docker Hub.
+	container, err := tcminio.Run(ctx, "quay.io/minio/minio:RELEASE.2024-12-18T13-15-44Z",
 		tcminio.WithUsername(username), tcminio.WithPassword(password))
 	testcontainers.CleanupContainer(t, container, testcontainers.StopTimeout(0))
 	require.NoError(t, err)
