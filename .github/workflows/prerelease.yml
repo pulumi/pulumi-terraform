@@ -88,7 +88,7 @@ jobs:
       run: tar -zcf ${{ github.workspace }}/bin/provider.tar.gz -C ${{
         github.workspace}}/bin/ pulumi-resource-${{ env.PROVIDER }}
     - name: Upload artifacts
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: pulumi-${{ env.PROVIDER }}-provider.tar.gz
         path: ${{ github.workspace }}/bin/provider.tar.gz
@@ -180,7 +180,7 @@ jobs:
     - name: Tar SDK folder
       run: tar -zcf sdk/${{ matrix.language }}.tar.gz -C sdk/${{ matrix.language }} .
     - name: Upload artifacts
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: ${{ matrix.language  }}-sdk.tar.gz
         path: ${{ github.workspace}}/sdk/${{ matrix.language }}.tar.gz
@@ -318,7 +318,7 @@ jobs:
       with:
         github_token: ${{ steps.app-auth.outputs.token }}
     - name: Clear GitHub Actions Ubuntu runner disk space
-      uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # v1.3.1
+      uses: jlumbroso/free-disk-space@ceedf095f4ec1a097402bc6bd80831f2e1a6fde6 # v2.0.0
       with:
         tool-cache: false
         dotnet: false
@@ -405,7 +405,7 @@ jobs:
       with:
         github_token: ${{ steps.app-auth.outputs.token }}
     - name: Download python SDK
-      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
       with:
         name: python-sdk.tar.gz
         path: ${{ github.workspace}}/sdk/
@@ -413,7 +413,7 @@ jobs:
       run: tar -zxf ${{github.workspace}}/sdk/python.tar.gz -C
         ${{github.workspace}}/sdk/python
     - name: Download dotnet SDK
-      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
       with:
         name: dotnet-sdk.tar.gz
         path: ${{ github.workspace}}/sdk/
@@ -421,7 +421,7 @@ jobs:
       run: tar -zxf ${{github.workspace}}/sdk/dotnet.tar.gz -C
         ${{github.workspace}}/sdk/dotnet
     - name: Download nodejs SDK
-      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
       with:
         name: nodejs-sdk.tar.gz
         path: ${{ github.workspace}}/sdk/
@@ -493,7 +493,7 @@ jobs:
       with:
         github_token: ${{ steps.app-auth.outputs.token }}
     - name: Download java SDK
-      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
       with:
         name: java-sdk.tar.gz
         path: ${{ github.workspace}}/sdk/
@@ -530,7 +530,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Download go SDK
-      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
       with:
         name: go-sdk.tar.gz
         path: ${{ github.workspace}}/sdk/
