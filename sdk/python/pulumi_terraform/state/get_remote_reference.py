@@ -62,6 +62,8 @@ def get_remote_reference(hostname: Optional[_builtins.str] = None,
     :param _builtins.str organization: The name of the organization containing the targeted workspace(s).
     :param _builtins.str token: The token used to authenticate with the remote backend.
     """
+    if hostname is None:
+        hostname = 'app.terraform.io'
     __args__ = dict()
     __args__['hostname'] = hostname
     __args__['organization'] = organization
@@ -84,6 +86,8 @@ def get_remote_reference_output(hostname: pulumi.Input[Optional[Optional[_builti
     :param _builtins.str organization: The name of the organization containing the targeted workspace(s).
     :param _builtins.str token: The token used to authenticate with the remote backend.
     """
+    if hostname is None:
+        hostname = 'app.terraform.io'
     __args__ = dict()
     __args__['hostname'] = hostname
     __args__['organization'] = organization
