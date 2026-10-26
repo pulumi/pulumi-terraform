@@ -672,8 +672,8 @@ github.com/kisielk/errcheck v1.5.0/go.mod h1:pFxgyoBC7bSaBwPgfKdkLd5X25qrDl4LWUI
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/klauspost/compress v1.18.7 h1:aUyZsS4kH3QTKurYhAOwAHxllVPnOthb3vPfnF1Ehjw=
 github.com/klauspost/compress v1.18.7/go.mod h1:cwPg85FWrGar70rWktvGQj8/hthj3wpl0PGDogxkrSQ=
-github.com/klauspost/cpuid/v2 v2.3.0 h1:S4CRMLnYUhGeDFDqkGriYKdfoFlDnMtqTiI/sFzhA9Y=
-github.com/klauspost/cpuid/v2 v2.3.0/go.mod h1:hqwkgyIinND0mEev00jJYCxPNVRVXFQeu1XKlok6oO0=
+github.com/klauspost/cpuid/v2 v2.2.6 h1:ndNyv040zDGIDh8thGkXYjnFtiN02M1PVVF+JE/48xc=
+github.com/klauspost/cpuid/v2 v2.2.6/go.mod h1:Lcz8mBdAVJIBVzewtcLocK12l3Y+JytZYpaMropDUws=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/kr/logfmt v0.0.0-20140226030751-b84e30acd515/go.mod h1:+0opPa2QZZtGFBFZlji/RkVcI2GknAs/DXo4wKdlNEc=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
@@ -875,8 +875,8 @@ github.com/pulumi/inflector v0.2.1 h1:bqyiish3tq//vLeLiEstSFE5K7RNjy/ce47ed4QATu
 github.com/pulumi/inflector v0.2.1/go.mod h1:HUFCjcPTz96YtTuUlwG3i3EZG4WlniBvR9bd+iJxCUY=
 github.com/pulumi/pulumi-cloud-sdk/go v1.20261023.0 h1:ktztW03U2HxEzh2/phKEcNr2B/3wOvcy9zlUdm0aMYs=
 github.com/pulumi/pulumi-cloud-sdk/go v1.20261023.0/go.mod h1:NPA79X6Wmyr5zNKd+N+RiVJN8duwIrRmIaed8HCL9EM=
-github.com/pulumi/pulumi-go-provider v1.7.0 h1:wrkDxqcHQTO3CjAjDqjBfYxQCMUNaYLbK/bEl8AbvMo=
-github.com/pulumi/pulumi-go-provider v1.7.0/go.mod h1:FIiR3Z9U1Qqk/qAGkctluJDFqMK9NWhj9qDJ9+AIVzs=
+github.com/pulumi/pulumi-go-provider v1.8.0 h1:Fp24jhdu5px0gEho0ACamwj4kAPbDysYTPVO+KjsN4Y=
+github.com/pulumi/pulumi-go-provider v1.8.0/go.mod h1:Ay6SbxX3OlASA2OOu914jovxV0alWNIaLk+q/uaQZfI=
 github.com/pulumi/pulumi/pkg/v3 v3.272.0 h1:XFglY9nrbjc7m9jdzLf38JFUOkdGbF9EyIX+HKGiKm4=
 github.com/pulumi/pulumi/pkg/v3 v3.272.0/go.mod h1:P2Y8kr5WQkmYWnTIZs0qRQI+tg+q/VwCHIRmOW0NkLc=
 github.com/pulumi/pulumi/sdk/v3 v3.272.0 h1:MoJElH3Y/VwV1tfTVNCh2BJuc3HxB7OPmvvYzaDe89c=
