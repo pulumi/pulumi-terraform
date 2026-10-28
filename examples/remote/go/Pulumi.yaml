@@ -1,5 +1,0 @@
-name: terraform-remote-state-with-go
-runtime: go
-description: An example demonstrating the Terraform Remote State resource in Go
-config:
-  terraform-remote-state-with-go:workspaces_prefix: dev

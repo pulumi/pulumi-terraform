@@ -1,6 +1,0 @@
-name: terraform-local-state-with-typescript
-description: Show how to use Pulumi's Terraform provider to read Terraform state in TypeScript.
-runtime:
-  name: nodejs
-  options:
-    packagemanager: yarn
