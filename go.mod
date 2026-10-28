@@ -1,6 +1,6 @@
 module github.com/pulumi/pulumi-terraform/v6
 
-go 1.26.6
+go 1.26.10
 
 replace (
 	github.com/hashicorp/terraform/shim => ./provider/shim
