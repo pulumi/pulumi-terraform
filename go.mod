@@ -15,8 +15,8 @@ require (
 	github.com/hashicorp/go-tfe v1.26.0
 	github.com/hashicorp/terraform/shim v0.0.0-00010101000000-000000000000
 	github.com/pulumi/pulumi-go-provider v1.8.0
-	github.com/pulumi/pulumi/pkg/v3 v3.274.0
-	github.com/pulumi/pulumi/sdk/v3 v3.274.0
+	github.com/pulumi/pulumi/pkg/v3 v3.274.1
+	github.com/pulumi/pulumi/sdk/v3 v3.274.1
 	github.com/stretchr/testify v1.12.1
 	github.com/testcontainers/testcontainers-go v0.42.0
 	github.com/testcontainers/testcontainers-go/modules/minio v0.42.0
@@ -233,7 +233,7 @@ require (
 	github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 // indirect
 	github.com/pulumi/appdash v0.0.0-20231130102222-75f619a67231 // indirect
 	github.com/pulumi/inflector v0.2.1 // indirect
-	github.com/pulumi/pulumi-cloud-sdk/go v1.20261104.1209 // indirect
+	github.com/pulumi/pulumi-cloud-sdk/go v1.20261105.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/sabhiram/go-gitignore v0.0.0-20210923224102-525f6e181f06 // indirect
