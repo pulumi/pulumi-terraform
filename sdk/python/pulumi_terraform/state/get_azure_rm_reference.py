@@ -102,6 +102,8 @@ def get_azure_rm_reference(access_key: Optional[_builtins.str] = None,
     :param _builtins.bool use_oidc: Whether to authenticate using OIDC. Falls back to the ARM_USE_OIDC environment variable when unset.
     :param _builtins.str workspace: The Terraform workspace to read state from.
     """
+    if workspace is None:
+        workspace = 'default'
     __args__ = dict()
     __args__['accessKey'] = access_key
     __args__['clientCertificatePassword'] = client_certificate_password
@@ -185,6 +187,8 @@ def get_azure_rm_reference_output(access_key: pulumi.Input[Optional[Optional[_bu
     :param _builtins.bool use_oidc: Whether to authenticate using OIDC. Falls back to the ARM_USE_OIDC environment variable when unset.
     :param _builtins.str workspace: The Terraform workspace to read state from.
     """
+    if workspace is None:
+        workspace = 'default'
     __args__ = dict()
     __args__['accessKey'] = access_key
     __args__['clientCertificatePassword'] = client_certificate_password
