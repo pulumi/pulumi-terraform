@@ -93,12 +93,13 @@ type GetAzureRMReferenceResult struct {
 }
 
 func GetAzureRMReferenceOutput(ctx *pulumi.Context, args GetAzureRMReferenceOutputArgs, opts ...pulumi.InvokeOption) GetAzureRMReferenceResultOutput {
-	return pulumi.ToOutputWithContext(ctx.Context(), args).
-		ApplyT(func(v interface{}) (GetAzureRMReferenceResultOutput, error) {
+	outputArgs := pulumi.ToOutputWithContext(ctx.Context(), args).
+		ApplyT(func(v interface{}) *GetAzureRMReferenceArgs {
 			args := v.(GetAzureRMReferenceArgs)
-			options := pulumi.InvokeOutputOptions{InvokeOptions: internal.PkgInvokeDefaultOpts(opts)}
-			return ctx.InvokeOutput("terraform:state:getAzureRMReference", args.Defaults(), GetAzureRMReferenceResultOutput{}, options).(GetAzureRMReferenceResultOutput), nil
-		}).(GetAzureRMReferenceResultOutput)
+			return args.Defaults()
+		})
+	options := pulumi.InvokeOutputOptions{InvokeOptions: internal.PkgInvokeDefaultOpts(opts)}
+	return ctx.InvokeOutput("terraform:state:getAzureRMReference", outputArgs, GetAzureRMReferenceResultOutput{}, options).(GetAzureRMReferenceResultOutput)
 }
 
 type GetAzureRMReferenceOutputArgs struct {

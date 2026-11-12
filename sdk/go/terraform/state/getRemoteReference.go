@@ -52,12 +52,13 @@ type GetRemoteReferenceResult struct {
 }
 
 func GetRemoteReferenceOutput(ctx *pulumi.Context, args GetRemoteReferenceOutputArgs, opts ...pulumi.InvokeOption) GetRemoteReferenceResultOutput {
-	return pulumi.ToOutputWithContext(ctx.Context(), args).
-		ApplyT(func(v interface{}) (GetRemoteReferenceResultOutput, error) {
+	outputArgs := pulumi.ToOutputWithContext(ctx.Context(), args).
+		ApplyT(func(v interface{}) *GetRemoteReferenceArgs {
 			args := v.(GetRemoteReferenceArgs)
-			options := pulumi.InvokeOutputOptions{InvokeOptions: internal.PkgInvokeDefaultOpts(opts)}
-			return ctx.InvokeOutput("terraform:state:getRemoteReference", args.Defaults(), GetRemoteReferenceResultOutput{}, options).(GetRemoteReferenceResultOutput), nil
-		}).(GetRemoteReferenceResultOutput)
+			return args.Defaults()
+		})
+	options := pulumi.InvokeOutputOptions{InvokeOptions: internal.PkgInvokeDefaultOpts(opts)}
+	return ctx.InvokeOutput("terraform:state:getRemoteReference", outputArgs, GetRemoteReferenceResultOutput{}, options).(GetRemoteReferenceResultOutput)
 }
 
 type GetRemoteReferenceOutputArgs struct {
