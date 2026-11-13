@@ -12,7 +12,7 @@ import * as utilities from "../utilities";
 export function getRemoteReference(args: GetRemoteReferenceArgs, opts?: pulumi.InvokeOptions): Promise<GetRemoteReferenceResult> {
     opts = pulumi.mergeOptions(utilities.resourceOptsDefaults(), opts || {});
     return pulumi.runtime.invoke("terraform:state:getRemoteReference", {
-        "hostname": args.hostname,
+        "hostname": (args.hostname) ?? "app.terraform.io",
         "organization": args.organization,
         "token": args.token,
         "workspaces": args.workspaces,
@@ -50,7 +50,7 @@ export interface GetRemoteReferenceResult {
 export function getRemoteReferenceOutput(args: GetRemoteReferenceOutputArgs, opts?: pulumi.InvokeOutputOptions): pulumi.Output<GetRemoteReferenceResult> {
     opts = pulumi.mergeOptions(utilities.resourceOptsDefaults(), opts || {});
     return pulumi.runtime.invokeOutput("terraform:state:getRemoteReference", {
-        "hostname": args.hostname,
+        "hostname": (args.hostname) ?? "app.terraform.io",
         "organization": args.organization,
         "token": args.token,
         "workspaces": args.workspaces,
