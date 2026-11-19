@@ -36,12 +36,8 @@ type GetLocalReferenceResult struct {
 }
 
 func GetLocalReferenceOutput(ctx *pulumi.Context, args GetLocalReferenceOutputArgs, opts ...pulumi.InvokeOption) GetLocalReferenceResultOutput {
-	return pulumi.ToOutputWithContext(ctx.Context(), args).
-		ApplyT(func(v interface{}) (GetLocalReferenceResultOutput, error) {
-			args := v.(GetLocalReferenceArgs)
-			options := pulumi.InvokeOutputOptions{InvokeOptions: internal.PkgInvokeDefaultOpts(opts)}
-			return ctx.InvokeOutput("terraform:state:getLocalReference", args, GetLocalReferenceResultOutput{}, options).(GetLocalReferenceResultOutput), nil
-		}).(GetLocalReferenceResultOutput)
+	options := pulumi.InvokeOutputOptions{InvokeOptions: internal.PkgInvokeDefaultOpts(opts)}
+	return ctx.InvokeOutput("terraform:state:getLocalReference", args, GetLocalReferenceResultOutput{}, options).(GetLocalReferenceResultOutput)
 }
 
 type GetLocalReferenceOutputArgs struct {
