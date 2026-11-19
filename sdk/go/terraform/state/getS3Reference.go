@@ -103,12 +103,13 @@ type GetS3ReferenceResult struct {
 }
 
 func GetS3ReferenceOutput(ctx *pulumi.Context, args GetS3ReferenceOutputArgs, opts ...pulumi.InvokeOption) GetS3ReferenceResultOutput {
-	return pulumi.ToOutputWithContext(ctx.Context(), args).
-		ApplyT(func(v interface{}) (GetS3ReferenceResultOutput, error) {
+	outputArgs := pulumi.ToOutputWithContext(ctx.Context(), args).
+		ApplyT(func(v interface{}) *GetS3ReferenceArgs {
 			args := v.(GetS3ReferenceArgs)
-			options := pulumi.InvokeOutputOptions{InvokeOptions: internal.PkgInvokeDefaultOpts(opts)}
-			return ctx.InvokeOutput("terraform:state:getS3Reference", args.Defaults(), GetS3ReferenceResultOutput{}, options).(GetS3ReferenceResultOutput), nil
-		}).(GetS3ReferenceResultOutput)
+			return args.Defaults()
+		})
+	options := pulumi.InvokeOutputOptions{InvokeOptions: internal.PkgInvokeDefaultOpts(opts)}
+	return ctx.InvokeOutput("terraform:state:getS3Reference", outputArgs, GetS3ReferenceResultOutput{}, options).(GetS3ReferenceResultOutput)
 }
 
 type GetS3ReferenceOutputArgs struct {
