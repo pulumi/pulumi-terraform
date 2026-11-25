@@ -14,9 +14,9 @@ require (
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/hashicorp/go-tfe v1.26.0
 	github.com/hashicorp/terraform/shim v0.0.0-00010101000000-000000000000
-	github.com/pulumi/pulumi-go-provider v1.8.0
-	github.com/pulumi/pulumi/pkg/v3 v3.277.0
-	github.com/pulumi/pulumi/sdk/v3 v3.277.0
+	github.com/pulumi/pulumi-go-provider v1.8.1
+	github.com/pulumi/pulumi/pkg/v3 v3.278.0
+	github.com/pulumi/pulumi/sdk/v3 v3.278.0
 	github.com/stretchr/testify v1.12.1
 	github.com/testcontainers/testcontainers-go v0.42.0
 	github.com/testcontainers/testcontainers-go/modules/minio v0.42.0
