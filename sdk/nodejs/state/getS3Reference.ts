@@ -37,7 +37,7 @@ export function getS3Reference(args: GetS3ReferenceArgs, opts?: pulumi.InvokeOpt
         "sseCustomerKey": args.sseCustomerKey,
         "stsEndpoint": args.stsEndpoint,
         "token": args.token,
-        "workspace": args.workspace,
+        "workspace": (args.workspace) ?? "default",
         "workspaceKeyPrefix": args.workspaceKeyPrefix,
     }, opts);
 }
@@ -203,7 +203,7 @@ export function getS3ReferenceOutput(args: GetS3ReferenceOutputArgs, opts?: pulu
         "sseCustomerKey": args.sseCustomerKey,
         "stsEndpoint": args.stsEndpoint,
         "token": args.token,
-        "workspace": args.workspace,
+        "workspace": (args.workspace) ?? "default",
         "workspaceKeyPrefix": args.workspaceKeyPrefix,
     }, opts);
 }
