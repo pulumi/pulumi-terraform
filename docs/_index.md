@@ -9,7 +9,7 @@ The Terraform provider allows you to reference Terraform state from Pulumi progr
 
 ## Example
 
-{{< chooser language "typescript,python,go,csharp,java,yaml" >}}
+{{< chooser language "typescript,python,go,csharp,java,yaml,hcl" >}}
 
 {{% choosable language typescript %}}
 
@@ -118,6 +118,28 @@ outputs:
       arguments:
         path: ./terraform.0-12-24.tfstate
       return: outputs
+```
+
+{{% /choosable %}}
+
+{{% choosable language hcl %}}
+
+```hcl
+terraform {
+  required_providers {
+    terraform = {
+      source = "pulumi/terraform"
+    }
+  }
+}
+
+data "terraform_state_local_reference" "state" {
+  path = "./terraform.0-12-24.tfstate"
+}
+
+output "state" {
+  value = data.terraform_state_local_reference.state.outputs
+}
 ```
 
 {{% /choosable %}}
